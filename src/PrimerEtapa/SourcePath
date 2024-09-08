@@ -1,0 +1,13 @@
+import java.nio.file.Path;
+
+public class SourcePath implements Path {
+
+    //Path path = new Path("C:\Users\Delfina\OneDrive\Escritorio\Delfina\FACULTAD\compiler-from-scratch\test_codes\1");
+
+    class SourcePath(String path) {
+
+    }
+
+    
+
+}

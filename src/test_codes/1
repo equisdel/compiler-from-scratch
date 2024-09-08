@@ -1,0 +1,5 @@
+single := -12.25s+18;
+if (1):
+    goto 17;
+else:
+    goto 0x7888;
