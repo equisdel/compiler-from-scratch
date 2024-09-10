@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import com.opencsv.CSVReader;
 
 public class Automata {
@@ -42,10 +43,10 @@ public class Automata {
             file_csv.remove(0); file_csv.remove(1);
 
             // Cambiar a mapas y rellenar la matriz de enteros
-            for (String[] fila : file_csv)
-                for (String columna : fila)
-                    matrizTransicion[estados[fila]][regex[columna]] = Integer.parseInt(columna);
-            
+            for (int i = 0; i<filas; i++)
+                for (int j = 0; i<columnas; j++)
+                    matrizTransicion[i][j] = Integer.parseInt(file_csv.get(i)[j]);
+
             csv.close();
 
             System.out.println(matrizTransicion);
@@ -63,6 +64,7 @@ public class Automata {
         int pos;
         boolean retorno = false;
         switch (caracter) {
+            // case regex[0] : pos = 3 ...
             case "0" : pos = 3;
             case "[1-9]": pos = 4;
             case "x": pos = 5;
