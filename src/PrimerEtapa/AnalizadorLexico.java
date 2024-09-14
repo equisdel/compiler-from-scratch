@@ -7,8 +7,9 @@ import java.util.concurrent.*;
 public class AnalizadorLexico {
 
 	private Automata automata;
-	private String lexema = "";
-	private String lexemaType = "";
+	protected int token = -1;
+	protected String lexema = "";
+	protected String lexemaType = "";
 	private ConcurrentHashMap<String,Token> TablaSimbolos = new ConcurrentHashMap<>();
 	
 	public AnalizadorLexico(){
@@ -60,7 +61,7 @@ public class AnalizadorLexico {
 					//System.out.println(ultimo_caracter);
 					lexema = lexema + ultimo_caracter.toString();
 					if (automata.getNext(ultimo_caracter)){
-						int id = getToken(lexema);
+						int id = getToken();
 						this.lexema = "";
 						this.lexemaType = "";
 						return id;
@@ -76,13 +77,13 @@ public class AnalizadorLexico {
 		return -1; //si no encontro ningun token...
 	}
 
-	private int getToken(String lexeme){
+	protected int getToken(){
 		// de lexema a numero, mapear a id
-		int id = lexToToken(lexeme);
+		int id = lexToToken(lexema);
 		//int id = 0;
 		Token token = new Token(id);
 		// pero antes de devolverlo (al A.S.) chequear tabla simbolos y agregarlo si corresponde:
-		TablaSimbolos.put(lexeme,token); // si existe el lexema no lo pone.
+		TablaSimbolos.put(lexema,token); // si existe el lexema no lo pone.
 		return id;
 	}
 
@@ -113,6 +114,10 @@ public class AnalizadorLexico {
 			} 
 		}
 		return id;
+	}
+
+	public static void main(String[] args) {
+		AccionSemantica.main(args);
 	}
 }
 
