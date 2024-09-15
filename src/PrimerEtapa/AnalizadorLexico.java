@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.*;
+import java.util.ArrayList;
 
 public class AnalizadorLexico {
 
@@ -10,6 +11,7 @@ public class AnalizadorLexico {
 	protected int token = -1;
 	protected String lexema = "";
 	protected String lexemaType = "";
+	protected char ult_caracter;
 	private ConcurrentHashMap<String,Token> TablaSimbolos = new ConcurrentHashMap<>();
 	
 	public AnalizadorLexico(){
@@ -22,7 +24,7 @@ public class AnalizadorLexico {
 		
 		
 	}
-/* 
+
 	// Recibe un path y lee el archivo asociado línea por línea
 	public ArrayList<String> getTokens(String filePath) {
 		
@@ -48,7 +50,7 @@ public class AnalizadorLexico {
 		}
 		return output;
 	}
-*/
+
 
 	public int getNextToken(String filePath) {
 		
