@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import com.opencsv.CSVReader;
@@ -78,7 +79,7 @@ public class Automata {
         */
     }
 
-    protected boolean getNext(String caracter) {
+    protected AccionSemantica getNext(String caracter) {
         int pos;
         boolean retorno = false;
         switch (caracter) {

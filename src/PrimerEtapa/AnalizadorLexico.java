@@ -2,71 +2,64 @@ package PrimerEtapa;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.concurrent.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+
 
 public class AnalizadorLexico {
-
-	private Automata automata;
-	protected int token = -1;
-	protected String lexema = "";
-	protected String lexemaType = "";
-	protected char ult_caracter;
-	private ConcurrentHashMap<String,Token> TablaSimbolos = new ConcurrentHashMap<>();
 	
+	// BORRAR ANTES DE LA ENTREGA:
+	boolean printmode = true;
+
+	// La clase AccionSemántica modifica directamente los atributos del A.l.
+	static private Automata automata;
+	static private TablaDeSimbolos t_simbolos;
+	static private ArrayList<AccionSemantica> acciones;
+	
+	static private String[] reserved = {"if","else","while"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
+	static protected int token = -1;
+	static protected String lexema = "";
+	static protected String lexemaType = "";
+	static protected String last_char;		// Se almacena acá, no se pasa como parámetro.
+	
+	// INICIALIZACION
 	public AnalizadorLexico(){
 
 		// Inicialización del autómata
-		String matriz_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";
+		String matriz_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";		// Quizás se pasa desde Main (parámetro)
 		this.automata = new Automata(matriz_filePath);
 
-		// Inicialización de la tabla de símbolos
-		
+		// Inicialización de la tabla de símbolos + precarga de palabras reservadas
+		this.t_simbolos = new TablaDeSimbolos();
+		for (String p_reservada : reserved)
+			t_simbolos.add_entry(token, p_reservada, "reserved");
+	
+		// Inicialización de acciones semánticas
+		acciones = AccionSemantica.all_actions;
 		
 	}
 
-	// Recibe un path y lee el archivo asociado línea por línea
-	public ArrayList<String> getTokens(String filePath) {
-		
-		ArrayList<String> output = new ArrayList<String>();
-		
-		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = br.readLine()) != null) {
-				for (int i = 0; i<line.length(); i++) {
-					String ultimo_caracter = line.substring(i,i);
-					System.out.println(ultimo_caracter);
-					if (automata.getNext(ultimo_caracter));
-						// cuando sale del : 1 token.
-					// Acá va la lógica de la matriz
-					// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];
-				}
-				
-				// Ojo, acá va salto de línea y tiene que cambiar el estado acorde.
-				// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return output;
-	}
+	// MODULOS DEL METODO PRINCIPAL
 
 
+	// METODO PRINCIPAL
 	public int getNextToken(String filePath) {
 		
 		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
 			String line;
 			while ((line = br.readLine()) != null) {  // !!!! cuando el A.S. quiera otro token deberia seguir leyendo desde donde quedo
 				//guardar donde quedó....
-				for (int i = 0; i<line.length(); i++) {
-					String ultimo_caracter = line.substring(i,i);
-					//System.out.println(ultimo_caracter);
-					lexema = lexema + ultimo_caracter.toString();
-					if (automata.getNext(ultimo_caracter)){
-						int id = getToken();
-						this.lexema = "";
-						this.lexemaType = "";
-						return id;
+				int i = 0;
+				while (i<line.length()) {
+					
+					AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
+					if (printmode) System.out.println(last_char);
+					automata.getNext(last_char).execute();				// Punto a resolver: solo con acciones semánticas?
+					// Esto en particular es horrible:
+					if (flag) {
+						i++;
+						flag = False;
 					}
 
 				}
@@ -116,12 +109,16 @@ public class AnalizadorLexico {
 			} 
 		}
 		return id;
+
+		public static void main(String[] args) {
+
+			// Inicialización de acciones semánticas
+			AccionSemantica.main(args);
+		
+		}
 	}
 
-	public static void main(String[] args) {
-		AccionSemantica.main(args);
-	}
-}
+
 
 /*
  * identificadores:
