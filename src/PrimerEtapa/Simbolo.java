@@ -31,6 +31,10 @@ public class Simbolo {
         return this.type;
     }
 
+    public String getLexema(){
+        return this.lexema;
+    }
+
     public void display() {
         System.out.println("ID: "+this.id+"; Token: "+this.token+"; Lexema: "+this.lexema+";");
     }

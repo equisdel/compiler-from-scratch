@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 
@@ -14,13 +15,41 @@ public class AnalizadorLexico {
 
 	// La clase AccionSemántica modifica directamente los atributos del A.l.
 	static private Automata automata;
-	static private TablaDeSimbolos t_simbolos;
+	static TablaDeSimbolos t_simbolos;
 	static private ArrayList<AccionSemantica> acciones;
 	
-	static private String[] reserved = {"if","else","while"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
+	static private String[] reserved = {"if","then","else","begin","end","end_if","outf","typedef","fun","ret","uinteger","single","repeat","until","pair","goto"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
+	static protected Map<String, Integer> tokens = new HashMap<>();
+	static {
+        tokens.put("ID", 		1);
+        tokens.put("CTE", 		2);
+        tokens.put("CHARCH",	3);
+        tokens.put("NEQ", 		4);
+        tokens.put("LEQ", 		5);
+        tokens.put("MEQ", 		6);
+        tokens.put("IF", 		7);		// Palabra Reservada
+        tokens.put("THEN", 		8);		// Palabra Reservada
+        tokens.put("ELSE", 		9);		// Palabra Reservada
+        tokens.put("BEGIN", 	10);	// Palabra Reservada
+        tokens.put("END", 		11);	// Palabra Reservada
+        tokens.put("END_IF",	12);	// Palabra Reservada
+        tokens.put("OUTF", 		13);	// Palabra Reservada
+        tokens.put("TYPEDEF",	14);	// Palabra Reservada
+        tokens.put("FUN", 		15);	// Palabra Reservada
+        tokens.put("RET", 		16);	// Palabra Reservada
+        tokens.put("UINTEGER",	17);	// Palabra Reservada
+        tokens.put("SINGLE",	18);	// Palabra Reservada
+        tokens.put("REPEAT",	19);	// Palabra Reservada
+        tokens.put("UNTIL", 	20);	// Palabra Reservada
+        tokens.put("PAIR", 		21);	// Palabra Reservada
+        tokens.put("GOTO", 		22);	// Palabra Reservada
+        tokens.put("ASIG", 		23);
+    }
+	// Coordinar el mapeo de tokens con lo que determine el YACC
+
 	static protected int token = -1;
 	static protected String lexema = "";
-	static protected String lexemaType = "";
+	static protected String lexema_type = "";
 	static protected String last_char;		// Se almacena acá, no se pasa como parámetro.
 	
 	// INICIALIZACION
@@ -55,13 +84,9 @@ public class AnalizadorLexico {
 					
 					AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
 					if (printmode) System.out.println(last_char);
-					automata.getNext(last_char).execute();				// Punto a resolver: solo con acciones semánticas?
-					// Esto en particular es horrible:
-					if (flag) {
-						i++;
-						flag = False;
-					}
-
+					i += 1 + (automata.getNext(last_char)).execute();	// Punto a resolver: solo con acciones semánticas?
+					// La mayoría de las A.S. retornan cero, pero si retorna -1 por ej se queda en el lugar.
+					// El flag era horrendo, mala mía.
 				}
 				// Ojo, acá va salto de línea y tiene que cambiar el estado acorde.
 				// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];

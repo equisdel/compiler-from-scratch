@@ -15,6 +15,10 @@ public class TablaDeSimbolos {
         symbols.put(lexema,new_entry);
     }
 
+    public Simbolo get_entry(String key) {
+        return symbols.get(key);
+    }
+
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
         for (Simbolo s : symbols.values())
