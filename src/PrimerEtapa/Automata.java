@@ -113,7 +113,7 @@ public class Automata {
         if (estado_actual == -1) {
             retorno = true;
         }
-        return retorno;
+        return null;
     }
 
 }

@@ -20,7 +20,6 @@ public class Simbolo {
     Simbolo(int token, String lexema) {
         this.token = token;
         this.lexema = lexema;
-        this.type = type;
     }
 
     public int getTokenId(){

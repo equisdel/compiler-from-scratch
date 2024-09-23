@@ -6,18 +6,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 public class AnalizadorLexico {
 	
 	// BORRAR ANTES DE LA ENTREGA:
 	boolean printmode = true;
 
-	// La clase AccionSemántica modifica directamente los atributos del A.l.
-	static private Automata automata;
+	// La clase AccionSemántica modifica directamente los atributos del A.L.
+	static Automata automata;
 	static TablaDeSimbolos t_simbolos;
-	static private ArrayList<AccionSemantica> acciones;
+	static ArrayList<AccionSemantica> acciones;
 	
+	static int line_number = 0;
+	static final int id_max_length = 15;
+
 	static private String[] reserved = {"if","then","else","begin","end","end_if","outf","typedef","fun","ret","uinteger","single","repeat","until","pair","goto"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
 	static protected Map<String, Integer> tokens = new HashMap<>();
 	static {
@@ -79,6 +80,7 @@ public class AnalizadorLexico {
 			String line;
 			while ((line = br.readLine()) != null) {  // !!!! cuando el A.S. quiera otro token deberia seguir leyendo desde donde quedo
 				//guardar donde quedó....
+				line_number++;
 				int i = 0;
 				while (i<line.length()) {
 					
@@ -91,6 +93,7 @@ public class AnalizadorLexico {
 				// Ojo, acá va salto de línea y tiene que cambiar el estado acorde.
 				// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];
 			}
+			line_number = 0;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -98,13 +101,15 @@ public class AnalizadorLexico {
 	}
 
 	protected int getToken(){
-		// de lexema a numero, mapear a id
+	/* 	// de lexema a numero, mapear a id
 		int id = lexToToken(lexema);
 		//int id = 0;
 		Token token = new Token(id);
 		// pero antes de devolverlo (al A.S.) chequear tabla simbolos y agregarlo si corresponde:
-		TablaSimbolos.put(lexema,token); // si existe el lexema no lo pone.
+		TablaDeSimbolos.put(lexema,token); // si existe el lexema no lo pone.
 		return id;
+	*/
+		return 0;
 	}
 
 	private int lexToToken(String lexeme){
@@ -126,7 +131,7 @@ public class AnalizadorLexico {
 			case ",": id = 13;
 			case ".": id = 14;
 			case ";": id = 15;
-			default:  switch (this.lexemaType) {
+			default:  switch (AnalizadorLexico.lexema_type) {
 				case "identifier": id = 16;
 				case "const": id = 17;
 				case "charChain": id = 18;
@@ -134,15 +139,14 @@ public class AnalizadorLexico {
 			} 
 		}
 		return id;
-
-		public static void main(String[] args) {
-
-			// Inicialización de acciones semánticas
-			AccionSemantica.main(args);
-		
-		}
 	}
+	public static void main(String[] args) {
 
+		// Inicialización de acciones semánticas
+		AccionSemantica.main(args);
+	
+	}
+}
 
 
 /*
