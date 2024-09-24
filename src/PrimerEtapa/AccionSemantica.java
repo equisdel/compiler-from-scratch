@@ -116,9 +116,19 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.token, AnalizadorLexico.lexema, AnalizadorLexico.lexema_type);
                 // Debería reiniciar el estado de la cadena y eso
+                // reiniciar estado de cadena la hacemos otra a.s. ???
                 return 0;
             }
         };
+
+        String desc_8 = "convertir a tipo float (PF-32)";
+        Function<Void,Integer> action_8 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                //Simbolo.setTipo = "PF-32"; A QUE SIMBOLO? CUANDO CREE ESE OBJETO? ANALLEXICO CUANDO CREA UN SIMBOLO?
+                return 0;
+            }
+        };
+
 
         // Instanciación de acciones semánticas
 

@@ -6,7 +6,7 @@ public class Simbolo {
     private int id;
     private int token;
     private String lexema;
-    private String type;        // 'uinteger', 'single', 'reserved', 'etc'.
+    private String type;        // 'uinteger', 'single', 'reserved', 'etc'. CREO Q NO, es lexema_type, APARTE DE ESA VARIABLE deberiamos tener el tipo de identificador.
     // scope, modificadores, etc.
     // nro de linea?
 
@@ -32,6 +32,10 @@ public class Simbolo {
 
     public String getLexema(){
         return this.lexema;
+    }
+
+    public void setTipo(String typo){
+        this.type = typo;
     }
 
     public void display() {

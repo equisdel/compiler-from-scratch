@@ -50,7 +50,7 @@ public class AnalizadorLexico {
 
 	static protected int token = -1;
 	static protected String lexema = "";
-	static protected String lexema_type = "";
+	static protected String lexema_type = ""; //SE REFIERE A CONSTANTE, IDENTIFICADOR O CADENA.
 	static protected String last_char;		// Se almacena acá, no se pasa como parámetro.
 	
 	// INICIALIZACION
