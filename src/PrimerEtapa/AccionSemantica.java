@@ -55,6 +55,7 @@ public class AccionSemantica {
         String desc_3 = "Devuelve el último caracter a la entrada (evita que el lector avance).";
         Function<Void,Integer> action_3 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
+                // no agregarlo a la cadena es suficiente.
                 return -1;
             }
         };
@@ -129,6 +130,58 @@ public class AccionSemantica {
             }
         };
 
+        String desc_10 = "se agrega el simbolo '=' como corrección, notifica warning.";
+        Function<Void,Integer> action_10 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "Se esperaba un '=' en lugar de '"+AnalizadorLexico.last_char+"'."; // esta linea la puso entera el copilot XD wtf HAY Q EJECUTAR ESTA ANTES QUE LA A.S.3
+                all_actions.get(0).execute();
+                return 0;
+            }
+        };
+
+        String desc_11 = "se agrega el simbolo '=' como corrección, notifica warning.";
+        Function<Void,Integer> action_11 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "Se esperaba un '0' en lugar de '"+AnalizadorLexico.last_char+"'.";
+                all_actions.get(0).execute();
+                return 0;
+            }
+        };
+
+        String desc_12 = "se elimina ultimo 2 caracteres. se notifica error por no poner exponente";
+        Function<Void,Integer> action_12 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0,AnalizadorLexico.lexema.length()-2);
+                AccionSemantica.error_msg = "Se esperaba un exponente en lugar de '"+AnalizadorLexico.last_char+"'.";
+                all_actions.get(0).execute();
+                return 0;
+            }
+        }; // la action_12 entera la hizo copilot... wtf XD
+
+        String desc_13 = "warning por error de comentario, se esperaba un #";
+        Function<Void,Integer> action_13 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "Se esperaba un '#' en lugar de '"+AnalizadorLexico.last_char+"'.";
+                all_actions.get(0).execute();
+                return 0;
+            }
+        };
+        
+        /* 
+        String desc_14 = "verifcar error lexico: caracter que no pertenece a la gramatica del lenguaje";
+        Function<Void,Integer> action_14 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                if (!AnalizadorLexico.grammar_symbols.contains(AnalizadorLexico.last_char)) {
+                    AccionSemantica.error_msg = "Caracter no perteneciente a la gramática del lenguaje: '" + AnalizadorLexico.last_char + "'.";
+                    all_actions.get(0).execute();
+                    return 0;
+                }
+                return 0;
+            }
+        };
+        */
+        
+
 
         // Instanciación de acciones semánticas
 
@@ -140,7 +193,10 @@ public class AccionSemantica {
         AccionSemantica as_5 = new AccionSemantica(5, desc_5, action_5);
         AccionSemantica as_6 = new AccionSemantica(6, desc_6, action_6);
         AccionSemantica as_7 = new AccionSemantica(7, desc_7, action_7);
-        //AccionSemantica as_8 = new AccionSemantica(8, desc_8, action_8);
+        AccionSemantica as_8 = new AccionSemantica(8, desc_8, action_8);
+        AccionSemantica as_10 = new AccionSemantica(10, desc_10, action_10);
+        AccionSemantica as_11 = new AccionSemantica(11, desc_11, action_11);
+        AccionSemantica as_12 = new AccionSemantica(12, desc_12, action_12);
 
         // TEST
         AnalizadorLexico.lexema = "Delfina";

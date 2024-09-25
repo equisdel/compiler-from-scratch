@@ -15,7 +15,9 @@ public class AnalizadorLexico {
 	static Automata automata;
 	static TablaDeSimbolos t_simbolos;
 	static ArrayList<AccionSemantica> acciones;
-	
+	//static Set<Character> grammar_symbols = new HashSet<>();
+	// pasa que en un comnetario puede estar literalmente cualqueir caracter..
+
 	static int line_number = 0;
 	static final int id_max_length = 15;
 
@@ -56,6 +58,7 @@ public class AnalizadorLexico {
 	// INICIALIZACION
 	public AnalizadorLexico(){
 
+
 		// Inicialización del autómata
 		String matriz_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";		// Quizás se pasa desde Main (parámetro)
 		this.automata = new Automata(matriz_filePath);
@@ -67,6 +70,7 @@ public class AnalizadorLexico {
 	
 		// Inicialización de acciones semánticas
 		acciones = AccionSemantica.all_actions;
+
 		
 	}
 
