@@ -5,8 +5,9 @@ public class Simbolo {
     
     private int id;
     private int token;
-    private String lexema;
-    private String type;        // 'uinteger', 'single', 'reserved', 'etc'. CREO Q NO, es lexema_type, APARTE DE ESA VARIABLE deberiamos tener el tipo de identificador.
+    private String lexema;      // '!='
+    private String type;        // 'ID', 'CTE', 'CHARCH', 'IF'. 'NEQ'. CREO Q NO, es lexema_type, APARTE DE ESA VARIABLE deberiamos tener el tipo de identificador.
+    private String subtype;     // caso 'ID': 'uinteger', 'single', 'reserved'.
     // scope, modificadores, etc.
     // nro de linea?
 

@@ -7,21 +7,21 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.opencsv.CSVReader;
 
 public class Automata {
     
 	private int estado_actual = 0;
     private int estados[];      // Cambiar a mapa: int -> int
     private String regex[];     // Cambiar a mapa: String -> int
-    private int matrizTransicion[][];
+    private int matrizTransicionEstados[][];
+    private int matrizAccionesSemanticas[][];
 
-    public Automata(String path_csv) {
+    public Automata(String path_csv_mE, String path_csv_mA) {
         // Lectura de encabezado - expresiones regulares
         // Lectura de la primera columna - identificadores de los estados
-        int filas = -2;	    // offset de filas determinado por el formato de la matriz
-		int columnas = -1;	// offset de columnas determinado por el formato de la matriz
-        matrizTransicion = new int[][] {
+        int offset_f = -2;	    // offset de filas determinado por el formato de la matriz
+		int offset_c = -1;	// offset de columnas determinado por el formato de la matriz
+        matrizTransicionEstados = new int[][] {
             { -1, -1, -1,  1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0 },
             { -1, -1, -1,  2,  2, -1, -1, -1, -1, -1, -1, -1,  4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0 },
             { -1, -1, -1,  3,  2,  7, -1, -1, -1, -1, -1, -1,  4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0 },
@@ -38,45 +38,54 @@ public class Automata {
             { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 15,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
             { 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15 }
         };
-        /*
-        System.out.println("SSS");
-        try (CSVReader csv = new CSVReader(new FileReader(path_csv))) { 
 
-            // Inicialización de las estructuras
-            List<String[]> file_csv = csv.readAll();        // file guarda una Lista de arreglos de tipo String
-            filas = filas + file_csv.size();                // separador por defecto: ','
-            columnas = columnas + (file_csv.get(0)).length;
-            this.estados = new int[filas];
-            this.regex = new String[columnas];
-            this.matrizTransicion = new int[filas][columnas];
-            
+        CSVReader csv_mE = new CSVReader(path_csv_mE);  // Lector de matriz de transición de estados
+        CSVReader csv_mA = new CSVReader(path_csv_mA);  // Lector de matriz de acciones semánticas
+
+        // Esto lo podemos volar despúes, es para control nuestro
+        if (csv_mA.columnas!=csv_mE.columnas || csv_mA.filas!=csv_mE.filas) System.out.println("Ojo, no coinciden las dimensiones de las matrices.");
+        int columnas = Math.max(csv_mA.columnas,csv_mE.columnas); // ver offset (ojo, deberían ser iguales)
+        int filas = Math.max(csv_mA.filas,csv_mE.filas);          // ver offset (ojo, deberían ser iguales)
+
+        this.matrizTransicionEstados    = new int[filas+offset_f][columnas+offset_c];
+        this.matrizAccionesSemanticas   = new int[filas+offset_c][columnas+offset_c];
+        this.estados = new int[filas];
+        this.regex = new String[columnas];
+        /* 
+        String[] line;
+        while ((line = csv_mE.getNextLine()) != null) {
+            for (String value : line) {
+                System.out.print(value + " ");
+            }
+            System.out.println();
+        }
+         * 
+        */
+
+        List<String[]> file_csv_mE = csv_mE.readAll();
+        filas += offset_f;                   
+        columnas += offset_c;
+
             // Header1: expresiones regulares de cada columna
-            String[] header1 = file_csv.get(1);
+            String[] header1 = file_csv_mE.get(1);
             for (int i = 0; i < columnas; i++)
                 regex[i] = header1[i];
 
             // Header2: estados asociados a cada fila
             for (int i = 0; i < filas; i++)
-                estados[i] = Integer.parseInt(file_csv.get(i)[0]);
+                estados[i] = Integer.parseInt(file_csv_mE.get(i)[0]);
 
-            file_csv.remove(0); file_csv.remove(1);
+            file_csv_mE.remove(0); file_csv_mE.remove(1);
 
             // Cambiar a mapas y rellenar la matriz de enteros
             for (int i = 0; i<filas; i++)
                 for (int j = 0; i<columnas; j++)
-                    matrizTransicion[i][j] = Integer.parseInt(file_csv.get(i)[j]);
-
-            csv.close();
+                    matrizTransicionEstados[i][j] = Integer.parseInt(file_csv_mE.get(i)[j]);
 
             System.out.println("III");
 
-        } 
+        }
 
-        catch (Exception e) { 
-            e.printStackTrace(); 
-
-        } 
-        */
     }
 
     protected AccionSemantica getNext(String caracter) {
@@ -114,6 +123,13 @@ public class Automata {
             retorno = true;
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        
+        try (CsvFileReader csv = new CsvFileReader(path_csv)) {
+            System.out.println("worked");
+        }
     }
 
 }

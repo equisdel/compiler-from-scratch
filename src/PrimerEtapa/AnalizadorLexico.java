@@ -50,10 +50,11 @@ public class AnalizadorLexico {
     }
 	// Coordinar el mapeo de tokens con lo que determine el YACC
 
-	static protected int token = -1;
-	static protected String lexema = "";
-	static protected String lexema_type = ""; //SE REFIERE A CONSTANTE, IDENTIFICADOR O CADENA.
-	static protected String last_char;		// Se almacena acá, no se pasa como parámetro.
+	static protected int 	token 		= -1;
+	static protected String lexema 		= "";
+	static protected String lexema_type = ""; 	//S
+	static protected String lexema_subtype = "";
+	static protected String last_char;			// Se almacena acá, no se pasa como parámetro.
 	
 	// INICIALIZACION
 	public AnalizadorLexico(){
@@ -91,8 +92,7 @@ public class AnalizadorLexico {
 					AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
 					if (printmode) System.out.println(last_char);
 					i += 1 + (automata.getNext(last_char)).execute();	// Punto a resolver: solo con acciones semánticas?
-					// La mayoría de las A.S. retornan cero, pero si retorna -1 por ej se queda en el lugar.
-					// El flag era horrendo, mala mía.
+
 				}
 				// Ojo, acá va salto de línea y tiene que cambiar el estado acorde.
 				// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];
@@ -136,9 +136,9 @@ public class AnalizadorLexico {
 			case ".": id = 14;
 			case ";": id = 15;
 			default:  switch (AnalizadorLexico.lexema_type) {
-				case "identifier": id = 16;
-				case "const": id = 17;
-				case "charChain": id = 18;
+				case "ID": id = 16;
+				case "CTE": id = 17;
+				case "CHARCH": id = 18;
 				// si no es algun operador, pero ya entra antes.
 			} 
 		}

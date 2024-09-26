@@ -62,20 +62,21 @@ public class AccionSemantica {
 
         String desc_4 = "Verifica si se trata de una palabra reservada o de un identificador.";
         Function<Void,Integer> action_4 = new Function<Void,Integer>() {
-            int max_length = AnalizadorLexico.id_max_length;
+            int max_length = AnalizadorLexico.id_max_length;    // 15
             String key = AnalizadorLexico.lexema;
             Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,max_length));
             public Integer apply(Void t) {
                 if (value != null) {    // Las palabras reservadas (PR) estan precargadas en la TS
-                    if (value.getTipo()=="reserved") {  // Es una palabra reservada (PR)
+                    if (value.getSubtipo()=="reserved") {  // Es una palabra reservada (PR)
                         AnalizadorLexico.lexema_type = key.toUpperCase();           // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
-                        AnalizadorLexico.token = AnalizadorLexico.tokens.get(key);  // Actualiza el token con el asociado a la PR.
+                        AnalizadorLexico.token = AnalizadorLexico.lexToToken(key);  // Actualiza el token con el asociado a la PR.
                     } else {  // Es una referencia a un identificador existente
                         // Cuestiones que pueden surgir más adelante... ¿Qué pasa si es de otro scope?
-                        AnalizadorLexico.token = AnalizadorLexico.tokens.get("ID");
+                        AnalizadorLexico.token = AnalizadorLexico.lexToToken("ID");
                     }
                 } else {    // Es un nuevo identificador
                     AnalizadorLexico.token = AnalizadorLexico.tokens.get("ID");
+                    AnalizadorLexico.lexema_type = "ID";
                     all_actions.get(5).execute();   // Verifica la longitud según límite superior
                     all_actions.get(6).execute();   // Determina el tipo según la inicial
                     all_actions.get(7).execute();   // Agrega el identificador a la tabla de símbolos
@@ -89,7 +90,7 @@ public class AccionSemantica {
             int max_length = AnalizadorLexico.id_max_length;
             public Integer apply(Void t) {
                 if (AnalizadorLexico.lexema.length() > max_length) {
-                    AccionSemantica.error_msg = "El identificador "+AnalizadorLexico.lexema+" supera la longitud máxima permitida ("+max_length+" caracteres).";
+                    AccionSemantica.error_msg = "El identificador "+new String(AnalizadorLexico.lexema)+" supera la longitud máxima permitida ("+max_length+" caracteres).";
                     AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0, max_length);
                     all_actions.get(0).execute();
                 }
@@ -102,11 +103,8 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 char inicial = AnalizadorLexico.lexema.charAt(0);
                 switch(inicial) {
-                    case 's':   AnalizadorLexico.lexema_type = "ID_SINGLE";
-                    case 'u':   AnalizadorLexico.lexema_type = "ID_UINTEGER";
-                    case 'v':   AnalizadorLexico.lexema_type = "ID_UINTEGER";
-                    case 'w':   AnalizadorLexico.lexema_type = "ID_UINTEGER";
-                    default:    AnalizadorLexico.lexema_type = "ID";
+                    case 's':                 AnalizadorLexico.lexema_subtype = "SINGLE";     // Usar var subtype
+                    case 'u' || 'v' || 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";
                 }
                 return 0;
             }
@@ -115,40 +113,43 @@ public class AccionSemantica {
         String desc_7 = "Agrega una nueva entrada a la tabla de símbolos.";
         Function<Void,Integer> action_7 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.token, AnalizadorLexico.lexema, AnalizadorLexico.lexema_type);
-                // Debería reiniciar el estado de la cadena y eso
+                AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.token, AnalizadorLexico.lexema, AnalizadorLexico.lexema_type);   // Agregar el resto
+                // Debería reiniciar el estado de la cadena y eso -> Agregar acción semántica
+                // 
                 // reiniciar estado de cadena la hacemos otra a.s. ???
                 return 0;
             }
         };
 
-        String desc_8 = "convertir a tipo float (PF-32)";
+        String desc_8 = "Convertir a tipo float (PF-32)";
         Function<Void,Integer> action_8 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                //Simbolo.setTipo = "PF-32"; A QUE SIMBOLO? CUANDO CREE ESE OBJETO? ANALLEXICO CUANDO CREA UN SIMBOLO?
+                lexema_subtype = "PF-32";
                 return 0;
             }
         };
 
-        String desc_10 = "se agrega el simbolo '=' como corrección, notifica warning.";
+        String desc_10 = "Asignación contiene error léxico: corrección + Warning.";
         Function<Void,Integer> action_10 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "Se esperaba un '=' en lugar de '"+AnalizadorLexico.last_char+"'."; // esta linea la puso entera el copilot XD wtf HAY Q EJECUTAR ESTA ANTES QUE LA A.S.3
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "=";    // Corrección con '='
+                AccionSemantica.error_msg = "Se esperaba un '=' en lugar de '"+AnalizadorLexico.last_char+"."; // esta linea la puso entera el copilot XD wtf HAY Q EJECUTAR ESTA ANTES QUE LA A.S.3
                 all_actions.get(0).execute();
                 return 0;
             }
         };
 
-        String desc_11 = "se agrega el simbolo '=' como corrección, notifica warning.";
+        String desc_11 = "Se agrega el simbolo '0' como corrección, notifica warning.";
         Function<Void,Integer> action_11 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";    // Corrección con '0'
                 AccionSemantica.error_msg = "Se esperaba un '0' en lugar de '"+AnalizadorLexico.last_char+"'.";
                 all_actions.get(0).execute();
                 return 0;
             }
         };
 
-        String desc_12 = "se elimina ultimo 2 caracteres. se notifica error por no poner exponente";
+        String desc_12 = "Se eliminan los últimos 2 caracteres. se notifica error por no poner exponente";
         Function<Void,Integer> action_12 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0,AnalizadorLexico.lexema.length()-2);
@@ -158,7 +159,7 @@ public class AccionSemantica {
             }
         }; // la action_12 entera la hizo copilot... wtf XD
 
-        String desc_13 = "warning por error de comentario, se esperaba un #";
+        String desc_13 = "Warning por error de comentario, se esperaba un #";
         Function<Void,Integer> action_13 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AccionSemantica.error_msg = "Se esperaba un '#' en lugar de '"+AnalizadorLexico.last_char+"'.";
