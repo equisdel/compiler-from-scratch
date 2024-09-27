@@ -1,5 +1,6 @@
 package PrimerEtapa;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class AnalizadorLexico {
 	static Automata automata;
 	static TablaDeSimbolos t_simbolos;
 	static ArrayList<AccionSemantica> acciones;
+	static BufferedReader program_file_reader;
 	//static Set<Character> grammar_symbols = new HashSet<>();
 	// pasa que en un comnetario puede estar literalmente cualqueir caracter..
 
@@ -59,7 +61,6 @@ public class AnalizadorLexico {
 	// INICIALIZACION
 	public AnalizadorLexico(){
 
-
 		// Inicialización del autómata
 		String matriz_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";		// Quizás se pasa desde Main (parámetro)
 		this.automata = new Automata(matriz_filePath);
@@ -72,24 +73,47 @@ public class AnalizadorLexico {
 		// Inicialización de acciones semánticas
 		acciones = AccionSemantica.all_actions;
 
-		
+	}
+
+	static public void compile(String program_file_path) {
+		try { AnalizadorLexico.program_file_reader = new BufferedReader(new FileReader(program_file_path)); } 
+		catch (FileNotFoundException e) { e.printStackTrace(); }
 	}
 
 	// MODULOS DEL METODO PRINCIPAL
 
 
 	// METODO PRINCIPAL
-	public int getNextToken(String filePath) {
+	public int yylex(String filePath) {
+
+		acciones.get(0).execute();		// Resetea el estado de las variables estáticas.
+		automata.reset();				// Resetea el autómata: estado inicial (0).
+
+		// Lee el próximo token
+		while (!automata.estadoFinal()) {
+			String next_char;
+			try {
+				program_file_reader.mark(Integer.MAX_VALUE);
+				next_char = (new Character((char)program_file_reader.read()).toString());
+				int next_accion_semantica = automata.getNext(next_char);
+				acciones.get(next_accion_semantica).execute();
+			} catch (IOException e) { e.printStackTrace(); }
+		}
+
+		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
+		return token;
 		
-		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-			String line;
-			while ((line = br.readLine()) != null) {  // !!!! cuando el A.S. quiera otro token deberia seguir leyendo desde donde quedo
-				//guardar donde quedó....
-				line_number++;
+	/*
+	 
+	 try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+		String line;
+		while ((line = br.readLine()) != null) {  // !!!! cuando el A.S. quiera otro token deberia seguir leyendo desde donde quedo
+		//guardar donde quedó....
+		line_number++;
 				int i = 0;
 				while (i<line.length()) {
 					
-					AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
+				AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
 					if (printmode) System.out.println(last_char);
 					i += 1 + (automata.getNext(last_char)).execute();	// Punto a resolver: solo con acciones semánticas?
 
@@ -102,6 +126,7 @@ public class AnalizadorLexico {
 			e.printStackTrace();
 		}
 		return -1; //si no encontro ningun token...
+		*/
 	}
 
 	protected int getToken(){
@@ -116,7 +141,7 @@ public class AnalizadorLexico {
 		return 0;
 	}
 
-	private int lexToToken(String lexeme){
+	static public int lexToToken(String lexeme){
 		int id = 0;
 		// como mierda sabemos si es id, cte, o cadena multilinea?
 		switch (lexeme) {
@@ -147,8 +172,23 @@ public class AnalizadorLexico {
 	public static void main(String[] args) {
 
 		// Inicialización de acciones semánticas
-		AccionSemantica.main(args);
-	
+		//AccionSemantica.main(args);
+		try { 
+			AnalizadorLexico.program_file_reader = new BufferedReader(new FileReader("src/test_codes/1")); 
+			int x;
+			try {
+				x = program_file_reader.read();
+				while(x!=-1) {
+					System.out.println(x);
+					x = program_file_reader.read();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} 
+		catch (FileNotFoundException e) { e.printStackTrace(); }
 	}
 }
 

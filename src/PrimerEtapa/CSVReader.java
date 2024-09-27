@@ -20,8 +20,8 @@ public class CSVReader {
             BufferedReader br = new BufferedReader(new FileReader(path));
             this.reader = br;
             try { this.reader.mark(1000000); } catch (IOException e) {}
-            columnas = this.getColumnas();
-            filas = this.getFilas();
+            this.filas = this.getFilas();
+            this.columnas = this.getColumnas();
             this.reset();
         } catch (FileNotFoundException e) { 
             System.out.println("not found");
@@ -43,7 +43,7 @@ public class CSVReader {
         try { line = reader.readLine(); } 
         catch (IOException e) { e.printStackTrace(); }
         if (line != null) {
-            String[] values = line.split(",",-1);       // El -1 es para que se incluyan los String vacíos en el arreglo
+            String[] values = line.split(",(?=(?:[^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$)",-1);       // El -1 es para que se incluyan los String vacíos en el arreglo
             return values;
         } return null;
     }
@@ -65,12 +65,6 @@ public class CSVReader {
 
     public static void main(String[] args) {
         CSVReader test = new CSVReader("src/PrimerEtapa/Matrices/matrizEstados.csv");
-
-        System.out.println(test.columnas+"aaa");
-        for (String string : test.getNextLine()) {
-            System.out.println(string);
-        };
         System.out.println(test.getFilas()+" : "+test.getColumnas());
-        
     }
 }

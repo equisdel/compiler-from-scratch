@@ -31,6 +31,10 @@ public class Simbolo {
         return this.type;
     }
 
+    public String getSubtipo(){
+        return this.subtype;
+    }
+
     public String getLexema(){
         return this.lexema;
     }
@@ -38,6 +42,7 @@ public class Simbolo {
     public void setTipo(String typo){
         this.type = typo;
     }
+    
 
     public void display() {
         System.out.println("ID: "+this.id+"; Token: "+this.token+"; Lexema: "+this.lexema+";");

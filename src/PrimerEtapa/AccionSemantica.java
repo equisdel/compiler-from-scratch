@@ -26,12 +26,14 @@ public class AccionSemantica {
 
         // Definición de las expresiones lambda que definen a cada instancia de Acción Semántica
 
-        String desc_0 = "Levanta un Warning con el mensaje de error actual.";
+        String desc_0 = "Resetea las variables del Analizador Léxico.";
         Function<Void,Integer> action_0 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                // Creo que debería existir una lista de Warnings, no estoy segura.
-                System.out.println("WARNING - [LINE "+AnalizadorLexico.line_number+"]: "+error_msg);
-                error_msg = null;
+                AnalizadorLexico.token 		    = -1;
+                AnalizadorLexico.lexema 		= "";
+                AnalizadorLexico.lexema_type    = ""; 
+                AnalizadorLexico.lexema_subtype = "";
+                AnalizadorLexico.last_char      = "";	
                 return 0;
             }
         };
@@ -55,8 +57,9 @@ public class AccionSemantica {
         String desc_3 = "Devuelve el último caracter a la entrada (evita que el lector avance).";
         Function<Void,Integer> action_3 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                // no agregarlo a la cadena es suficiente.
-                return -1;
+                // No agregarlo a la cadena es suficiente.
+                AnalizadorLexico.program_file_reader.reset();
+                return -1;  // Evita que avance el lector.
             }
         };
 
@@ -66,6 +69,7 @@ public class AccionSemantica {
             String key = AnalizadorLexico.lexema;
             Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,max_length));
             public Integer apply(Void t) {
+                all_actions.get(3).execute();   // Devuelve el último caracter a la entrada
                 if (value != null) {    // Las palabras reservadas (PR) estan precargadas en la TS
                     if (value.getSubtipo()=="reserved") {  // Es una palabra reservada (PR)
                         AnalizadorLexico.lexema_type = key.toUpperCase();           // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
@@ -81,6 +85,7 @@ public class AccionSemantica {
                     all_actions.get(6).execute();   // Determina el tipo según la inicial
                     all_actions.get(7).execute();   // Agrega el identificador a la tabla de símbolos
                 }
+                all_actions.get(100);               // Informa que se encuentra en el estado final
                 return 0;
             }
         };
@@ -92,7 +97,7 @@ public class AccionSemantica {
                 if (AnalizadorLexico.lexema.length() > max_length) {
                     AccionSemantica.error_msg = "El identificador "+new String(AnalizadorLexico.lexema)+" supera la longitud máxima permitida ("+max_length+" caracteres).";
                     AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0, max_length);
-                    all_actions.get(0).execute();
+                    all_actions.get(10).execute();
                 }
                 return 0;
             }
@@ -103,8 +108,8 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 char inicial = AnalizadorLexico.lexema.charAt(0);
                 switch(inicial) {
-                    case 's':                 AnalizadorLexico.lexema_subtype = "SINGLE";     // Usar var subtype
-                    case 'u' || 'v' || 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";
+                    case 's':               AnalizadorLexico.lexema_subtype = "SINGLE";     // Usar var subtype
+                    case 'u' | 'v' | 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";
                 }
                 return 0;
             }
@@ -121,10 +126,20 @@ public class AccionSemantica {
             }
         };
 
+
+        String desc_8 = "Operadores unarios: transición directa";
+        Function<Void,Integer> action_8 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AnalizadorLexico.token = (int)AnalizadorLexico.last_char.charAt(0);
+                all_actions.get(0).execute();   // Reinicia el estado del AL
+                return 0;
+            }
+        }; 
+
         String desc_8 = "Convertir a tipo float (PF-32)";
         Function<Void,Integer> action_8 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                lexema_subtype = "PF-32";
+                AnalizadorLexico.lexema_subtype = "PF-32";
                 return 0;
             }
         };
@@ -168,6 +183,24 @@ public class AccionSemantica {
             }
         };
         
+        String desc_100 = "Informa al Analizador Léxico que se está en el estado final.";
+        Function<Void,Integer> action_100 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                // Estado final
+                AnalizadorLexico.final_state = true;
+            }
+        };
+
+
+        String desc_10 = "Levanta un Warning con el mensaje de error actual.";
+        Function<Void,Integer> action_10 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                // Creo que debería existir una lista de Warnings, no estoy segura.
+                System.out.println("WARNING - [LINE "+AnalizadorLexico.line_number+"]: "+error_msg);
+                error_msg = null;
+                return 0;
+            }
+        };
         /* 
         String desc_14 = "verifcar error lexico: caracter que no pertenece a la gramatica del lenguaje";
         Function<Void,Integer> action_14 = new Function<Void,Integer>() {
@@ -198,6 +231,7 @@ public class AccionSemantica {
         AccionSemantica as_10 = new AccionSemantica(10, desc_10, action_10);
         AccionSemantica as_11 = new AccionSemantica(11, desc_11, action_11);
         AccionSemantica as_12 = new AccionSemantica(12, desc_12, action_12);
+        AccionSemantica as_100 = new AccionSemantica(100, desc_100, action_100);
 
         // TEST
         AnalizadorLexico.lexema = "Delfina";
