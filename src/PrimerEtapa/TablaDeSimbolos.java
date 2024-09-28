@@ -10,13 +10,15 @@ public class TablaDeSimbolos {
         symbols = new HashMap<>();
     }
 
-    public void add_entry(int token, String lexema, String type) {
-        Simbolo new_entry = new Simbolo(token, lexema.toUpperCase(), type);   // Se pasa todo a upper case
-        symbols.put(lexema,new_entry);
+    public void add_entry(String lexema, String type, String subtype) {
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase());   // Se pasa todo a upper case
+        symbols.put(lexema.toUpperCase(),new_entry);
     }
 
     public Simbolo get_entry(String key) {
-        return symbols.get(key);
+        Simbolo retorno = symbols.get(key);
+        System.out.println(retorno==null);
+        return retorno;
     }
 
     public void display() {
@@ -35,7 +37,7 @@ public class TablaDeSimbolos {
         // Creación de la tabla de símbolos
         TablaDeSimbolos ts = new TablaDeSimbolos();
         // Inserción de una entrada piloto
-        ts.add_entry(0,"test_0","type_any");
+        ts.add_entry("","test_0","type_any");
         // Impresión de la tabla
         ts.display();
 

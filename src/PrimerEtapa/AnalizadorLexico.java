@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class AnalizadorLexico {
 	
@@ -15,7 +16,7 @@ public class AnalizadorLexico {
 	// La clase AccionSemántica modifica directamente los atributos del A.L.
 	static Automata automata;
 	static TablaDeSimbolos t_simbolos;
-	static ArrayList<AccionSemantica> acciones;
+	static AccionSemantica[] acciones;
 	static BufferedReader program_file_reader;
 	//static Set<Character> grammar_symbols = new HashSet<>();
 	// pasa que en un comnetario puede estar literalmente cualqueir caracter..
@@ -56,50 +57,57 @@ public class AnalizadorLexico {
 	static protected String lexema 		= "";
 	static protected String lexema_type = ""; 	//S
 	static protected String lexema_subtype = "";
-	static protected String last_char;			// Se almacena acá, no se pasa como parámetro.
+	static protected String next_char;			// Se almacena acá, no se pasa como parámetro.
 	
 	// INICIALIZACION
 	public AnalizadorLexico(){
 
 		// Inicialización del autómata
-		String matriz_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";		// Quizás se pasa desde Main (parámetro)
-		this.automata = new Automata(matriz_filePath);
+		String matrizE_filePath = "src/PrimerEtapa/Matrices/matrizEstados.csv";		// Quizás se pasa desde Main (parámetro)
+		String matrizA_filePath = "src/PrimerEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
+		this.automata = new Automata(matrizE_filePath,matrizA_filePath);
 
 		// Inicialización de la tabla de símbolos + precarga de palabras reservadas
 		this.t_simbolos = new TablaDeSimbolos();
 		for (String p_reservada : reserved)
-			t_simbolos.add_entry(token, p_reservada, "reserved");
+			t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
 	
 		// Inicialización de acciones semánticas
+		AccionSemantica.main(new String[0]);
 		acciones = AccionSemantica.all_actions;
 
 	}
 
-	static public void compile(String program_file_path) {
+	public void compile(String program_file_path) {
 		try { AnalizadorLexico.program_file_reader = new BufferedReader(new FileReader(program_file_path)); } 
-		catch (FileNotFoundException e) { e.printStackTrace(); }
+		catch (FileNotFoundException e) { System.out.println("NOT FOUND"); e.printStackTrace(); }
 	}
 
 	// MODULOS DEL METODO PRINCIPAL
 
 
 	// METODO PRINCIPAL
-	public int yylex(String filePath) {
+	public int yylex() {
 
-		acciones.get(0).execute();		// Resetea el estado de las variables estáticas.
+		acciones[0].execute();		// Resetea el estado de las variables estáticas.
 		automata.reset();				// Resetea el autómata: estado inicial (0).
 
 		// Lee el próximo token
+		int next_char, next_accion_semantica;
 		while (!automata.estadoFinal()) {
-			String next_char;
 			try {
-				program_file_reader.mark(Integer.MAX_VALUE);
-				next_char = (new Character((char)program_file_reader.read()).toString());
-				int next_accion_semantica = automata.getNext(next_char);
-				acciones.get(next_accion_semantica).execute();
+				program_file_reader.mark(100);
+				next_char = program_file_reader.read();
+				AnalizadorLexico.next_char = (new Character((char)next_char)).toString();
+				System.out.println(AnalizadorLexico.next_char);
+				if (next_char == 10) line_number++;			// Salto de línea
+				next_accion_semantica = automata.getNext(AnalizadorLexico.next_char);
+				System.out.println("Acción semántica: "+next_accion_semantica);
+				if (next_accion_semantica>=0) acciones[next_accion_semantica].execute();
+				if (next_char == -1) automata.finalize();
 			} catch (IOException e) { e.printStackTrace(); }
 		}
-
+		System.out.println("["+AnalizadorLexico.lexema+"]");
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
 		return token;
 		
@@ -170,25 +178,19 @@ public class AnalizadorLexico {
 		return id;
 	}
 	public static void main(String[] args) {
+		AnalizadorLexico al = new AnalizadorLexico();
+		al.compile("src/test_codes/1");
+	
+		Scanner scanner = new Scanner(System.in);
+        int input = 0;
 
-		// Inicialización de acciones semánticas
-		//AccionSemantica.main(args);
-		try { 
-			AnalizadorLexico.program_file_reader = new BufferedReader(new FileReader("src/test_codes/1")); 
-			int x;
-			try {
-				x = program_file_reader.read();
-				while(x!=-1) {
-					System.out.println(x);
-					x = program_file_reader.read();
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        // Mientras el usuario no ingrese -1, el ciclo sigue
+		input = scanner.nextInt();
+        while (input != -1) {
+			al.yylex();
+            input = scanner.nextInt();
+        }
 
-		} 
-		catch (FileNotFoundException e) { e.printStackTrace(); }
 	}
 }
 

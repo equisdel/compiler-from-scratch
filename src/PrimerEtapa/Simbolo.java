@@ -4,23 +4,23 @@ package PrimerEtapa;
 public class Simbolo {
     
     private int id;
-    private int token;
-    private String lexema;      // '!='
+//    private int token;        // No es necesario: es lo mismo que el campo type
+//    private String lexema;    // No es necesario: es la clave en la TS
+    static int counter = 0;
     private String type;        // 'ID', 'CTE', 'CHARCH', 'IF'. 'NEQ'. CREO Q NO, es lexema_type, APARTE DE ESA VARIABLE deberiamos tener el tipo de identificador.
     private String subtype;     // caso 'ID': 'uinteger', 'single', 'reserved'.
     // scope, modificadores, etc.
     // nro de linea?
 
     // Implementar getters y setters
-    Simbolo(int token, String lexema, String type) {
-        this.token = token;
-        this.lexema = lexema;
+    Simbolo(String type, String subtype) {
         this.type = type;
+        this.subtype = subtype;
+        this.id = Simbolo.counter++;
     }
 
-    Simbolo(int token, String lexema) {
-        this.token = token;
-        this.lexema = lexema;
+    Simbolo(String type) {
+        this(type,null);
     }
 
     public int getTokenId(){
@@ -35,16 +35,11 @@ public class Simbolo {
         return this.subtype;
     }
 
-    public String getLexema(){
-        return this.lexema;
-    }
-
     public void setTipo(String typo){
         this.type = typo;
     }
     
-
     public void display() {
-        System.out.println("ID: "+this.id+"; Token: "+this.token+"; Lexema: "+this.lexema+";");
+        System.out.println("ID: "+this.id+"; Tipo: "+this.type+"; Subtipo: "+this.subtype+";");
     }
 }
