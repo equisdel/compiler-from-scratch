@@ -7,9 +7,10 @@
 /*Puntos flotantes: ¿están bajo el mismo token que las uinteger y las hexadecimales?*/
 %token ID CTE CHARCH NEQ LEQ MEQ ASSIGN TAG /* los que son unicos como * se usa el ASCII */ IF THEN ELSE BEGIN END END_IF OUTF TYPEDEF FUN RET UINTEGER SINGLE REPEAT UNTIL PAIR GOTO
 
-
+/*
 %LEFT '+' '-'
 %LEFT '*' '/'
+*/
 
 %start prog
 
@@ -31,7 +32,7 @@ statement
         : executable_statement
         | declare_statement
         | return_statement ';'
-        | return_statement error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | return_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | error {System.println.out("Error: sintaxis de sentencia incorrecta")}
         ;       
 /* cada una debe terminar con ;*/
@@ -41,14 +42,13 @@ statement
 
 executable_statement
         : if_statement ';'
-        | if_statement error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | if_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | assign_statement
         | outf_statement ';'
-        | outf_statement error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
-        | repeat_statement ';'
-        | repeat_statement error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | outf_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | repeat_statement
         | goto_statement ';'
-        | goto_statement error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | goto_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | mult_assign_statement
         ;
 /* agregar mult_assign_statement cuando no de shift/reduce conflict */
@@ -60,14 +60,16 @@ executable_statement_list
 
 declare_statement
         : var_type var_list ';'
-        | var_type var_list error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | var_type var_list error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | var_type ID ';'
-        | var_type ID error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | var_type ID error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | var_type FUN ID '(' parametro ')' BEGIN fun_body END ';'
-        | var_type FUN ID '(' parametro ')' BEGIN fun_body END error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | var_type FUN ID '(' parametro ')' BEGIN fun_body END error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | var_type FUN error '(' parametro ')' BEGIN fun_body END {System.println.out("Error: se esperaba nombre de funcion en linea "+AnalizadorLexico.line_number)}
+        | var_type FUN ID '(' parametro ',' ')' BEGIN fun_body END ';' {System.println.out("Error: ',' invalida en linea "+AnalizadorLexico.line_number)}
+        | var_type FUN ID '(' parametro ',' parametro ')' BEGIN fun_body END ';' {System.println.out("Error: no se puede pasar mas de 1 parametro a la funcion, linea "+AnalizadorLexico.line_number)}
         | TYPEDEF PAIR '<' var_type '>' ID ';'
-        | TYPEDEF PAIR '<' var_type '>' ID error {Sysmtem.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | TYPEDEF PAIR '<' var_type '>' ID error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | TYPEDEF error {System.println.out("Error: se esperaba 'pair' en linea "+AnalizadorLexico.line_number)}
         | TYPEDEF PAIR error {System.println.out("Error: se esperaba '<' en linea "+AnalizadorLexico.line_number)}
         | TYPEDEF PAIR '<' var_type '>' error {System.println.out("Error: se esperaba un ID al final de la linea "+AnalizadorLexico.line_number)}
@@ -122,7 +124,16 @@ if_statement
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
         | IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
-        | IF cond THEN error ELSE ctrl_block_statement END_IF {Sysmtem.println.out("Error: Se esperaba sentencia de ejecucicion en el IF, linea "+AnalizadorLexico.line_number)}
+        | IF cond THEN error ELSE ctrl_block_statement END_IF {System.println.out("Error: Se esperaba sentencia de ejecucicion en el IF, linea "+AnalizadorLexico.line_number)}
+
+        | IF '(' fun_invoc ')' THEN ctrl_block_statement END_IF
+        | IF fun_invoc THEN ctrl_block_statement END_IF {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
+        | IF '(' fun_invoc ')' THEN ctrl_block_statement error {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
+        | IF '(' fun_invoc ')' THEN error END_IF {System.println.out("Error: Se esperaba sentencia/s ejecutable/s dentro del IF en linea "+AnalizadorLexico.line_number)}
+        | IF '(' fun_invoc ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+        | IF fun_invoc THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
+        | IF '(' fun_invoc ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
+        | IF fun_invoc THEN error ELSE ctrl_block_statement END_IF {System.println.out("Error: Se esperaba sentencia de ejecucicion en el IF, linea "+AnalizadorLexico.line_number)}
         ; /*error {System.println.out("Error: sintaxis incorrecta de sentencia de IF en linea "+AnalizadorLexico.line_number)}*/
         /* creo que si hay error da error por regla statement */
         /* agregar más especificos: ej. si falta ')' */
@@ -137,7 +148,7 @@ ctrl_block_statement
 cond
         : expr cond_op expr
         | expr expr {System.println.out("Error: se esperaba comparador en linea "+AnalizadorLexico.line_number)}
-        | fun_invoc
+        /*| fun_invoc */
         ;
 
 cond_op
@@ -158,30 +169,28 @@ assign_statement
 expr    : expr '+' term
         | expr '-' term
         | term
+        ;
         /*| expr error{System.println.out("Error: sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion")}*/
         /*| expr expr {System.println.out("Error: sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion")}*/
         /*| error {System.println.out("Error: asegurate no falte alguna expresion u operando")}*/
-        /*| error '+' term {System.println.out("Error: se esperaba expresion antes del '+' en linea "+AnalizadorLexico.line_number)}
+        | error '+' term {System.println.out("Error: se esperaba expresion antes del '+' en linea "+AnalizadorLexico.line_number)}
         | error '-' term {System.println.out("Error: se esperaba expresion antes del '-' en linea "+AnalizadorLexico.line_number)}
         | expr '+' error {System.println.out("Error: se esperaba expresion despues del '+' en linea "+AnalizadorLexico.line_number)}
         | expr '-' error {System.println.out("Error: se esperaba expresion despues del '-' en linea "+AnalizadorLexico.line_number)}
-        */
-        ;
-        /* el error es bastante generico pero al menos en el caso que piden (no este el operando) lo contempla */
-
+        
+/* FALTAN ERRORES DE SI FALTA UN EXPR O TERM ...*/
 
 term    : term '*' fact
         | term '/' fact
         | fact
         /*| term error {System.println.out("Error: sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta un termino")}*/
         /*| error {System.println.out("Error: asegurate no falte alguna expresion u operando")}*/
-        /*| error '*' fact {System.println.out("Error: se esperaba expresion antes de '*' en linea "+AnalizadorLexico.line_number)}
+        | error '*' fact {System.println.out("Error: se esperaba expresion antes de '*' en linea "+AnalizadorLexico.line_number)}
         | error '/' fact {System.println.out("Error: se esperaba expresion antes de '/' en linea "+AnalizadorLexico.line_number)}
         | term '*' error {System.println.out("Error: se esperaba expresion despues de '*' en linea "+AnalizadorLexico.line_number)}
         | term '/' error {System.println.out("Error: se esperaba expresion despues de '/* en linea "+AnalizadorLexico.line_number)}
-        */
         ;
-        /* no parsea nada si falta un * o un / ?? cque hace?*/
+        /* no parsea nada si falta un * o un / ?? que hace?*/
 
 fact    : ID
         | CTE
@@ -190,27 +199,33 @@ fact    : ID
 
 fun_invoc
         : ID '(' expr ')'
+        | ID '(' expr ',' expr ')' {System.println.out ("Error: no se puede pasar mas de 1 parametro a una funcion, linea "+AnalizadorLexico.line_number)}
         ;
 
 outf_statement
         : OUTF '(' expr ')'
         | OUTF '(' CHARCH ')'
         | OUTF error {System.println.out("Error: se esperaba parametro de OUTF en linea "+AnalizadorLexico.line_number)}
-         | OUTF '(' error ')' {System.println.out("Error: se tipo de parametro incorrecto en linea "+AnalizadorLexico.line_number)}
         ;
+        /* en semantica: tipo de parametro incorrecto */
 
 repeat_statement
-        : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
+        : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')' ';'
+        | REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')' error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
         | REPEAT BEGIN executable_statement_list END UNTIL cond {System.println.out("Error: se esperaba '(' en linea "+AnalizadorLexico.line_number)}
+        | REPEAT BEGIN executable_statement_list END UNTIL '(' fun_invoc ')' ';'{System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | REPEAT BEGIN executable_statement_list END UNTIL '(' fun_invoc ')' error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+        | REPEAT BEGIN executable_statement_list END UNTIL fun_invoc ';' {System.println.out("Error: se esperaba '(' en linea "+AnalizadorLexico.line_number)}
         | REPEAT BEGIN error {System.println.out("Error: se esperaba cuerpo de repeat until en linea "+AnalizadorLexico.line_number)}
         | REPEAT BEGIN executable_statement_list END error {System.println.out("Error: se esperaba UNTIL luego de 'END' en linea "+AnalizadorLexico.line_number)}
         ;       
 
 mult_assign_statement
-        : id_list ASSIGN expr_list ';'
-        | id_list ASSIGN expr_list error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number)}
-        | id_list ASSIGN expr ';'
-        | id_list ASSIGN error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number)}
+        : id_list ASSIGN expr_list
+        /*| id_list ASSIGN expr_list error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number)}*/
+        /* id_list ASSIGN expr ';'*/
+        /*| id_list ASSIGN error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number)}*/
+        /*si hay mas de 1 id al aizq y solo 1 expr a la der asumimos esta mal..*/
         ;
 
 id_list
@@ -219,9 +234,10 @@ id_list
         ;
 
 expr_list
-        : expr ',' expr
+        : expr ',' expr ';'
+        | expr ',' expr error {System.println.out("falta ';'")}
         | expr ',' expr_list
-        | expr expr_list {System.println.out("Error: se epseraba ',' luego de la expresion en linea "+AnalizadorLexico.line_number)}
+        | expr expr_list {System.println.out("Error: se epseraba ',' luego de la expresion en linea "+AnalizadorLexico.line_number)} 
         ;
 
 goto_statement
