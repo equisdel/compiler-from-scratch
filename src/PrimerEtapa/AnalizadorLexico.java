@@ -108,6 +108,8 @@ public class AnalizadorLexico {
 			} catch (IOException e) { e.printStackTrace(); }
 		}
 		System.out.println("["+AnalizadorLexico.lexema+"]");
+		token = 
+		lexToToken(lexema);
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
 		return token;
 		
@@ -153,9 +155,9 @@ public class AnalizadorLexico {
 		int id = 0;
 		// como mierda sabemos si es id, cte, o cadena multilinea?
 		switch (lexeme) {
-			case ":=": id = 1;
+			case ":=": id = 1; // estos de 2 char empiezan en 257
 			case "!=": id = 2;
-			case "<": id = 3;
+			case "<": id = 3;	// castear un char a un int lo transforma en ascii
 			case ">": id = 4;
 			case "<=": id = 5;
 			case ">=": id = 6;
@@ -163,7 +165,7 @@ public class AnalizadorLexico {
 			case "-": id = 8;
 			case "*": id = 9;
 			case "=": id = 10;
-			case "(": id = 11;
+			case "(": id = 11;			
 			case ")": id = 12;
 			case ",": id = 13;
 			case ".": id = 14;
@@ -183,11 +185,10 @@ public class AnalizadorLexico {
 	
 		Scanner scanner = new Scanner(System.in);
         int input = 0;
-
         // Mientras el usuario no ingrese -1, el ciclo sigue
 		input = scanner.nextInt();
         while (input != -1) {
-			al.yylex();
+			System.out.println("token: "+al.yylex());
             input = scanner.nextInt();
         }
 

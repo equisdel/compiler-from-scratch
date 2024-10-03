@@ -7,8 +7,8 @@ public class Simbolo {
 //    private int token;        // No es necesario: es lo mismo que el campo type
 //    private String lexema;    // No es necesario: es la clave en la TS
     static int counter = 0;
-    private String type;        // 'ID', 'CTE', 'CHARCH', 'IF'. 'NEQ'. CREO Q NO, es lexema_type, APARTE DE ESA VARIABLE deberiamos tener el tipo de identificador.
-    private String subtype;     // caso 'ID': 'uinteger', 'single', 'reserved'.
+    private String type;        // 'ID', 'CTE', 'CHARCH', 'IF'. 'NEQ' ...
+    private String subtype;     // caso 'ID': 'uinteger', 'single', 'reserved'
     // scope, modificadores, etc.
     // nro de linea?
 

@@ -1,7 +1,6 @@
+import PrimerEtapa.AnalizadorLexico;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import PrimerEtapa.AnalizadorLexico;
 
 // 
 
@@ -26,7 +25,6 @@ public class Main {
 		}
 		
 		System.out.println(p.matches("[a-z]", "a"));
-		//a_lexico.getTokens(filePath);
 	}
 
 }
