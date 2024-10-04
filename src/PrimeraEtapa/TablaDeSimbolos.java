@@ -1,4 +1,4 @@
-package PrimerEtapa;
+package PrimeraEtapa;
 
 import java.util.HashMap;
 

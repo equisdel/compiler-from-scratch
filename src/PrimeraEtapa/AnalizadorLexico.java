@@ -1,4 +1,5 @@
-package PrimerEtapa;
+package PrimeraEtapa;
+import SegundaEtapa.Parser;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import javax.swing.text.html.HTMLEditorKit;
 
 public class AnalizadorLexico {
 	
@@ -26,7 +28,7 @@ public class AnalizadorLexico {
 
 	static private String[] reserved = {"if","then","else","begin","end","end_if","outf","typedef","fun","ret","uinteger","single","repeat","until","pair","goto"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
 	static protected Map<String, Integer> tokens = new HashMap<>();
-	static {
+	static {	// CREO NO SE USA, BORRAR
         tokens.put("ID", 		1);
         tokens.put("CTE", 		2);
         tokens.put("CHARCH",	3);
@@ -51,12 +53,12 @@ public class AnalizadorLexico {
         tokens.put("GOTO", 		22);	// Palabra Reservada
         tokens.put("ASIG", 		23);
     }
-	// Coordinar el mapeo de tokens con lo que determine el YACC
+	// Coordinar el mapeo de tokens con lo que determine el YACC -> ascii y las final de parser.java
 
 	static protected int 	token 		= -1;
 	static protected String lexema 		= "";
-	static protected String lexema_type = ""; 	//S
-	static protected String lexema_subtype = "";
+	static protected String lexema_type = ""; 	//ID', 'CTE', 'CHARCH',
+	static protected String lexema_subtype = ""; //'uinteger', 'single', 'reserved'
 	static protected String next_char;			// Se almacena acá, no se pasa como parámetro.
 	
 	// INICIALIZACION
@@ -87,7 +89,7 @@ public class AnalizadorLexico {
 
 
 	// METODO PRINCIPAL
-	public int yylex() {
+	public static int yylex() {
 
 		acciones[0].execute();		// Resetea el estado de las variables estáticas.
 		automata.reset();				// Resetea el autómata: estado inicial (0).
@@ -100,7 +102,7 @@ public class AnalizadorLexico {
 				next_char = program_file_reader.read();
 				AnalizadorLexico.next_char = (new Character((char)next_char)).toString();
 				System.out.println(AnalizadorLexico.next_char);
-				if (next_char == 10) line_number++;			// Salto de línea
+				if (next_char == 10) line_number++;			// Salto de línea	 EEE PORQUE 10? ES EL ASCII?
 				next_accion_semantica = automata.getNext(AnalizadorLexico.next_char);
 				System.out.println("Acción semántica: "+next_accion_semantica);
 				if (next_accion_semantica>=0) acciones[next_accion_semantica].execute();
@@ -108,8 +110,7 @@ public class AnalizadorLexico {
 			} catch (IOException e) { e.printStackTrace(); }
 		}
 		System.out.println("["+AnalizadorLexico.lexema+"]");
-		token = 
-		lexToToken(lexema);
+		token = lexToToken(lexema);
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
 		return token;
 		
@@ -154,27 +155,46 @@ public class AnalizadorLexico {
 	static public int lexToToken(String lexeme){
 		int id = 0;
 		// como mierda sabemos si es id, cte, o cadena multilinea?
-		switch (lexeme) {
-			case ":=": id = 1; // estos de 2 char empiezan en 257
-			case "!=": id = 2;
-			case "<": id = 3;	// castear un char a un int lo transforma en ascii
-			case ">": id = 4;
-			case "<=": id = 5;
-			case ">=": id = 6;
-			case "+": id = 7;
-			case "-": id = 8;
-			case "*": id = 9;
-			case "=": id = 10;
-			case "(": id = 11;			
-			case ")": id = 12;
-			case ",": id = 13;
-			case ".": id = 14;
-			case ";": id = 15;
+		switch (lexeme) { // estos de 2 char empiezan en 257
+			case ":=": id = Parser.ASSIGN;
+			case "!=": id = Parser.NEQ;
+			case "<": id = (int)'<' ;	// castear un char a un int lo transforma en ascii
+			case ">": id = (int)'>' ;
+			case "<=": id = Parser.LEQ;
+			case ">=": id = Parser.MEQ;
+			case "+": id = (int)'+';
+			case "-": id = (int)'-';
+			case "*": id = (int)'*';
+			case "=": id = (int)'=';
+			case "(": id = (int)'(';			
+			case ")": id = (int)')';
+			case ",": id = (int)',';
+			case ".": id = (int)'.';
+			case ";": id = (int)';';
 			default:  switch (AnalizadorLexico.lexema_type) {
-				case "ID": id = 16;
-				case "CTE": id = 17;
-				case "CHARCH": id = 18;
-				// si no es algun operador, pero ya entra antes.
+				case "ID": id = Parser.ID;
+				case "CTE": id = Parser.CTE;
+				case "CHARCH": id = Parser.CHARCH;
+				case "TAG": id = Parser.TAG;
+				// si lexema_type es reservada...
+				default: switch (lexema_subtype) {
+					case "IF": id = Parser.IF;
+					case "THEN": id = Parser.THEN;
+					case "ELSE": id = Parser.ELSE;
+					case "BEGIN": id = Parser.BEGIN;
+					case "END": id = Parser.END;
+					case "END_IF": id = Parser.END_IF;
+					case "OUTF": id = Parser.OUTF;
+					case "TYPEDEF": id = Parser.TYPEDEF;
+					case "FUN": id = Parser.FUN;
+					case "RET": id = Parser.RET;
+					case "UINTEGER": id = Parser.UINTEGER;
+					case "SINGLE": id = Parser.SINGLE;
+					case "REPEAT": id = Parser.REPEAT;
+					case "UNTIL": id = Parser.UNTIL;
+					case "PAIR": id = Parser.PAIR;
+					case "GOTO": id = Parser.GOTO;
+				}
 			} 
 		}
 		return id;

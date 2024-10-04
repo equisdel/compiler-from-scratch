@@ -1,4 +1,4 @@
-package PrimerEtapa;
+package PrimeraEtapa;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.*;

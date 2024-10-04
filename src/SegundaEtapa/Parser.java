@@ -13,12 +13,13 @@
 
 
 
+package SegundaEtapa;
 
 
 
-//#line 2 "gramatica.y"
+//#line 3 "gramatica.y"
         import java.io.*;
-        import PrimerEtapa.AnalizadorLexico;
+        import PrimeraEtapa.AnalizadorLexico;
 //#line 20 "Parser.java"
 
 
@@ -581,7 +582,7 @@ boolean doaction;
       if (yydebug) debug("yyn:"+yyn+"  state:"+yystate+"  yychar:"+yychar);
       if (yychar < 0)      //we want a char?
         {
-        yychar = yylex();  //get next token
+        yychar = AnalizadorLexico.yylex();  //get next token
         if (yydebug) debug(" next yychar:"+yychar);
         //#### ERROR CHECK ####
         if (yychar < 0)    //it it didn't work/error
@@ -687,190 +688,190 @@ boolean doaction;
       {
 //########## USER-SUPPLIED ACTIONS ##########
 case 2:
-//#line 20 "gramatica.y"
+//#line 21 "gramatica.y"
 {System.println.out("Error: Falta el nombre del programa en la primer linea")}
 break;
 case 3:
-//#line 21 "gramatica.y"
+//#line 22 "gramatica.y"
 {System.println.out("Error: Falta delimitador de programa")}
 break;
 case 9:
-//#line 34 "gramatica.y"
+//#line 35 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 10:
-//#line 35 "gramatica.y"
+//#line 36 "gramatica.y"
 {System.println.out("Error: sintaxis de sentencia incorrecta")}
 break;
 case 12:
-//#line 44 "gramatica.y"
+//#line 45 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 15:
-//#line 47 "gramatica.y"
+//#line 48 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 18:
-//#line 50 "gramatica.y"
+//#line 51 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 20:
-//#line 52 "gramatica.y"
+//#line 53 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 24:
-//#line 63 "gramatica.y"
+//#line 64 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 26:
-//#line 65 "gramatica.y"
+//#line 66 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 28:
-//#line 67 "gramatica.y"
+//#line 68 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 29:
-//#line 68 "gramatica.y"
+//#line 69 "gramatica.y"
 {System.println.out("Error: se esperaba nombre de funcion en linea "+AnalizadorLexico.line_number)}
 break;
 case 30:
-//#line 69 "gramatica.y"
+//#line 70 "gramatica.y"
 {System.println.out("Error: ',' invalida en linea "+AnalizadorLexico.line_number)}
 break;
 case 31:
-//#line 70 "gramatica.y"
+//#line 71 "gramatica.y"
 {System.println.out("Error:  linea "+AnalizadorLexico.line_number)}
 break;
 case 33:
-//#line 72 "gramatica.y"
+//#line 73 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 34:
-//#line 73 "gramatica.y"
+//#line 74 "gramatica.y"
 {System.println.out("Error: se esperaba 'pair' en linea "+AnalizadorLexico.line_number)}
 break;
 case 35:
-//#line 74 "gramatica.y"
+//#line 75 "gramatica.y"
 {System.println.out("Error: se esperaba '<' en linea "+AnalizadorLexico.line_number)}
 break;
 case 36:
-//#line 75 "gramatica.y"
+//#line 76 "gramatica.y"
 {System.println.out("Error: se esperaba un ID al final de la linea "+AnalizadorLexico.line_number)}
 break;
 case 39:
-//#line 86 "gramatica.y"
+//#line 87 "gramatica.y"
 {
         yyerror("Error: se espera ',' luego de cada variable, línea " + AnalizadorLexico.line_number);
         yyclearin;
       }
 break;
 case 41:
-//#line 96 "gramatica.y"
+//#line 97 "gramatica.y"
 {System.println.out("Error: se esperaba tipo del parametro de la funcion en linea "+AnalizadorLexico.line_number)}
 break;
 case 42:
-//#line 97 "gramatica.y"
+//#line 98 "gramatica.y"
 {System.println.out("Error: se esperaba nombre de parametro")}
 break;
 case 48:
-//#line 121 "gramatica.y"
+//#line 122 "gramatica.y"
 {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
 break;
 case 49:
-//#line 122 "gramatica.y"
+//#line 123 "gramatica.y"
 {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
 break;
 case 50:
-//#line 123 "gramatica.y"
+//#line 124 "gramatica.y"
 {System.println.out("Error: Se esperaba sentencia/s ejecutable/s dentro del IF en linea "+AnalizadorLexico.line_number)}
 break;
 case 52:
-//#line 125 "gramatica.y"
+//#line 126 "gramatica.y"
 {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
 break;
 case 53:
-//#line 126 "gramatica.y"
+//#line 127 "gramatica.y"
 {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
 break;
 case 54:
-//#line 127 "gramatica.y"
+//#line 128 "gramatica.y"
 {System.println.out("Error: Se esperaba sentencia de ejecucicion en el IF, linea "+AnalizadorLexico.line_number)}
 break;
 case 56:
-//#line 130 "gramatica.y"
+//#line 131 "gramatica.y"
 {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
 break;
 case 57:
-//#line 131 "gramatica.y"
+//#line 132 "gramatica.y"
 {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
 break;
 case 58:
-//#line 132 "gramatica.y"
+//#line 133 "gramatica.y"
 {System.println.out("Error: Se esperaba sentencia/s ejecutable/s dentro del IF en linea "+AnalizadorLexico.line_number)}
 break;
 case 60:
-//#line 134 "gramatica.y"
+//#line 135 "gramatica.y"
 {System.println.out("Error: se esperaba '(' antes de la condicion en linea "+AnalizadorLexico.line_number)}
 break;
 case 61:
-//#line 135 "gramatica.y"
+//#line 136 "gramatica.y"
 {System.println.out("Error: se esperaba END_IF al final de la linea "+AnalizadorLexico.line_number)}
 break;
 case 62:
-//#line 136 "gramatica.y"
+//#line 137 "gramatica.y"
 {System.println.out("Error: Se esperaba sentencia de ejecucicion en el IF, linea "+AnalizadorLexico.line_number)}
 break;
 case 65:
-//#line 150 "gramatica.y"
+//#line 151 "gramatica.y"
 {System.println.out("Error: se esperaba comparador en linea "+AnalizadorLexico.line_number)}
 break;
 case 73:
-//#line 165 "gramatica.y"
+//#line 166 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number)}
 break;
 case 85:
-//#line 204 "gramatica.y"
+//#line 205 "gramatica.y"
 {System.println.out ("Error: no se puede pasar mas de 1 parametro a una funcion, linea "+AnalizadorLexico.line_number)}
 break;
 case 88:
-//#line 210 "gramatica.y"
+//#line 211 "gramatica.y"
 {System.println.out("Error: se esperaba parametro de OUTF en linea "+AnalizadorLexico.line_number)}
 break;
 case 90:
-//#line 216 "gramatica.y"
+//#line 217 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
 case 91:
-//#line 217 "gramatica.y"
+//#line 218 "gramatica.y"
 {System.println.out("Error: se esperaba '(' en linea "+AnalizadorLexico.line_number)}
 break;
 case 92:
-//#line 218 "gramatica.y"
-{System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
-break;
-case 93:
 //#line 219 "gramatica.y"
 {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
 break;
-case 94:
+case 93:
 //#line 220 "gramatica.y"
+{System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number)}
+break;
+case 94:
+//#line 221 "gramatica.y"
 {System.println.out("Error: se esperaba '(' en linea "+AnalizadorLexico.line_number)}
 break;
 case 95:
-//#line 221 "gramatica.y"
+//#line 222 "gramatica.y"
 {System.println.out("Error: se esperaba cuerpo de repeat until en linea "+AnalizadorLexico.line_number)}
 break;
 case 96:
-//#line 222 "gramatica.y"
+//#line 223 "gramatica.y"
 {System.println.out("Error: se esperaba UNTIL luego de 'END' en linea "+AnalizadorLexico.line_number)}
 break;
 case 101:
-//#line 237 "gramatica.y"
+//#line 238 "gramatica.y"
 {System.println.out("Error: se esperaba una ',' entre las expresiones en linea "+AnalizadorLexico.line_number)}
 break;
 case 104:
-//#line 243 "gramatica.y"
+//#line 244 "gramatica.y"
 {System.println.out("Error: se esperaba TAG en linea "+AnalizadorLexico.line_number)}
 break;
 //#line 800 "Parser.java"
