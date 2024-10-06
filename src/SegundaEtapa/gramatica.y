@@ -6,7 +6,7 @@
 
 
 /*Puntos flotantes: ¿están bajo el mismo token que las uinteger y las hexadecimales? ID es un token, CTE es otro*/
-%token ID CTE CHARCH NEQ LEQ MEQ ASSIGN TAG /* los que son unicos como * se usa el ASCII */ IF THEN ELSE BEGIN END END_IF OUTF TYPEDEF FUN RET UINTEGER SINGLE REPEAT UNTIL PAIR GOTO 
+%token ID CTE CHARCH NEQ LEQ MEQ ASSIGN TAG IF THEN ELSE BEGIN END END_IF OUTF TYPEDEF FUN RET UINTEGER SINGLE REPEAT UNTIL PAIR GOTO 
 
 /*
 %LEFT '+' '-'
@@ -16,7 +16,7 @@
 %start prog
 
 %%
-
+/* %start prog eto va aca o atnes del %% ? */
 prog    : ID BEGIN statement_list END
         | error BEGIN statement_list END {System.println.out("Error: Falta el nombre del programa en la primer linea");}
         | error {System.println.out("Error: Falta delimitador de programa");}
@@ -51,6 +51,7 @@ executable_statement
         | goto_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
         | mult_assign_statement ';'
         | mult_assign_statement error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+        | TAG /* asumimos esta sentencia no termina con ';' */
         ;
 /* agregar mult_assign_statement cuando no de shift/reduce conflict */
 
@@ -69,7 +70,7 @@ declare_statement
         | var_type FUN error '(' parametro ')' BEGIN fun_body END {System.println.out("Error: se esperaba nombre de funcion en linea "+AnalizadorLexico.line_number);}
         | var_type FUN ID '(' parametro ',' ')' BEGIN fun_body END ';' {System.println.out("Error: ',' invalida en linea "+AnalizadorLexico.line_number);}
         | var_type FUN ID '(' error ')' BEGIN fun_body END ';' {System.println.out("Error:  linea "+AnalizadorLexico.line_number);}
-        | TYPEDEF PAIR '<' var_type '>' ID ';'
+        | TYPEDEF PAIR '<' var_type '>' ID ';' /* en semantica, se agrega la variable a la TS*/
         | TYPEDEF PAIR '<' var_type '>' ID error {System.println.out("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
         | TYPEDEF error {System.println.out("Error: se esperaba 'pair' en linea "+AnalizadorLexico.line_number);}
         | TYPEDEF PAIR error {System.println.out("Error: se esperaba '<' en linea "+AnalizadorLexico.line_number);}
@@ -114,8 +115,8 @@ fun_body
 var_type
         : UINTEGER
         | SINGLE
+        | ID /* en semantica se verifica que el tipo haya sido definido por el usuario */
         ;
-
 
 if_statement
         : IF '(' cond ')' THEN ctrl_block_statement END_IF
@@ -148,7 +149,7 @@ ctrl_block_statement
 
 cond
         : expr cond_op expr
-        | expr expr {System.println.out("Error: se esperaba comparador en linea "+AnalizadorLexico.line_number);}
+        | expr error expr {System.println.out("Error: se esperaba comparador en linea "+AnalizadorLexico.line_number);}
         /*| fun_invoc */
         ;
 
@@ -163,14 +164,17 @@ cond_op
 
 assign_statement
         : ID ASSIGN expr ';'
+        | expr_pair ASSIGN expr ';'
         | ID ASSIGN expr error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
+        | expr_pair ASSIGN expr error {System.println.out("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
         ;
 
 
 expr    : expr '+' term
         | expr '-' term
         | term
-        | error
+        | error  
+        /*en vez de usar esta, cada vez q usemos expr ponemos la opcion de error ( o aveces xq sino mucho error..)*/
         ;
         /*| expr error{System.println.out("Error: sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion");}*/
         /*| expr expr {System.println.out("Error: sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion");}*/
@@ -197,7 +201,13 @@ term    : term '*' fact
 
 fact    : ID
         | CTE
+        | '-' CTE 
         | fun_invoc
+        | expr_pair
+        ;
+
+expr_pair
+        : ID '{' CTE '}' /* en semantica: •Verificar CTE es 1 o 2     • control de tipo de ID */
         ;
 
 fun_invoc
@@ -225,24 +235,39 @@ repeat_statement
 
 mult_assign_statement
         : id_list ASSIGN expr_list
+        | id_list ASSIGN error {System.println.out("Error: lista de expresiones incorrecta, puede que falte ',' entre las expresiones, linea "+AnalizadorLexico.line_number)}
         /*si hay mas de 1 id al aizq y solo 1 expr a la der asumimos esta mal..*/
         ;
 
 id_list
-        : ID ',' ID
-        | id_list ',' ID
+        : elem_list ',' elem_list
+        | id_list ',' elem_list
         ;
+
+elem_list
+        : ID
+        | expr_pair
+        ;
+
+/*
+a, pint(2) := 124,20;
+
+a,b,c := 1,2,3;
+*/
 
 expr_list
         : expr ',' expr
-        | expr expr {System.println.out("Error: se esperaba una ',' entre las expresiones en linea "+AnalizadorLexico.line_number);}
+        /* | expr expr {System.println.out("Error: se esperaba una ',' entre las expresiones en linea "+AnalizadorLexico.line_number);}  DA ERROR PERO NECESITAMOS TENERLO EN CUENTA */
         | expr_list ',' expr
+        /*| error {System.println.out("Error: lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones")}*/
         ;
 
 goto_statement
-        : GOTO TAG '@'
+        : GOTO TAG 
         | GOTO error {System.println.out("Error: se esperaba TAG en linea "+AnalizadorLexico.line_number);}
         ;
+/* ejemplo de un tag:     tagsito@ */
+
 
 /* ERRORES PENDIENTES: */
 /*    falta sentencia ret en funcion: semantica  */
