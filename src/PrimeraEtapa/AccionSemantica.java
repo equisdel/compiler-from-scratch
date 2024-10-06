@@ -66,7 +66,7 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 // No agregarlo a la cadena es suficiente.
                 try { AnalizadorLexico.program_file_reader.reset(); } catch (IOException e) { System.out.println("no funca"); e.printStackTrace(); }
-                return 0; 
+                return 0;
             }
         };
 
@@ -78,15 +78,14 @@ public class AccionSemantica {
                 return 0;
             }
         };
-/*
- 
-String desc_5 = "Discierne entre identificador y palabra reservada. Llama a las A.S. adecuadas para tratar a ambos tipos.";
-Function<Void,Integer> action_5 = new Function<Void,Integer>() {
-    int max_length = AnalizadorLexico.id_max_length;    // 15
+
+        String desc_5 = "Discierne entre identificador y palabra reservada. Llama a las A.S. adecuadas para tratar a ambos tipos.";
+        Function<Void,Integer> action_5 = new Function<Void,Integer>() {
+            int max_length = AnalizadorLexico.id_max_length;    // 15
             String key = AnalizadorLexico.lexema;
-            Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,Math.min(key.length(),max_length)));
             // Las palabras reservadas (PR) estan precargadas en la TS
             public Integer apply(Void t) {
+                Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,Math.min(key.length(),max_length)));
                 all_actions[3].execute();   // Devuelve el último caracter a la entrada
                 if (value != null) {        // Existe una entrada en la TS asociada al lexema
                     if (value.getSubtipo()=="reserved")     // Es una palabra reservada (PR)
@@ -94,16 +93,16 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
                     else {}                                 // Es una referencia a un identificador existente
                     // ¿Redeclaración? ¿Distinto scope? ¿Distinto subtipo? Cuestiones que pueden surgir más adelante
                 } else {                                    // Es un nuevo identificador
-                all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
-                if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
-                all_actions[107].execute(); //   -> Trunca el identificador + Warning
-                all_actions[7].execute();       // Agrega el identificador a la tabla de símbolos
+                    all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
+                    if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
+                    all_actions[107].execute(); //   -> Trunca el identificador + Warning
+                    all_actions[7].execute();       // Agrega el identificador a la tabla de símbolos
+                }
+                return 0;
             }
-            return 0;
-        }
-    };
+        };
+        
     
-    */
         String desc_7 = "Agrega una nueva entrada a la tabla de símbolos.";
         Function<Void,Integer> action_7 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
@@ -221,7 +220,7 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
         String desc_25 = "Actualiza el subtipo del lexema a UINTEGER (Constante Entera Sin Signo).";
         Function<Void,Integer> action_25 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.lexema_subtype = "UNITEGER";
+                AnalizadorLexico.lexema_subtype = "UINTEGER";
                 all_actions[6].execute();   // Control de rangos
                 all_actions[9].execute();   // Devuelve el último caracter + Inserción en la TdeS
                 return 0;
@@ -231,7 +230,18 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
         String desc_26 = "Actualiza el tipo del lexema a CHARCH (Cadena de Caracteres Multilínea).";
         Function<Void,Integer> action_26 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.lexema_subtype = "CHARCH";
+                all_actions[1].execute();   // Agrega el ']' de cierre al lexema
+                AnalizadorLexico.lexema_type = "CHARCH";    // Indica el tipo
+                all_actions[3].execute();   // Inserción en la TdeS
+                return 0;
+            }
+        };
+
+        String desc_27 = "Actualiza el tipo del lexema a TAG (Etiqueta de salto de control).";
+        Function<Void,Integer> action_27 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AnalizadorLexico.lexema_type = "TAG";
+                all_actions[7].execute();   // Agrega el símbolo a la tabla
                 return 0;
             }
         };
@@ -373,12 +383,12 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
         AccionSemantica as_2 = new AccionSemantica(2, desc_2, action_2);
         AccionSemantica as_3 = new AccionSemantica(3, desc_3, action_3);
         AccionSemantica as_4 = new AccionSemantica(4, desc_4, action_4);
-        //AccionSemantica as_5 = new AccionSemantica(5, desc_5, action_5);
+        AccionSemantica as_5 = new AccionSemantica(5, desc_5, action_5);
         AccionSemantica as_6 = new AccionSemantica(6, desc_6, action_6);
         AccionSemantica as_7 = new AccionSemantica(7, desc_7, action_7);
         AccionSemantica as_8 = new AccionSemantica(8, desc_8, action_8);
         AccionSemantica as_9 = new AccionSemantica(9, desc_9, action_9);
-        AccionSemantica as_10 = new AccionSemantica(10, desc_10, action_10);     
+        AccionSemantica as_10 = new AccionSemantica(10, desc_10, action_10);    
 
         AccionSemantica as_20 = new AccionSemantica(20, desc_20, action_20);
         AccionSemantica as_21 = new AccionSemantica(21, desc_21, action_21);
@@ -387,6 +397,7 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
         AccionSemantica as_24 = new AccionSemantica(24, desc_24, action_24);
         AccionSemantica as_25 = new AccionSemantica(25, desc_25, action_25);
         AccionSemantica as_26 = new AccionSemantica(26, desc_26, action_26);
+        AccionSemantica as_27 = new AccionSemantica(26, desc_26, action_26);
 
         AccionSemantica as_100 = new AccionSemantica(100, desc_100, action_100);
         AccionSemantica as_101 = new AccionSemantica(101, desc_101, action_101);
@@ -401,11 +412,14 @@ Function<Void,Integer> action_5 = new Function<Void,Integer>() {
         //AccionSemantica as_110 = new AccionSemantica(10, desc_110, action_110);
         AccionSemantica as_111 = new AccionSemantica(111, desc_111, action_111);
         AccionSemantica as_112 = new AccionSemantica(112, desc_112, action_112);
+
         AccionSemantica as_199 = new AccionSemantica(199, desc_199, action_199);
 
     // prueba de accion 112
-        AnalizadorLexico.lexema = "3s+4";
-        AccionSemantica.all_actions[10].execute();
-        System.out.println(AnalizadorLexico.lexema);
+        /*
+            AnalizadorLexico.lexema = "3s+4";
+            AccionSemantica.all_actions[10].execute();
+            System.out.println(AnalizadorLexico.lexema);
+        */
     }
 }

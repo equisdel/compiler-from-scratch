@@ -83,30 +83,6 @@ public class AnalizadorLexico {
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
 		return token;
 		
-	/*
-	 
-	 try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-		String line;
-		while ((line = br.readLine()) != null) {  // !!!! cuando el A.S. quiera otro token deberia seguir leyendo desde donde quedo
-		//guardar donde quedó....
-		line_number++;
-				int i = 0;
-				while (i<line.length()) {
-					
-				AnalizadorLexico.last_char = line.substring(i,i);	// Se actualiza el último caracter
-					if (printmode) System.out.println(last_char);
-					i += 1 + (automata.getNext(last_char)).execute();	// Punto a resolver: solo con acciones semánticas?
-
-				}
-				// Ojo, acá va salto de línea y tiene que cambiar el estado acorde.
-				// estado_actual = matrizTransicionDeEstados[estado_actual][ultimo_caracter];
-			}
-			line_number = 0;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return -1; //si no encontro ningun token...
-		*/
 	}
 
 	static public int lexToToken(String lexeme){
@@ -162,7 +138,7 @@ public class AnalizadorLexico {
 	}
 	public static void main(String[] args) {
 		AnalizadorLexico.compile("src/test_codes/fulltest");
-		Scanner scanner = new Scanner(System.in);
+		/*Scanner scanner = new Scanner(System.in);
         int input = 0;
         // Mientras el usuario no ingrese -1, el ciclo sigue
 		input = scanner.nextInt();
@@ -170,16 +146,7 @@ public class AnalizadorLexico {
 			System.out.println("token: "+AnalizadorLexico.yylex());
             input = scanner.nextInt();
         }
+		*/
 
 	}
 }
-
-
-/*
- * identificadores:
- * cadena de caracteres multilinea:
- * constantes:
- * los que no van en tabla de simbolos (tokens unicos):
- * <,>,!,( .....
- * 
- */

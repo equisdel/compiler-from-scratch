@@ -4,10 +4,7 @@ package PrimeraEtapa;
 public class Simbolo {
     
     private int id;
-//    private int token;        // No es necesario: es lo mismo que el campo type
-//    private String lexema;    // No es necesario: es la clave en la TS
-   // static int counter = 0;
-    private String type;        // 'ID', 'CTE', 'CHARCH', 'IF'. 'NEQ' ...
+    private String type;        // 'ID', 'CTE', 'CHARCH', 'IF', 'NEQ' ...
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
     // scope, modificadores, etc.
     // nro de linea?
