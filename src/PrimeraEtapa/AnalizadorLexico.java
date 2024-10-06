@@ -1,66 +1,35 @@
 package PrimeraEtapa;
-import SegundaEtapa.Parser;
+import SegundaEtapa.*;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
-import javax.swing.text.html.HTMLEditorKit;
 
 public class AnalizadorLexico {
-	
-	// BORRAR ANTES DE LA ENTREGA:
-	boolean printmode = true;
 
-	// La clase AccionSemántica modifica directamente los atributos del A.L.
 	static Automata automata;
 	static TablaDeSimbolos t_simbolos;
 	static AccionSemantica[] acciones;
+
+	// Variables relativas a la lectura
 	static BufferedReader program_file_reader;
-	//static Set<Character> grammar_symbols = new HashSet<>();
-	// pasa que en un comnetario puede estar literalmente cualqueir caracter..
+	static public int line_number = 0;
 
-	static int line_number = 0;
+	// Especificaciones del lenguaje
 	static final int id_max_length = 15;
+	static final int cte_uinteger_min = 0;
+	static final int cte_uinteger_max = (int)(Math.pow(2.0,16.0) - 1);	// Rango: [0, 65535]
+	static private String[] reserved = {"if","then","else","begin","end","end_if","outf","typedef","fun","ret","uinteger","single","repeat","until","pair","goto"};	// La TdeS lo convierte todo a mayúscula
 
-	static private String[] reserved = {"if","then","else","begin","end","end_if","outf","typedef","fun","ret","uinteger","single","repeat","until","pair","goto"};	// Completar! Es lo mismo masc y mayuscula, TS lo convierte todo a mayúscula
-	static protected Map<String, Integer> tokens = new HashMap<>();
-	static {	// CREO NO SE USA, BORRAR
-        tokens.put("ID", 		1);
-        tokens.put("CTE", 		2);
-        tokens.put("CHARCH",	3);
-        tokens.put("NEQ", 		4);
-        tokens.put("LEQ", 		5);
-        tokens.put("MEQ", 		6);
-        tokens.put("IF", 		7);		// Palabra Reservada
-        tokens.put("THEN", 		8);		// Palabra Reservada
-        tokens.put("ELSE", 		9);		// Palabra Reservada
-        tokens.put("BEGIN", 	10);	// Palabra Reservada
-        tokens.put("END", 		11);	// Palabra Reservada
-        tokens.put("END_IF",	12);	// Palabra Reservada
-        tokens.put("OUTF", 		13);	// Palabra Reservada
-        tokens.put("TYPEDEF",	14);	// Palabra Reservada
-        tokens.put("FUN", 		15);	// Palabra Reservada
-        tokens.put("RET", 		16);	// Palabra Reservada
-        tokens.put("UINTEGER",	17);	// Palabra Reservada
-        tokens.put("SINGLE",	18);	// Palabra Reservada
-        tokens.put("REPEAT",	19);	// Palabra Reservada
-        tokens.put("UNTIL", 	20);	// Palabra Reservada
-        tokens.put("PAIR", 		21);	// Palabra Reservada
-        tokens.put("GOTO", 		22);	// Palabra Reservada
-        tokens.put("ASIG", 		23);
-    }
-	// Coordinar el mapeo de tokens con lo que determine el YACC -> ascii y las final de parser.java
-
+	// Variables de comunicación entre el A.L. y las acciones semánticas
 	static protected int 	token 		= -1;
 	static protected String lexema 		= "";
-	static protected String lexema_type = ""; 	//ID', 'CTE', 'CHARCH',
-	static protected String lexema_subtype = ""; //'uinteger', 'single', 'reserved'
-	static protected String next_char;			// Se almacena acá, no se pasa como parámetro.
+	static protected String lexema_type = ""; 		//ID', 'CTE', 'CHARCH',
+	static protected String lexema_subtype = "";	//'uinteger', 'single', 'reserved'
+	static protected String next_char;
 	
+
 	// INICIALIZACION
 	public AnalizadorLexico(){
 
@@ -74,13 +43,13 @@ public class AnalizadorLexico {
 		for (String p_reservada : reserved)
 			t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
 	
-		// Inicialización de acciones semánticas
+		// Inicialización de las acciones semánticas
 		AccionSemantica.main(new String[0]);
 		acciones = AccionSemantica.all_actions;
 
 	}
 
-	public void compile(String program_file_path) {
+	public static void compile(String program_file_path) {
 		try { AnalizadorLexico.program_file_reader = new BufferedReader(new FileReader(program_file_path)); } 
 		catch (FileNotFoundException e) { System.out.println("NOT FOUND"); e.printStackTrace(); }
 	}
@@ -101,7 +70,7 @@ public class AnalizadorLexico {
 				next_char = program_file_reader.read();
 				AnalizadorLexico.next_char = (new Character((char)next_char)).toString();
 				System.out.println(AnalizadorLexico.next_char);
-				if (next_char == 10) line_number++;			// Salto de línea	 EEE PORQUE 10? ES EL ASCII?
+				if (next_char == 10) line_number++;			// Salto de línea
 				next_accion_semantica = automata.getNext(AnalizadorLexico.next_char);
 				System.out.println("Acción semántica: "+next_accion_semantica);
 				if (next_accion_semantica>=0) acciones[next_accion_semantica].execute();
@@ -110,6 +79,7 @@ public class AnalizadorLexico {
 		}
 		System.out.println("["+AnalizadorLexico.lexema+"]");
 		token = lexToToken(lexema);
+		//ParserVal yylval = new ParserVal(lexema);
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
 		return token;
 		
@@ -137,18 +107,6 @@ public class AnalizadorLexico {
 		}
 		return -1; //si no encontro ningun token...
 		*/
-	}
-
-	protected int getToken(){
-	/* 	// de lexema a numero, mapear a id
-		int id = lexToToken(lexema);
-		//int id = 0;
-		Token token = new Token(id);
-		// pero antes de devolverlo (al A.S.) chequear tabla simbolos y agregarlo si corresponde:
-		TablaDeSimbolos.put(lexema,token); // si existe el lexema no lo pone.
-		return id;
-	*/
-		return 0;
 	}
 
 	static public int lexToToken(String lexeme){
@@ -198,16 +156,18 @@ public class AnalizadorLexico {
 		}
 		return id;
 	}
+
+	public static void yyerror(String msg){
+		System.out.println("Error en la línea "+line_number+": "+msg);
+	}
 	public static void main(String[] args) {
-		AnalizadorLexico al = new AnalizadorLexico();
-		al.compile("src/test_codes/fulltest");
-	
+		AnalizadorLexico.compile("src/test_codes/fulltest");
 		Scanner scanner = new Scanner(System.in);
         int input = 0;
         // Mientras el usuario no ingrese -1, el ciclo sigue
 		input = scanner.nextInt();
         while (input != -1) {
-			System.out.println("token: "+al.yylex());
+			System.out.println("token: "+AnalizadorLexico.yylex());
             input = scanner.nextInt();
         }
 
