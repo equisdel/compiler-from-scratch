@@ -1,0 +1,37 @@
+prog sampleProg BEGIN
+    /* Declaration of variables */
+    SINGLE x, y;
+    UINTEGER counter;
+    
+    /* Example of assignment */
+    x ASSIGN 3.14;
+    y ASSIGN 2.71;
+
+    /* Output using OUTF */
+    OUTF (x);
+    
+    /* Loop using REPEAT */
+    REPEAT BEGIN
+        counter ASSIGN counter + 1;
+        x ASSIGN x + y;
+        OUTF (x);
+    END UNTIL (counter > 10);
+    
+    /* Conditional IF */
+    IF (x > y) THEN
+        OUTF ("X is greater than Y");
+    ELSE
+        OUTF ("Y is greater or equal to X");
+    END_IF;
+
+    /* Function invocation */
+    x ASSIGN myFunc(5);
+    
+END;
+
+/* Function definition */
+SINGLE FUN myFunc (UINTEGER a) BEGIN
+    SINGLE result;
+    result ASSIGN a * 2.5;
+    RET (result);
+END;

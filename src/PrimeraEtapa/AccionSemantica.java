@@ -1,6 +1,5 @@
 package PrimeraEtapa;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.function.*;
 
 public class AccionSemantica {
@@ -19,10 +18,15 @@ public class AccionSemantica {
         all_actions[id] = this;      // Construcción: cada acción se agrega a la lista de todas las acciones
     }
 
+    public void display(){
+        System.out.println("Acción ["+id+"]: "+descripcion);
+    }
+
     public Integer execute() {
         return this.action.apply(null);
     }
 
+    @SuppressWarnings("unused")
     public static void main(String[] args) {
 
         // Definición de las expresiones lambda que definen a cada instancia de Acción Semántica
@@ -45,7 +49,7 @@ public class AccionSemantica {
                 AnalizadorLexico.lexema = AnalizadorLexico.lexema + AnalizadorLexico.next_char;  // ¿Hay manera de que tenga estos datos más a mano?
                 return 0;
             }
-        };  // Testeado
+        };  
 
         String desc_2 = "Elimina el último caracter de la cadena.";
         Function<Void,Integer> action_2 = new Function<Void,Integer>() {
@@ -53,7 +57,7 @@ public class AccionSemantica {
                 AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0,AnalizadorLexico.lexema.length()-1);
                 return 0;
             }
-        };  // Testeado
+        };  
 
         String desc_3 = "Devuelve el último caracter leído a la entrada.";
         Function<Void,Integer> action_3 = new Function<Void,Integer>() {
@@ -328,15 +332,5 @@ public class AccionSemantica {
         //AccionSemantica as_110 = new AccionSemantica(10, desc_110, action_110);
         AccionSemantica as_199 = new AccionSemantica(199, desc_199, action_199);
 
-
-        /*
-        // TEST
-        AnalizadorLexico.lexema = "Delfina";
-        AnalizadorLexico.next_char = "F";
-        as_4.execute();
-        System.out.println(AnalizadorLexico.lexema);
-        
-        //as_1.execute();
-        */
     }
 }

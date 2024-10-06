@@ -29,7 +29,7 @@ public class Automata {
         
         filas -= offset_f; 
         columnas -= offset_c;
-        
+        System.out.println(filas);
         this.matrizTransicionEstados    = new int[filas][columnas];
         this.matrizAccionesSemanticas   = new int[filas][columnas];
         
@@ -149,7 +149,6 @@ public class Automata {
         */
         //a.getNext(new String("s"));
         Automata a = new Automata("src/PrimerEtapa/Matrices/matrizEstados.csv","src/PrimerEtapa/Matrices/matrizEstados.csv");
-        String rr = ":";
         Pattern p = Pattern.compile(a.regex[2],Pattern.CASE_INSENSITIVE);
         System.out.println(p.pattern());
         Matcher matcher = p.matcher("0");
