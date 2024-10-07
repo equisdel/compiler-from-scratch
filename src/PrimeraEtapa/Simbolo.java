@@ -2,12 +2,10 @@ package PrimeraEtapa;
 
 // Entradas de la tabla de símbolos
 public class Simbolo {
-    
-    private int id;
+
     private String type;        // 'ID', 'CTE', 'CHARCH', 'IF', 'NEQ' ...
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
-    // scope, modificadores, etc.
-    // nro de linea?
+    // scope, modificadores, punteros, etc.
 
     // Implementar getters y setters
     Simbolo(String type, String subtype) {
@@ -18,10 +16,6 @@ public class Simbolo {
 
     Simbolo(String type) {
         this(type,null);
-    }
-
-    public int getTokenId(){
-        return this.id;
     }
 
     public String getTipo(){
@@ -37,6 +31,6 @@ public class Simbolo {
     }
     
     public void display() {
-        System.out.println("ID: "+this.id+"; Tipo: "+this.type+"; Subtipo: "+this.subtype+";");
+        System.out.println("Tipo: "+this.type+"; Subtipo: "+this.subtype+";");
     }
 }

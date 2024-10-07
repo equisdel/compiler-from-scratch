@@ -1,6 +1,7 @@
 package PrimeraEtapa;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class TablaDeSimbolos {
 
@@ -23,8 +24,10 @@ public class TablaDeSimbolos {
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
-        for (Simbolo s : symbols.values())
-            s.display();
+        for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
+            System.out.print("Clave: " + entry.getKey() + ", Valor: ");
+            entry.getValue().display();
+        }
         System.out.println();
     }
 

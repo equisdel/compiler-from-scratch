@@ -1,29 +1,27 @@
-import PrimeraEtapa.AnalizadorLexico;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Scanner;
 
-// 
+import PrimeraEtapa.*;
+import SegundaEtapa.*;
 
 public class Main {
 
 	public static void main(String[] args) {
-		AnalizadorLexico.main(args);
-		// a_lexico.setMatriz(5);
-		// https://docs.oracle.com/javase/8/docs/api/java/nio/file/Path.
-		String filePath = "src/test_codes/1";
-		//Pattern pattern = Pattern.compile(".{4}(.{3}).*");
-		//Matcher matcher = pattern.matcher("testXXXtest");
-		//matcher.matches();
-		//String whatYouNeed = matcher.group(1);
-		//System.out.println(whatYouNeed);
-		Pattern p = Pattern.compile("[a-zA-Z&&[^a-fA-F]]");
-		Matcher m = p.matcher("a");
- 		boolean b = m.matches(); 
-		if (b) {
-			System.out.println("yei");
-		}
 		
-		System.out.println(p.matches("[a-z]", "a"));
+		// Pide al usuario el camino al programa a compilar
+		String filePath = "src/test_codes/P1";
+		Scanner sc = new Scanner(System.in);
+		String input = sc.nextLine();  // Lee una línea de input
+
+		AnalizadorLexico.compile(filePath);
+		int x;
+		while(!input.equals("xd")) {
+			x = AnalizadorLexico.yylex();
+			input = sc.nextLine(); 
+		}
+	
+		AnalizadorLexico.display();
+
+
 	}
 
 }

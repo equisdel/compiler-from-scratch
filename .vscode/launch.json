@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Automata",
+            "request": "launch",
+            "mainClass": "PrimeraEtapa.Automata",
+            "projectName": "Compilador-Desde-Cero"
+        },
+        {
+            "type": "java",
+            "name": "TablaDeSimbolos",
+            "request": "launch",
+            "mainClass": "PrimeraEtapa.TablaDeSimbolos",
+            "projectName": "Compilador-Desde-Cero"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "Main",
+            "projectName": "Compilador-Desde-Cero"
+        },
+        {
+            "type": "java",
+            "name": "AnalizadorLexico",
+            "request": "launch",
+            "mainClass": "PrimeraEtapa.AnalizadorLexico",
+            "projectName": "Compilador-Desde-Cero"
+        },
+        {
+            "type": "java",
             "name": "AccionSemantica",
             "request": "launch",
             "mainClass": "PrimeraEtapa.AccionSemantica",

@@ -36,7 +36,6 @@ public class AccionSemantica {
         String desc_0 = "Resetea las variables del Analizador Léxico.";
         Function<Void,Integer> action_0 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.token 		    = -1;   // Sacar
                 AnalizadorLexico.lexema 		= "";
                 AnalizadorLexico.lexema_type    = ""; 
                 AnalizadorLexico.lexema_subtype = "";
@@ -81,29 +80,35 @@ public class AccionSemantica {
 
         String desc_5 = "Discierne entre identificador y palabra reservada. Llama a las A.S. adecuadas para tratar a ambos tipos.";
         Function<Void,Integer> action_5 = new Function<Void,Integer>() {
-            int max_length = AnalizadorLexico.id_max_length;    // 15
-            String key = AnalizadorLexico.lexema;
+            final int max_length = AnalizadorLexico.id_max_length;    // 15
             // Las palabras reservadas (PR) estan precargadas en la TS
             public Integer apply(Void t) {
-                Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,Math.min(key.length(),max_length)));
+                String key = AnalizadorLexico.lexema.toUpperCase();
+                Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,Math.min(key.length(),max_length)).toUpperCase());
                 all_actions[3].execute();   // Devuelve el último caracter a la entrada
                 if (value != null) {        // Existe una entrada en la TS asociada al lexema
-                    if (value.getSubtipo()=="reserved")     // Es una palabra reservada (PR)
-                    all_actions[21].execute();          //   -> lo identifica como tal
-                    else {}                                 // Es una referencia a un identificador existente
+                    //System.out.println(value.getSubtipo());
+                    if (value.getSubtipo().equals("RESERVED"))  {   // Es una palabra reservada (PR)
+                        AnalizadorLexico.lexema_subtype = "RESERVED";
+                        all_actions[21].execute();          //   -> lo identifica como tal
+                    }
+                    else {
+                        AnalizadorLexico.lexema_type = value.getTipo();
+                        AnalizadorLexico.lexema_subtype = value.getSubtipo();
+                    }                                 // Es una referencia a un identificador existente
                     // ¿Redeclaración? ¿Distinto scope? ¿Distinto subtipo? Cuestiones que pueden surgir más adelante
-                } else {                                    // Es un nuevo identificador
+                } else {                               // Es un nuevo identificador
                     all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
                     if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
                     all_actions[107].execute(); //   -> Trunca el identificador + Warning
-                    all_actions[7].execute();       // Agrega el identificador a la tabla de símbolos
+                    all_actions[7].execute();       // Agrega el identificador a la tabla de simbolos
                 }
                 return 0;
             }
         };
         
     
-        String desc_7 = "Agrega una nueva entrada a la tabla de símbolos.";
+        String desc_7 = "Agrega una nueva entrada a la tabla de simbolos.";
         Function<Void,Integer> action_7 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.lexema, AnalizadorLexico.lexema_type, AnalizadorLexico.lexema_subtype);
@@ -139,7 +144,7 @@ public class AccionSemantica {
                 String hexa = AnalizadorLexico.lexema.substring(2);
                 AnalizadorLexico.lexema = Integer.parseInt(hexa, 16)+"";
                 all_actions[6].execute();
-                AnalizadorLexico.lexema = Integer.toHexString(Integer.parseInt(AnalizadorLexico.lexema)).toUpperCase();
+                AnalizadorLexico.lexema = "0x"+Integer.toHexString(Integer.parseInt(AnalizadorLexico.lexema)).toUpperCase();
                 all_actions[9].execute();
                 return 0;
             }
@@ -167,19 +172,20 @@ public class AccionSemantica {
 
         // A.S. ASOCIADAS A RECONOCIMIENTO DE (SUB)TIPOS
 
-        String desc_20 = "Actualiza el tipo del lexema a PR (Palabra Reservada).";
+        String desc_20 = "Actualiza el tipo del lexema a CTE (Constante).";
         Function<Void,Integer> action_20 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.lexema_type = AnalizadorLexico.lexema.toUpperCase();   // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
+                AnalizadorLexico.lexema_type = "CTE";   // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
+                all_actions[1].execute();
                 return 0;
             }
         };
 
-        String desc_21 = "Actualiza el tipo del lexema a CTE (Constante).";
+        String desc_21 = "Actualiza el tipo del lexema a PR (Palabra Reservada).";
         Function<Void,Integer> action_21 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_type = AnalizadorLexico.lexema.toUpperCase();   // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
-                all_actions[1].execute();
+                //all_actions[1].execute();
                 return 0;
             }
         };
@@ -188,12 +194,12 @@ public class AccionSemantica {
         Function<Void,Integer> action_22 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_type = "ID";
-                char inicial = AnalizadorLexico.lexema.charAt(0);
+                char inicial = Character.toLowerCase(AnalizadorLexico.lexema.charAt(0));
                 switch(inicial) {
-                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";     // Usar var subtype
-                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";
-                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";
-                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";
+                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";     break;   // Usar var subtype
+                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
+                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
+                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
                 }
                 return 0;
             }
@@ -241,7 +247,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_27 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_type = "TAG";
-                all_actions[7].execute();   // Agrega el símbolo a la tabla
+                all_actions[7].execute();   // Agrega el simbolo a la tabla
                 return 0;
             }
         };
@@ -331,19 +337,32 @@ public class AccionSemantica {
             }
         };
 
-        String desc_108 = "Error de inserción fuera de contexto del símbolo '_'.";
+        String desc_108 = "Error de inserción fuera de contexto del simbolo '_'.";
         Function<Void,Integer> action_108 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "El símbolo '_' solo puede usarse dentro de (1) el nombre de un identificador, (2) una cadena de caracteres o (3) un comentario.";
+                AccionSemantica.error_msg = "El simbolo '_' solo puede usarse dentro de (1) el nombre de un identificador, (2) una cadena de caracteres o (3) un comentario.";
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
         };
 
-        String desc_109 = "Error de inserción fuera de contexto del símbolo ']'.";
+        String desc_109 = "Error de inserción fuera de contexto del simbolo ']'.";
         Function<Void,Integer> action_109 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "El símbolo ']' solo puede usarse (1) como cierre de una cadena de caracteres previamente abierta por '[' o (2) dentro de un comentario.";
+                AccionSemantica.error_msg = "El simbolo ']' solo puede usarse (1) como cierre de una cadena de caracteres previamente abierta por '[' o (2) dentro de un comentario.";
+                all_actions[100].execute();     // Levanta el warning
+                return 0;
+            }
+        };
+
+        String desc_110 = "Error de CHARCH abierta indefinidamente.";
+        Function<Void,Integer> action_110 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "La cadena de caracteres no ha sido correctamente cerrada mediante el simbolo ']'.";
+                String aux = new String(AnalizadorLexico.next_char);
+                AnalizadorLexico.next_char = "]";
+                all_actions[26].execute();
+                AnalizadorLexico.next_char = aux;
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
@@ -367,10 +386,21 @@ public class AccionSemantica {
             }
         };
 
-        String desc_199 = "Error de símbolo no reconocido por la gramática del lenguaje.";
+        String desc_113 = "Error de cte. SINGLE: parte decimal ausente luego del punto.";
+        Function<Void,Integer> action_113 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "La parte decimal de la constante de tipo SINGLE está ausente. Debe incluirse.";
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";
+                all_actions[1].execute();
+                all_actions[100].execute();     // Levanta el warning
+                return 0;
+            }
+        };
+
+        String desc_199 = "Error de simbolo no reconocido por la gramática del lenguaje.";
         Function<Void,Integer> action_199 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "El símbolo "+AnalizadorLexico.next_char+" no pertenece al lenguaje.";
+                AccionSemantica.error_msg = "El simbolo "+AnalizadorLexico.next_char+" no pertenece al lenguaje."; // se imprime rarisimo
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
@@ -400,6 +430,7 @@ public class AccionSemantica {
         AccionSemantica as_27 = new AccionSemantica(26, desc_26, action_26);
 
         AccionSemantica as_100 = new AccionSemantica(100, desc_100, action_100);
+
         AccionSemantica as_101 = new AccionSemantica(101, desc_101, action_101);
         AccionSemantica as_102 = new AccionSemantica(102, desc_102, action_102);
         AccionSemantica as_103 = new AccionSemantica(103, desc_103, action_103);
@@ -409,9 +440,10 @@ public class AccionSemantica {
         AccionSemantica as_107 = new AccionSemantica(107, desc_107, action_107);
         AccionSemantica as_108 = new AccionSemantica(108, desc_108, action_108);
         AccionSemantica as_109 = new AccionSemantica(109, desc_109, action_109);
-        //AccionSemantica as_110 = new AccionSemantica(10, desc_110, action_110);
+        AccionSemantica as_110 = new AccionSemantica(110, desc_110, action_110);
         AccionSemantica as_111 = new AccionSemantica(111, desc_111, action_111);
         AccionSemantica as_112 = new AccionSemantica(112, desc_112, action_112);
+        AccionSemantica as_113 = new AccionSemantica(113, desc_113, action_113);
 
         AccionSemantica as_199 = new AccionSemantica(199, desc_199, action_199);
 

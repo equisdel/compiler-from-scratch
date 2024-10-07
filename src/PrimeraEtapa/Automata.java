@@ -45,12 +45,11 @@ public class Automata {
         
         // Header1: expresiones regulares de cada columna
         for (int i = 0; i < columnas; i++) {
-            String rE = header1[i+offset_c];
-            rE = rE.substring(1,rE.length()-1);
-            regex[i] = rE;
-
-            //System.out.println(rE);
-            //regex[i] = Pattern.compile(rE,Pattern.CASE_INSENSITIVE);
+            String s_rE = header1[i+offset_c];
+            s_rE = s_rE.substring(1,s_rE.length()-1);       // Remueve las comillas extra
+            //if (s_rE == "n")      {System.out.println("LSASA"); s_rE = "?";}    // Fin del programa
+            //if (s_rE == "efaul")  {System.out.println("LSASA"); s_rE = ".";}                                   // Cualquier otro caracter
+            regex[i] = s_rE;
         }
 
         // Llena la matriz de transicion de estados
@@ -60,7 +59,6 @@ public class Automata {
                 //System.out.println(Integer.parseInt(file_csv_mE.get(i)[j]));
                 matrizTransicionEstados[i][j] = Integer.parseInt(file_csv_mE.get(i)[j+offset_c]);
             }
-
 
         List<String[]> file_csv_mA = csv_mA.readAll();
         header1 = file_csv_mA.get(1);  file_csv_mA.remove(header1);
@@ -78,7 +76,7 @@ public class Automata {
         estado_actual = -1;
     }
 
-    protected boolean estadoFinal() {
+    public boolean estadoFinal() {
         return estado_actual == -1;
     }
         
@@ -89,15 +87,15 @@ public class Automata {
 
         //Pattern p_regex;
         int x=-1;
-        for(int i = 0; i < this.regex.length-1; i++) {
-            Pattern p_regex = Pattern.compile(regex[i],Pattern.CASE_INSENSITIVE);
-            Matcher matcher = p_regex.matcher(caracter);
+        for(int i = 0; i < this.regex.length; i++) {
+            Pattern p_rE = Pattern.compile(regex[i],Pattern.CASE_INSENSITIVE);
+            Matcher matcher = p_rE.matcher(caracter);
             if (matcher.matches()) {
-                System.out.println("Coincidencia con regex: "+i+". Patrón: "+p_regex.pattern());
+                //System.out.println("Coincidencia con regex: "+i+". Patrón: "+p_rE.pattern());
                 x = estado_actual;
-                System.out.println("Nuevo E: mE["+x+"]["+i+"] = "+matrizTransicionEstados[x][i]);
+                //System.out.println("Nuevo E: mE["+x+"]["+i+"] = "+matrizTransicionEstados[x][i]);
                 estado_actual = matrizTransicionEstados[estado_actual][i];
-                System.out.println("Retorno: mA["+x+"]["+i+"] = "+matrizAccionesSemanticas[x][i]);
+                //System.out.println("Retorno: mA["+x+"]["+i+"] = "+matrizAccionesSemanticas[x][i]);
                 return matrizAccionesSemanticas[x][i];
             }
         }
@@ -107,52 +105,16 @@ public class Automata {
         return matrizAccionesSemanticas[x][this.regex.length-1];
     
     }
-/* 
- * 
- switch (caracter) {
-    // case regex[0] : pos = 3 ...
-            case "0" : pos = 3;
-            case "[1-9]": pos = 4;
-            case "x": pos = 5;
-            case "s": pos = 6;
-            case "[abcdeghijklmnopqrtuvwyzABCDEGHIJKLMNOPQRTUVWYZ]": pos=7;
-            case "[a-fA-F]": pos = 8;
-            case "_": pos = 9;
-            case "#" : pos = 10;
-            case "[": pos = 11;
-            case "]": pos = 12;
-            case "+": pos = 13;
-            case "-": pos = 14;
-            case ".": pos = 15;
-            case "=": pos = 16;
-            case ":": pos = 17;
-            case "!": pos = 18;
-            case "<": pos = 19;
-            case ">": pos = 20;
-            case "*": pos = 21;
-            case "(": pos = 22;
-            case ")": pos = 23;
-            case ",": pos = 24;
-            case ";": pos = 25;
-            default: { pos = 26; retorno = true; }
-        }
-        estado_actual = matrizTransicion[estado_actual][pos];
-        if (estado_actual == -1) {
-            retorno = true;
-        }
-        return matrizAccionesSemanticas[0][0];
-        */
-    
 
     public static void main(String[] args) {
         /*
-        */
         //a.getNext(new String("s"));
         Automata a = new Automata("src/PrimerEtapa/Matrices/matrizEstados.csv","src/PrimerEtapa/Matrices/matrizEstados.csv");
-        Pattern p = Pattern.compile(a.regex[2],Pattern.CASE_INSENSITIVE);
+        Pattern p = a.regex[2];
         System.out.println(p.pattern());
         Matcher matcher = p.matcher("0");
         System.out.println(matcher.find());
+        */
     }
 
 }

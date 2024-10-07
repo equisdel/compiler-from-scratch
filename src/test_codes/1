@@ -1,6 +1,10 @@
-single := -12.25s+18;
+programa1
+begin
+soltera := -12.25s+18;
 if (1 < 5) 
-    goto 17;
+    outf([asd_S&&#&]);
 else 
-    goto 0x7888;
-[asd_S&&#&];
+    outf([asd_S&&#&]);
+end_if;
+cadena := [asdsa;];
+end

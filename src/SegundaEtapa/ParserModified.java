@@ -597,7 +597,7 @@ String yys;    //current token string
 int yyparse()
 {
 boolean doaction;
-  init_stacks();  //dentro de esto se inicializa variable yylex
+  init_stacks();
   yynerrs = 0;
   yyerrflag = 0;
   yychar = -1;          //impossible char forces a read
@@ -615,7 +615,7 @@ boolean doaction;
       if (yychar < 0)      //we want a char?
         {
         yychar = AnalizadorLexico.yylex();
-        if (yychar == -1) break;
+        if (yychar == -1) break;  //we accept EOF
         if (yydebug) debug(" next yychar:"+yychar);
         //#### ERROR CHECK ####
         if (yychar < 0)    //it it didn't work/error
@@ -655,7 +655,7 @@ boolean doaction;
       {
       if (yyerrflag==0)
         {
-        yyerror("syntax error");
+        AnalizadorLexico.yyerror("syntax error");
         yynerrs++;
         }
       if (yyerrflag < 3) //low error count?
@@ -665,7 +665,7 @@ boolean doaction;
           {
           if (stateptr<0)   //check for under & overflow here
             {
-            yyerror("stack underflow. aborting...");  //note lower case 's'
+            AnalizadorLexico.yyerror("stack underflow. aborting...");  //note lower case 's'
             return 1;
             }
           yyn = yysindex[state_peek(0)];
@@ -686,7 +686,7 @@ boolean doaction;
               debug("error recovery discarding state "+state_peek(0)+" ");
             if (stateptr<0)   //check for under & overflow here
               {
-              yyerror("Stack underflow. aborting...");  //capital 'S'
+              AnalizadorLexico.yyerror("Stack underflow. aborting...");  //capital 'S'
               return 1;
               }
             state_pop();
@@ -738,31 +738,31 @@ case 10:
 break;
 case 12:
 //#line 45 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 15:
 //#line 48 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 18:
 //#line 51 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 20:
 //#line 53 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 25:
 //#line 65 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 27:
 //#line 67 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 29:
 //#line 69 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 30:
 //#line 70 "gramatica.y"
@@ -778,7 +778,7 @@ case 32:
 break;
 case 34:
 //#line 74 "gramatica.y"
-{System.out.println("Error: se esperaba ';' en linea "AnalizadorLexico.line_number);}
+{System.out.println("Error: se esperaba ';' en linea "+AnalizadorLexico.line_number);}
 break;
 case 35:
 //#line 75 "gramatica.y"
@@ -795,7 +795,7 @@ break;
 case 40:
 //#line 88 "gramatica.y"
 {
-        yyerror("Error: se espera ',' luego de cada variable, línea " + AnalizadorLexico.line_number);
+        AnalizadorLexico.yyerror("Error: se espera ',' luego de cada variable, línea " + AnalizadorLexico.line_number);
         yyclearin;
       ;}
 break;
@@ -928,7 +928,7 @@ break;
       val_push(yyval);           //also save the semantic value of parsing
       if (yychar < 0)            //we want another character?
         {
-        yychar = AnalizadorLexico.yylex();        //get next character
+        yychar = yylex();        //get next character
         if (yychar<0) yychar=0;  //clean, if necessary
         if (yydebug)
           yylexdebug(yystate,yychar);

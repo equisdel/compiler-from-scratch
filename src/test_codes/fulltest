@@ -1,37 +1,109 @@
-prog sampleProg BEGIN
-    /* Declaration of variables */
+ProgramaTest
+BEGIN
+    ## Declaration of variables 
     SINGLE x, y;
     UINTEGER counter;
     
-    /* Example of assignment */
-    x ASSIGN 3.14;
-    y ASSIGN 2.71;
+    ## Example of :=ment 
+    x := 3.14;
+    y := 2.71;
 
-    /* Output using OUTF */
+    ## Output using OUTF 
     OUTF (x);
     
-    /* Loop using REPEAT */
+    ## Loop using REPEAT 
     REPEAT BEGIN
-        counter ASSIGN counter + 1;
-        x ASSIGN x + y;
+        counter := counter + 1;
+        x := x + y;
         OUTF (x);
     END UNTIL (counter > 10);
     
-    /* Conditional IF */
+    ## Conditional IF 
     IF (x > y) THEN
-        OUTF ("X is greater than Y");
+        OUTF [X is greater than Y];
     ELSE
-        OUTF ("Y is greater or equal to X");
+        OUTF [Y is greater or equal to X];
     END_IF;
 
-    /* Function invocation */
-    x ASSIGN myFunc(5);
+    ## Function invocation 
+    x := myFunc(5);
     
 END;
 
-/* Function definition */
+## Function definition 
 SINGLE FUN myFunc (UINTEGER a) BEGIN
     SINGLE result;
-    result ASSIGN a * 2.5;
+    result := a * 2.5;
     RET (result);
 END;
+
+## TESTEO DE ERRORES LEXICOS Y SINTACTICOS:
+
+## P1: Testeo de rangos y reconocimiento de constantes (los tres tipos)
+
+uinteger UINT1, UINT2;
+uint1 := 0;
+uint2 := 65535;
+
+uinteger uint_h1 = 0x0;
+uinteger uint_h2 = 0xFFFF; 
+
+single sing1,sing2,sing3,sing4;
+SING1 := 1.17549435s-38;
+SING2 := 3.40282347s+38;
+SING3 := -1.17549435s-38;
+SING4 := -3.40282347s+38;
+
+SING1 := - SING2;
+OUTF(SING1);
+
+
+##- Constantes con el primer y último valor dentro del rango (Para cada tipo de datos asignado).
+##- Constantes con el primer y último valor fuera del rango (Para cada tipo de datos asignado).
+##- Para números de punto flotante: parte entera con y sin parte decimal, parte decimal con y sin parte entera, con y sin exponente, con exponente positivo y negativo.
+
+## P2:testeo 
+
+##- Distincion entre tag, PR e ID
+##- Palabras reservadas escritas en minúsculas y mayúsculas.
+##- Identificadores de menos y más de 15 caracteres.
+##- Identificadores con letras, dígitos y "_".
+##- Intento de incluir en el nombre de un identificador un carácter que no sea letra, dígito o “-“.
+
+
+##- Comentarios bien y mal escritos.
+##- Cadenas bien y mal escritas
+
+
+## 1. Error de identificador
+
+
+## 2. Error de numero
+
+## 3. Error de cadena
+
+## 4. Error de comentario
+
+## 5. Error de operador
+
+## 6. Error de parentesis
+
+## 7. Error de corchetes
+
+## 8. Error de llaves
+
+## 9. Error de punto y coma
+
+## 10. Error de dos puntos
+
+## 11. Error de coma
+
+## 12. Error de asignacion
+
+## 13. Error de comparacion
+
+## 16. Error de fin de archivo
+
+## 17. Error de palabra reservada
+
+## 18. Error de tipo de dato
