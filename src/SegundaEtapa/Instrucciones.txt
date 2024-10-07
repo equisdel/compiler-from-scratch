@@ -1,2 +1,2 @@
 Comando:
-yacc -Jpackage="SegundaEtapa" -v gramatica.y
+yacc -Jpackage="SegundaEtapa" -v grammar.y
