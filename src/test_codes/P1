@@ -23,4 +23,4 @@ sing8 := 1.2s-;
 SING1 := - SING2;
 OUTF(SING1);
 
-cadena := [asdsa;
+cadena := [asdsa];

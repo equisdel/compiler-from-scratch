@@ -238,7 +238,7 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 all_actions[1].execute();   // Agrega el ']' de cierre al lexema
                 AnalizadorLexico.lexema_type = "CHARCH";    // Indica el tipo
-                all_actions[3].execute();   // Inserción en la TdeS
+                all_actions[7].execute();   // Inserción en la TdeS
                 return 0;
             }
         };
