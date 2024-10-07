@@ -7,8 +7,8 @@ uinteger UINT1, UINT2;
 uint1 := 0;
 uint2 := 65535;
 
-uinteger uint_h1 = 0x0;
-uinteger uint_h2 = 0xFFFF; 
+uinteger uint_h1 := 0x0;
+uinteger uint_h2 := 0xFFFF; 
 
 single sing1,sing2,sing3,sing4;
 SING1 := 1.17549435s-38;

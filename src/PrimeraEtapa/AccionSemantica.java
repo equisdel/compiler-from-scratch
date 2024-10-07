@@ -64,7 +64,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_3 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 // No agregarlo a la cadena es suficiente.
-                try { AnalizadorLexico.program_file_reader.reset(); } catch (IOException e) { System.out.println("no funca"); e.printStackTrace(); }
+                try { AnalizadorLexico.program_file_reader.reset(); } catch (IOException e)  { if(AnalizadorLexico.isdebug()) System.out.println("no funca"); e.printStackTrace(); }
                 return 0;
             }
         };
@@ -247,6 +247,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_27 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_type = "TAG";
+                all_actions[1].execute();
                 all_actions[7].execute();   // Agrega el simbolo a la tabla
                 return 0;
             }
@@ -427,7 +428,7 @@ public class AccionSemantica {
         AccionSemantica as_24 = new AccionSemantica(24, desc_24, action_24);
         AccionSemantica as_25 = new AccionSemantica(25, desc_25, action_25);
         AccionSemantica as_26 = new AccionSemantica(26, desc_26, action_26);
-        AccionSemantica as_27 = new AccionSemantica(26, desc_26, action_26);
+        AccionSemantica as_27 = new AccionSemantica(27, desc_27, action_27);
 
         AccionSemantica as_100 = new AccionSemantica(100, desc_100, action_100);
 

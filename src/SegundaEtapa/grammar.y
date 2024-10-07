@@ -28,20 +28,18 @@ prog    : ID BEGIN statement_list END
         | /* vacio */ {System.out.println("Error en linea "+AnalizadorLexico.line_number+": programa vacio... "); }
         ;
 
-
 statement_list 
-        : statement 
-        | statement_list statement
-        | statement_list error ';'{System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de sentencia.") ;}
+        : statement
+         | error ';' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de sentencia.") ;}
+        | statement_list statement 
         ;
 /* AGREGAR EN ALGUN LADO EL POSIBLE ERROR DE SENTENCIA, POR SI POR EJEMPLO DE LA NADA HAY UNA CONDICION*/
 
 statement
-        : executable_statement optional_semicolon
-        | declare_pair optional_semicolon
-        | declare_var
-        | declare_fun
-        | return_statement optional_semicolon
+        : executable_statement 
+        | declare_pair optional_semicolon       {System.out.println("Sentencia de declaracion de tipo");}
+        | declare_var   {System.out.println("Sentencia de declaracion de variable/s");}
+        | declare_fun   {System.out.println("Sentencia de declaracion de funcion");}
         /*| error {System.out.println("Error en linea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia en ;}*/
         /* | return_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; } */
         ;       
@@ -52,25 +50,32 @@ statement
 
 optional_semicolon
     : ';'
-    | /* empty*/
+    | /* empty */
         {
             System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' al final de la sentencia.");
         }
     ;
 /* al usar esto, puedo contemplar la falta de ';' sin el token error, y sin shift reduce conflicts */
 
+optional_not_semicolon
+        : ';' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se encontro ';' pero esa sentencia no lleva. Proba quitandoselo.");}
+        | /* vacio */
+        ;
+
 executable_statement
-        : if_statement 
+        : if_statement optional_semicolon {System.out.println("Sentencia de control IF");} 
         /* | if_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; } */
-        | assign_statement
-        | outf_statement 
+        | assign_statement optional_semicolon{System.out.println("Sentencia de asignacion");}
+        | outf_statement optional_semicolon{System.out.println("Sentencia de impresion por pantalla");}
         /* | outf_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; } */
-        | repeat_statement
-        | goto_statement 
+        | repeat_statement optional_semicolon{System.out.println("Sentencia de repeat until");}
+        | goto_statement optional_semicolon{System.out.println("Sentencia de salto goto");}
         /* | goto_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; } */
-        | mult_assign_statement 
+        | mult_assign_statement optional_semicolon{System.out.println("Sentencia de asignacion multiple");}
         /*| mult_assign_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; }*/
-        | TAG /* asumimos esta sentencia no termina con ';' */
+        | return_statement optional_semicolon {System.out.println("Sentencia de retorno de funcion");}
+        | TAG optional_not_semicolon/* asumimos esta sentencia no termina con ';' */ {System.out.println("Sentencia de TAG");}
+        /*| error ';'*/
         ;
 
 executable_statement_list
@@ -86,8 +91,7 @@ declare_var
 declare_fun
         : var_type FUN ID '(' parametro ')' BEGIN fun_body END 
         | var_type FUN error '(' parametro ')' BEGIN fun_body END {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ; }
-        | var_type FUN ID '(' parametro ',' ')' BEGIN fun_body END  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": solo se permite 1 parametro. "); }
-        | var_type FUN ID '(' error ')' BEGIN fun_body END  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro "); }
+        | var_type FUN ID '(' error ')' BEGIN fun_body END  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto. Verifica solo haya 1 parametro ");} 
         ;
 
 declare_pair
@@ -138,15 +142,30 @@ var_type
 
 if_statement
         : IF '(' cond ')' THEN ctrl_block_statement END_IF
-        | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+        | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
+        | IF '(' cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+        | IF cond ')' THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
-        | IF '(' cond ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
-        | IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion ") ; }
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
-        | IF cond THEN error ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia de ejecucicion en el IF ") ; }
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+        | IF '(' cond ')' THEN END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
+        | IF '(' cond ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
 
+
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+        | IF '(' cond ')' THEN ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
+        | IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
+        | IF '(' cond ')' THEN error ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; }
+        | IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este dentro de parentesis. ") ; }
+        | IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+        | IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+
+
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+        | IF ';' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia IF incorrecta");}
+        ;
+
+/*
         | IF '(' fun_invoc ')' THEN ctrl_block_statement END_IF
         | IF fun_invoc THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' fun_invoc ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF "); }
@@ -155,7 +174,8 @@ if_statement
         | IF fun_invoc THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. ") ; }
         | IF '(' fun_invoc ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
         | IF fun_invoc THEN error ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia de ejecucicion en el IF ") ; }
-        ; /*error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de sentencia de IF "); }*/
+        */
+         /*error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de sentencia de IF "); }*/
         /* creo que si hay error da error por regla statement */
         /* agregar más especificos: ej. si falta ')' */
 
@@ -230,24 +250,35 @@ expr_pair
         ;
 
 fun_invoc
-        : ID '(' expr ')'
+        : ID '(' expr ')'       /* chequear rango ID, warning y truncar si es necesario (en lexico se trunca y no va a hacer matching sino.. PERO EN ESTE CASO ESTAMOS PERMITIENDO ID DE MAS DE 15 !??) */
         | ID '(' expr error ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
         ;
 
 outf_statement
         : OUTF '(' expr ')'
-        | OUTF error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro de OUTF "); }
+        | OUTF '(' ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
+        | OUTF error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
         ;
         /* en semantica: tipo de parametro incorrecto */
 
+
+
 repeat_statement
         : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
-        | REPEAT BEGIN executable_statement_list END UNTIL cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' "); }
+        | REPEAT BEGIN executable_statement_list END UNTIL cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
+        | REPEAT BEGIN executable_statement_list END UNTIL '(' cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+        | REPEAT BEGIN executable_statement_list END UNTIL cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+        ;
+        /*
         | REPEAT BEGIN executable_statement_list END UNTIL '(' fun_invoc ')' 
-        | REPEAT BEGIN executable_statement_list END UNTIL fun_invoc ';' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' "); }
-        | REPEAT BEGIN error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
+        | REPEAT BEGIN executable_statement_list END UNTIL fun_invoc {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' "); }
+        */
+        | REPEAT BEGIN END UNTIL '(' cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
+        | REPEAT BEGIN END UNTIL cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
+        | REPEAT BEGIN END UNTIL '(' cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
+        | REPEAT BEGIN END UNTIL cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
         | REPEAT BEGIN executable_statement_list END error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
-        ;       
+        | REPEAT BEGIN executable_statement_list END UNTIL error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL");}   
 
 mult_assign_statement
         : id_list ASSIGN expr_list

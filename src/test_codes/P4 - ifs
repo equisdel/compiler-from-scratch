@@ -9,13 +9,15 @@ outf([impresion]);
 
 sing1,sing2 := 1.2s+2, 1.2s-2;
 
+#prueba de if y if else : cond, parentesis, cuerpo, errores random (Que deberia comerse todo el if y seguir..)
+
 uinteger fun testeveryverylarge(uinteger intval)
 begin
-    if (intval > 10) then
+    if intval > 10 then
         goto SALTITO@;
     else
         RET (intval * intval); 
-
+    end_if;
 end
 uinteger aux;
 aux := testeveryverylarge(5);

@@ -13,18 +13,19 @@ uinteger fun testeveryverylarge(uinteger intval)
 begin
     if (intval > 10) then
         goto SALTITO@;
-    else
-        RET (intval * intval); 
-
+    end_if;
+    RET (intval * intval);
 end
 uinteger aux;
 aux := testeveryverylarge(5);
 SALTITO@
 outf(aux);
 
+#deteccion de varios errores del repeat until: falta de cond, de parentesis, de PR, de sentencia ejecutable...
+
 repeat begin
-aux := aux + 1;
+
 end
-until (aux = 10);
+until aux = 10)
 
 end

@@ -18,7 +18,7 @@ public class TablaDeSimbolos {
 
     public Simbolo get_entry(String key) {
         Simbolo retorno = symbols.get(key);
-        System.out.println(retorno==null);
+        if (AnalizadorLexico.isdebug())System.out.println(retorno==null);
         return retorno;
     }
 

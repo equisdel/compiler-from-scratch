@@ -29,7 +29,7 @@ public class Automata {
         
         filas -= offset_f; 
         columnas -= offset_c;
-        System.out.println(filas);
+        if (AnalizadorLexico.isdebug()) System.out.println(filas);
         this.matrizTransicionEstados    = new int[filas][columnas];
         this.matrizAccionesSemanticas   = new int[filas][columnas];
         
@@ -53,7 +53,7 @@ public class Automata {
         }
 
         // Llena la matriz de transicion de estados
-        System.out.println("filas: "+filas+"; cols: "+columnas);
+        if(AnalizadorLexico.isdebug()) System.out.println("filas: "+filas+"; cols: "+columnas);
         for (int i = 0; i<filas; i++)
             for (int j = 0; j<columnas; j++) {
                 //System.out.println(Integer.parseInt(file_csv_mE.get(i)[j]));

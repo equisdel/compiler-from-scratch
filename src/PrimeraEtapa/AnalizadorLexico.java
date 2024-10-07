@@ -29,6 +29,10 @@ public class AnalizadorLexico {
 	static protected String lexema_subtype = "";	//'uinteger', 'single', 'reserved'
 	static protected String next_char;
 
+	//debugging
+	static private boolean aldebug = false;
+
+	static public boolean isdebug(){ return aldebug; }
 
 	public static void compile(String program_file_path) {
 		AnalizadorLexico.main(new String[0]);
@@ -37,9 +41,11 @@ public class AnalizadorLexico {
 	}
 
 	public static void display() {
-		System.out.println("Lista de lexemas:");
-		for (String lex : lex_list) {
-			System.out.print(lex);
+		if (aldebug) {
+			System.out.println("Lista de lexemas:");
+			for (String lex : lex_list) {
+				System.out.print(lex);
+			}
 		}
 		System.out.println("Tabla de Símbolos:");
 		AnalizadorLexico.t_simbolos.display();
@@ -58,23 +64,25 @@ public class AnalizadorLexico {
 				program_file_reader.mark(100);
 				next_char = program_file_reader.read();		// Lectura del siguiente carac
 				// Casos especiales
-				System.out.println("\nSIG CHAR: \'"+next_char+"\'");	// se imprime rarisimo
+				if (aldebug) System.out.println("\nSIG CHAR: \'"+next_char+"\'");	
 				if (next_char == 10) line_number++;			// Presencia de un salto de línea
 				if (next_char == -1) AnalizadorLexico.next_char = "?";	// Fin del programa
 				else AnalizadorLexico.next_char = ""+(char)next_char;
 
-				System.out.println("SIG CHAR: \'"+AnalizadorLexico.next_char+"\'");	// se imprime rarisimo
+				if (aldebug) System.out.println("SIG CHAR: \'"+AnalizadorLexico.next_char+"\'");	// se imprime rarisimo
 				next_accion_semantica = automata.getNext(AnalizadorLexico.next_char);
-				System.out.println("Acción semántica: "+next_accion_semantica);
+				if (aldebug) System.out.println("Acción semántica: "+next_accion_semantica);
 				if (next_accion_semantica>=0) acciones[next_accion_semantica].execute();
 				if (next_char == -1) automata.finalize();
 			} catch (IOException e) { e.printStackTrace(); }
 		}
-		System.out.println("!!! ["+AnalizadorLexico.lexema+"] -> {"+AnalizadorLexico.lexema_type+"|"+AnalizadorLexico.lexema_subtype+"}");
+		int token =lexToToken(lexema);
+		if (aldebug) System.out.println("!!!  ["+AnalizadorLexico.lexema+"] -> {"+AnalizadorLexico.lexema_type+"|"+AnalizadorLexico.lexema_subtype+"}");
+		if (aldebug == false) System.out.println("!!! Lexema: '"+AnalizadorLexico.lexema+"' -> Token: "+token);
 		AnalizadorLexico.lex_list.add("["+new String(AnalizadorLexico.lexema)+"|"+lexToToken(AnalizadorLexico.lexema)+"]");
 		//ParserVal yylval = new ParserVal(lexema);
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
-		return lexToToken(lexema);
+		return token;
 		
 	}
 
@@ -128,20 +136,19 @@ public class AnalizadorLexico {
 
 
 	public static void main(String[] args) {
+			// Inicialización del autómata
+			String matrizE_filePath = "src/PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
+			String matrizA_filePath = "src/PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
+			AnalizadorLexico.automata = new Automata(matrizE_filePath,matrizA_filePath);	
 
-		// Inicialización del autómata
-		String matrizE_filePath = "src/PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
-		String matrizA_filePath = "src/PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
-		AnalizadorLexico.automata = new Automata(matrizE_filePath,matrizA_filePath);	
-
-		// Inicialización de la tabla de símbolos + precarga de palabras reservadas
-		AnalizadorLexico.t_simbolos = new TablaDeSimbolos();
-		for (String p_reservada : reserved)
-			t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
-	
-		// Inicialización de las acciones semánticas
-		AccionSemantica.main(new String[0]);
-		acciones = AccionSemantica.all_actions;
+			// Inicialización de la tabla de símbolos + precarga de palabras reservadas
+			AnalizadorLexico.t_simbolos = new TablaDeSimbolos();
+			for (String p_reservada : reserved)
+				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
+		
+			// Inicialización de las acciones semánticas
+			AccionSemantica.main(new String[0]);
+			acciones = AccionSemantica.all_actions;
 
 	}
 }

@@ -24,7 +24,7 @@ public class CSVReader {
             this.columnas = this.getColumnas();
             this.reset();
         } catch (FileNotFoundException e) { 
-            System.out.println("not found");
+            System.out.println("Error en csvreader.java linea 27 :not found");
             e.printStackTrace(); 
         }
     }
