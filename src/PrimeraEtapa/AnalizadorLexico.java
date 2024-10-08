@@ -76,8 +76,8 @@ public class AnalizadorLexico {
 			} catch (IOException e) { e.printStackTrace(); }
 		}
 		int token =lexToToken(lexema);
-		if (aldebug) System.out.println("!!!  ["+AnalizadorLexico.lexema+"] -> {"+AnalizadorLexico.lexema_type+"|"+AnalizadorLexico.lexema_subtype+"}");
-		if (aldebug == false) System.out.println("!!! Lexema: '"+AnalizadorLexico.lexema+"' -> Token: "+token);
+		if (aldebug) System.out.println(">>>  ["+AnalizadorLexico.lexema+"] -> {"+AnalizadorLexico.lexema_type+"|"+AnalizadorLexico.lexema_subtype+"}");
+		if (aldebug == false) System.out.println(">>> Lexema: '"+AnalizadorLexico.lexema+"' -> Token: "+token);
 		AnalizadorLexico.lex_list.add("["+new String(AnalizadorLexico.lexema)+"|"+lexToToken(AnalizadorLexico.lexema)+"]");
 		//ParserVal yylval = new ParserVal(lexema);
 		// Retorna el token asociado (implementar función de mapeo) -> lo que hay en el lexema como entrada
