@@ -278,6 +278,7 @@ public class AccionSemantica {
         String desc_102 = "Error de comentario declarado con un único '#'. Desecho + Warning.";
         Function<Void,Integer> action_102 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
+                //AnalizadorLexico.lexema = AnalizadorLexico.lexema + "#"; 
                 AccionSemantica.error_msg = "Los comentarios se declaran con doble '#'.";
                 all_actions[100].execute();     // Levanta el warning
                 all_actions[3].execute();       // Devuelve el último caracter leído a la entrada

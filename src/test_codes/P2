@@ -2,27 +2,29 @@
 
 programap3
 begin
-
-single sing1 , sing2;
-
-outf([impresion]);
-
-sing1,sing2 := 1.2s+2 , .2s-2;
-
+single sing1  sing2;
+outf([impresion])
+sing1,sing2 := 1.2s+2 , 1.2s-2;
 uinteger fun testeveryverylarge(uinteger intval)
 begin
-    if (intval < 10) then
+    if (intval < 10 then
         goto SALTITO@;
     end_if;
 end
-uinteger aux;
+typedef pair uinteger pairsito;
+
+typedef <uinteger> parsito2 ;
+
+uinteger aux, aux2;
 aux := testeveryverylarge(5);
 SALTITO@
-outf(aux);
-
+outf();
 repeat begin
     aux := aux + 5;
 end
- until (aux < 10);
-
+until ();
+repeat begin
+    aux := aux + 1;
 end
+until (aux = 10;
+

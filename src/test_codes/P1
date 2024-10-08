@@ -1,9 +1,26 @@
-## programa de prueba de pair
-programap1
+## programa de prueba de errores lexicos
+programap2
 begin
 
-typedef pair <uinteger> parsito ;
+uinteger u1, u2, u3, u4;
+u1 := 65535;
+u2 := 0;
+u1 := 65536;
+u4 := 0xFFFF1;
+u3 := 0x0000;
 
-outf([hola]);
+
+## prueba de single
+
+SINGLE sing1, sing2, sing3, sing4;
+sing1 := 1.17549435s-38;
+sing2 := 3.40282347s+38;
+sing3 := -3.40282347s+38;
+sing4 := -1.17549435s-38;
+
+sing1:= 1.17549435s-39;
+sing2:= 3.40282347s+39;
+sing3:= -3.40282347s+39;
+sing4:= -1.17549435s-39;
 
 end

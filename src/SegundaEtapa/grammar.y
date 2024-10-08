@@ -10,15 +10,11 @@
 /*Puntos flotantes: ¿están bajo el mismo token que las uinteger y las hexadecimales? ID es un token, CTE es otro*/
 %token ID CTE CHARCH NEQ LEQ MEQ ASSIGN TAG IF THEN ELSE BEGIN END END_IF OUTF TYPEDEF FUN RET UINTEGER SINGLE REPEAT UNTIL PAIR GOTO 
 
-/*
-%LEFT '+' '-'
-%LEFT '*' '/'
-*/
 
 %start prog
 
 %%
-/* %start prog eto va aca o atnes del %% ? */
+
 prog    : ID BEGIN statement_list END
         | error BEGIN statement_list END {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Falta el nombre del programa en la primer linea. "); }
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta del programa." ); } 
@@ -85,8 +81,10 @@ executable_statement_list
 
 declare_var
         : var_type var_list ';'
+        | var_type var_list error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia ");}
         | var_type ID ';'
-        | var_type ID error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de declaracion incorrecta, asegurate haya ',' entre las variables si estas tratando de declarar varias.");}
+        | var_type ID error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia o estas tratando de declarar varias variables sin ','");}
+        ;
 
 declare_fun
         : var_type FUN ID '(' parametro ')' BEGIN fun_body END 
@@ -107,10 +105,10 @@ declare_pair
 
 
 var_list
-    : ID ',' ID
-    | var_list ',' ID
-    /* | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de lista de variables. Asegurate haya ',' entre las variables, ; }*/
-    ;
+        : ID ',' ID
+        | var_list ',' ID
+       /* | ID error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de lista de variables. Asegurate haya ',' entre las variables ") ; }*/
+        ;
 /* no hay problema de ambiguedad porque a diferencia de id_list, esta regla*/
 /* puede reducirse solo despues que aparezcla var_type */
 
