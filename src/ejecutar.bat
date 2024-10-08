@@ -1,2 +1,2 @@
-java ExePrimerEntrega.java 
+java Main.java 
 pause
