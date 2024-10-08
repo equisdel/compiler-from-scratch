@@ -162,26 +162,11 @@ if_statement
         /*| IF error  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia IF incorrecta");}*/
         ;
 
-/*
-        | IF '(' fun_invoc ')' THEN ctrl_block_statement END_IF
-        | IF fun_invoc THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
-        | IF '(' fun_invoc ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF "); }
-        | IF '(' fun_invoc ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF ") ; }
-        | IF '(' fun_invoc ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
-        | IF fun_invoc THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. ") ; }
-        | IF '(' fun_invoc ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
-        | IF fun_invoc THEN error ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia de ejecucicion en el IF ") ; }
-        */
-         /*error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de sentencia de IF "); }*/
-        /* creo que si hay error da error por regla statement */
-        /* agregar más especificos: ej. si falta ')' */
 
 ctrl_block_statement
         : executable_statement_list
         ;
-        /* ¿? SI ES MAS DE 1 LINEA O SENTENCIA Y VA BEGIN Y END SE AGREGA:*/
-        /*      BEGIN executable_statement_list END      */
-        /* si no: borro ctrl_block_statement y uso executable_statement_list en el if*/
+        
 
 cond
         : expr cond_op expr
@@ -208,30 +193,14 @@ expr    : expr '+' term
         | expr '-' term
         | term
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
-
-        /* al tener la sentencia la regla error ';' el compilador tira lo que encuentra hasta un ';' y de ahi sigue compilando */
-        /*| expr error{System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion"); }*/
-        /*| expr expr {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta una expresion"); }*/
-        /*| error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": asegurate no falte alguna expresion u operando"); }
-        | error '+' term {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion antes del '+' en ; }
-        | error '-' term {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion antes del '-' en ; }
-        | expr '+' error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion despues del '+' en ; }
-        | expr '-' error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion despues del '-' en ; } */
         ;
         
-/* FALTAN ERRORES DE SI FALTA UN EXPR O TERM ...*/
+
 
 term    : term '*' fact
         | term '/' fact
         | fact
-        /*| term error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de la expresión incorrecta. Chequeá si pusiste el operando, o si falta un termino"); }*/
-        /*| error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": asegurate no falte alguna expresion u operando"); }
-        | error '*' fact {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion antes de '*' en ; }
-        | error '/' fact {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion antes de '/' en ; }
-        | term '*' error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion despues de '*' en ; }
-        | term '/' error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba expresion despues de '/* en ; } */
         ;
-        /* no parsea nada si falta un * o un / ?? que hace?*/
 
 fact    : ID
         | CTE
@@ -265,11 +234,7 @@ repeat_statement
         | REPEAT BEGIN executable_statement_list END UNTIL cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
         | REPEAT BEGIN executable_statement_list END UNTIL '(' cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
         | REPEAT BEGIN executable_statement_list END UNTIL cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
-        ;
-        /*
-        | REPEAT BEGIN executable_statement_list END UNTIL '(' fun_invoc ')' 
-        | REPEAT BEGIN executable_statement_list END UNTIL fun_invoc {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' "); }
-        */
+
         | REPEAT BEGIN END UNTIL '(' cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
         | REPEAT BEGIN END UNTIL cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
         | REPEAT BEGIN END UNTIL '(' cond {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
@@ -277,6 +242,7 @@ repeat_statement
         | REPEAT BEGIN executable_statement_list END '(' cond ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
         | REPEAT BEGIN executable_statement_list END UNTIL '(' ')' {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
         /*| REPEAT BEGIN executable_statement_list END UNTIL error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL");} */
+        ;
 
 mult_assign_statement
         : id_list ASSIGN expr_list
@@ -302,7 +268,7 @@ a,b,c := 1,2,3;
 
 expr_list
         : expr ',' expr
-        /* | expr expr {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba una ',' entre las expresiones en ; }  DA ERROR PERO NECESITAMOS TENERLO EN CUENTA */
+        /* | expr expr {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba una ',' entre las expresiones en ; }  */
         | expr_list ',' expr
         /*| error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
         ;
@@ -315,13 +281,6 @@ goto_statement
 
 %%
 
-/* ERRORES PENDIENTES: */
-/*    falta sentencia ret en funcion: semantica  */
-/*    cantidad erronea de parametros: ni permiti mas de 1 parametro no me di cuenta, pero la cantidad es semantica  */
-
-
-/* recordar: $$ es el valor del lado izq de la regla. $n del n-ésimo del lado de la derecha */
-/* con esto podemos verfiicar algunos errores en vez de reescribir reglas.. */
 
 
 
