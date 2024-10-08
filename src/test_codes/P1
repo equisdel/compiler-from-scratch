@@ -1,26 +1,9 @@
-## P1:  Testeo de reconocimiento de los distintos tipos de constantes.
-##      Testeo de chequeo de rangos de los distintos tipos de constantes.
-##      Testeo de comentarios e insensibilidad a mayúsculas y minúsculas.
-##      Testeo de cuestiones sintácticas generales (sin error).
+## programa de prueba de pair
+programap1
+begin
 
-uinteger UINT1, UINT2;
-uint1 := 0;
-uint2 := 65535;
+typedef pair <uinteger> parsito ;
 
-uinteger uint_h1 := 0x0;
-uinteger uint_h2 := 0xFFFF; 
+outf([hola]);
 
-single sing1,sing2,sing3,sing4;
-SING1 := 1.17549435s-38;
-SING2 := 3.40282347s+38;
-SING3 := -1.17549435s-38;
-SING4 := -3.40282347s+38;
-SING5 := 2.s+2;
-SING6 := .4s+1;
-sing7 := 1.2s3;
-sing8 := 1.2s-;
-
-SING1 := - SING2;
-OUTF(SING1);
-
-cadena := [asdsa];
+end

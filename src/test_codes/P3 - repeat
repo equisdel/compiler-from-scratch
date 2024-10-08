@@ -21,7 +21,8 @@ aux := testeveryverylarge(5);
 SALTITO@
 outf(aux);
 
-#deteccion de varios errores del repeat until: falta de cond, de parentesis, de PR, de sentencia ejecutable...
+#Deteccion de varios errores del repeat until: falta de cond, de parentesis, de PR, de sentencia ejecutable...
+# SI FALTA CONDICION DA ERROR DE EXPR ?? SOLO DEVUELVE Q FALTA CONDICION, SI HAY PARENTESIS VACIOS
 
 repeat begin
 

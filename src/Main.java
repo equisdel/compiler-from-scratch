@@ -10,7 +10,7 @@ public class Main {
 		AnalizadorLexico.compile(filePath);
 		Parser parser = new Parser();
 		parser.run();
-
+		AnalizadorLexico.display();
 
 	}
 

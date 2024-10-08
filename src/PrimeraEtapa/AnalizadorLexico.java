@@ -47,7 +47,6 @@ public class AnalizadorLexico {
 				System.out.print(lex);
 			}
 		}
-		System.out.println("Tabla de Símbolos:");
 		AnalizadorLexico.t_simbolos.display();
 	}
 	
@@ -143,6 +142,7 @@ public class AnalizadorLexico {
 
 			// Inicialización de la tabla de símbolos + precarga de palabras reservadas
 			AnalizadorLexico.t_simbolos = new TablaDeSimbolos();
+			//AnalizadorLexico.t_simbolos.clear();
 			for (String p_reservada : reserved)
 				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
 		

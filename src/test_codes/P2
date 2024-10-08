@@ -7,15 +7,13 @@ single sing1 , sing2;
 
 outf([impresion]);
 
-sing1,sing2 := 1.2s+2, 1.2s-2;
+sing1,sing2 := 1.2s+2 , .2s-2;
 
 uinteger fun testeveryverylarge(uinteger intval)
 begin
-    if (intval > 10) then
+    if (intval < 10) then
         goto SALTITO@;
-    else
-        RET (intval * intval); 
-
+    end_if;
 end
 uinteger aux;
 aux := testeveryverylarge(5);
@@ -23,8 +21,8 @@ SALTITO@
 outf(aux);
 
 repeat begin
-aux := aux + 1;
+    aux := aux + 5;
 end
-until (aux = 10);
+ until (aux < 10);
 
 end

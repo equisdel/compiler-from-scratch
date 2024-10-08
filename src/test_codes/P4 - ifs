@@ -10,6 +10,7 @@ outf([impresion]);
 sing1,sing2 := 1.2s+2, 1.2s-2;
 
 #prueba de if y if else : cond, parentesis, cuerpo, errores random (Que deberia comerse todo el if y seguir..)
+# FALTA DE END_IF NO CONTEMPLADA..
 
 uinteger fun testeveryverylarge(uinteger intval)
 begin

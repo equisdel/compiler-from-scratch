@@ -1,14 +1,14 @@
 package PrimeraEtapa;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TablaDeSimbolos {
 
-    private HashMap<String,Simbolo> symbols;        // Estructura eficiente. Key = Lexema.
+    private LinkedHashMap<String,Simbolo> symbols;        // Estructura eficiente. Key = Lexema.
 
     public TablaDeSimbolos() {
-        symbols = new HashMap<>();
+        symbols = new LinkedHashMap<>();
     }
 
     public void add_entry(String lexema, String type, String subtype) {
@@ -25,12 +25,15 @@ public class TablaDeSimbolos {
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
         for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
-            System.out.print("Clave: " + entry.getKey() + ", Valor: ");
+            System.out.print("Clave: " + entry.getKey()+" ");
             entry.getValue().display();
         }
         System.out.println();
     }
 
+    public void clear(){
+        symbols.clear();
+    }
     
     public static void main (String args[]) {
 
