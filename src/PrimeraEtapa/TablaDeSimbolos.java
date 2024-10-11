@@ -11,8 +11,8 @@ public class TablaDeSimbolos {
         symbols = new LinkedHashMap<>();
     }
 
-    public void add_entry(String lexema, String type, String subtype) {
-        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase());   // Se pasa todo a upper case
+    public void add_entry(String lexema, String type, String subtype, int linea) {
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase(), linea);   // Se pasa todo a upper case
         symbols.put(lexema.toUpperCase(),new_entry);
     }
 
@@ -43,7 +43,7 @@ public class TablaDeSimbolos {
         // Creación de la tabla de símbolos
         TablaDeSimbolos ts = new TablaDeSimbolos();
         // Inserción de una entrada piloto
-        ts.add_entry("","test_0","type_any");
+        ts.add_entry("","test_0","type_any",0);
         // Impresión de la tabla
         ts.display();
 

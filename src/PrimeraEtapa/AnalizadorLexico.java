@@ -136,15 +136,15 @@ public class AnalizadorLexico {
 
 	public static void main(String[] args) {
 			// Inicialización del autómata
-			String matrizE_filePath = "compiler-from-scratch/src/PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
-			String matrizA_filePath = "compiler-from-scratch/src/PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
+			String matrizE_filePath = "PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
+			String matrizA_filePath = "PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
 			AnalizadorLexico.automata = new Automata(matrizE_filePath,matrizA_filePath);	
 
 			// Inicialización de la tabla de símbolos + precarga de palabras reservadas
 			AnalizadorLexico.t_simbolos = new TablaDeSimbolos();
 			//AnalizadorLexico.t_simbolos.clear();
 			for (String p_reservada : reserved)
-				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
+				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved", -1);
 		
 			// Inicialización de las acciones semánticas
 			AccionSemantica.main(new String[0]);

@@ -11,10 +11,9 @@ public class Main {
 	public static void main(String[] args) {
 		
 		// Pide al usuario el camino al programa a compilar
-      String var1 = "compiler-from-scratch/src/test_codes";
+      String var1 = "test_codes";
       File var2 = new File(var1);
       File[] var3 = var2.listFiles();
-	  System.out.println("var3= "+var3.toString());
       if (var3 != null && var3.length != 0) {
          System.out.println("Seleccione un archivo para leer:");
 
@@ -56,7 +55,7 @@ public class Main {
                var19.close();
             }
 
-            String var20 = "compiler-from-scratch/src/test_codes/" + var6.getName();
+            String var20 = "test_codes/" + var6.getName();
             System.out.println("archivo elegido: " + var20);
             AnalizadorLexico.compile(var20);
             Parser var21 = new Parser();
