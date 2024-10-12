@@ -93,7 +93,11 @@ declare_fun
         ;
 
 declare_pair
-        : TYPEDEF PAIR '<' var_type '>' ID  /* en semantica, se agrega la variable a la TS*/
+        : TYPEDEF PAIR '<' var_type '>' ID  {
+                System.out.println("$6 : "+$6.sval);
+                System.out.println("$4 : "+$4.sval);
+                AnalizadorLexico.t_simbolos.add_entry($6.sval,"ID", $4.sval);
+        }
         | TYPEDEF '<' var_type '>' ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
         | TYPEDEF PAIR var_type ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
         | TYPEDEF PAIR '<' var_type '>' error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba un ID al final de la declaracion"); }
@@ -142,7 +146,9 @@ var_type
 if_statement
         : IF '(' cond ')' THEN ctrl_block_statement END_IF
         | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
-        | IF '(' cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+        | IF '(' cond THEN ctrl_block_statement END_IF {
+                $$ = $3;
+                System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion. "); }
         | IF cond ')' THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
         | IF '(' cond ')' THEN END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }

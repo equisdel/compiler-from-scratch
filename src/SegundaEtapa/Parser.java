@@ -680,15 +680,8 @@ final static String yyrule[] = {
 "goto_statement : GOTO error",
 };
 
-//#line 283 "grammar.y"
+//#line 289 "grammar.y"
 
-/* ERRORES PENDIENTES: */
-/*    falta sentencia ret en funcion: semantica  */
-/*    cantidad erronea de parametros: ni permiti mas de 1 parametro no me di cuenta, pero la cantidad es semantica  */
-
-
-/* recordar: $$ es el valor del lado izq de la regla. $n del n-ésimo del lado de la derecha */
-/* con esto podemos verfiicar algunos errores en vez de reescribir reglas.. */
 
 
 
@@ -700,7 +693,7 @@ final static String yyrule[] = {
                 return AnalizadorLexico.yylex();
         }
         // valor a yylval (lexema)
-//#line 631 "Parser.java"
+//#line 624 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -952,159 +945,169 @@ case 35:
 //#line 92 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto. Verifica solo haya 1 parametro ");}
 break;
+case 36:
+//#line 96 "grammar.y"
+{
+                System.out.println("$6 : "+val_peek(0));
+                System.out.println("$4 : "+val_peek(2));
+                AnalizadorLexico.t_simbolos.add_entry(val_peek(0).sval,"ID", val_peek(2).sval);
+        }
+break;
 case 37:
-//#line 97 "grammar.y"
+//#line 101 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
 break;
 case 38:
-//#line 98 "grammar.y"
+//#line 102 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
 break;
 case 39:
-//#line 99 "grammar.y"
+//#line 103 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba un ID al final de la declaracion"); }
 break;
 case 43:
-//#line 117 "grammar.y"
+//#line 121 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba tipo del parametro de la funcion. "); }
 break;
 case 44:
-//#line 118 "grammar.y"
+//#line 122 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de parametro"); }
 break;
 case 46:
-//#line 123 "grammar.y"
+//#line 127 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": faltan parentesis en sentencia de return. ") ;}
 break;
 case 52:
-//#line 144 "grammar.y"
+//#line 148 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
 break;
 case 53:
-//#line 145 "grammar.y"
-{System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+//#line 149 "grammar.y"
+{
+                yyval = val_peek(3);
+                System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion. "); }
 break;
 case 54:
-//#line 146 "grammar.y"
+//#line 152 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 55:
-//#line 147 "grammar.y"
+//#line 153 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 break;
 case 56:
-//#line 148 "grammar.y"
+//#line 154 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
 break;
 case 57:
-//#line 149 "grammar.y"
+//#line 155 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
 break;
 case 59:
-//#line 153 "grammar.y"
+//#line 159 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
 break;
 case 60:
-//#line 154 "grammar.y"
+//#line 160 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
 break;
 case 61:
-//#line 155 "grammar.y"
+//#line 161 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
 break;
 case 62:
-//#line 156 "grammar.y"
+//#line 162 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
 break;
 case 63:
-//#line 157 "grammar.y"
+//#line 163 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; }
 break;
 case 64:
-//#line 158 "grammar.y"
+//#line 164 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este dentro de parentesis. ") ; }
 break;
 case 65:
-//#line 159 "grammar.y"
+//#line 165 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
 break;
 case 66:
-//#line 160 "grammar.y"
+//#line 166 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 67:
-//#line 161 "grammar.y"
+//#line 167 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 break;
 case 70:
-//#line 173 "grammar.y"
+//#line 179 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
 break;
 case 79:
-//#line 189 "grammar.y"
+//#line 195 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
 break;
 case 83:
-//#line 195 "grammar.y"
+//#line 201 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
 break;
 case 96:
-//#line 220 "grammar.y"
+//#line 226 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
 break;
 case 98:
-//#line 225 "grammar.y"
+//#line 231 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
 break;
 case 99:
-//#line 226 "grammar.y"
+//#line 232 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
 break;
 case 101:
-//#line 234 "grammar.y"
+//#line 240 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
 break;
 case 102:
-//#line 235 "grammar.y"
+//#line 241 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
 break;
 case 103:
-//#line 236 "grammar.y"
+//#line 242 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 104:
-//#line 238 "grammar.y"
+//#line 244 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
 break;
 case 105:
-//#line 239 "grammar.y"
+//#line 245 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
 break;
 case 106:
-//#line 240 "grammar.y"
+//#line 246 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
 break;
 case 107:
-//#line 241 "grammar.y"
+//#line 247 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
 break;
 case 108:
-//#line 242 "grammar.y"
+//#line 248 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
 break;
 case 109:
-//#line 243 "grammar.y"
+//#line 249 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
 break;
 case 111:
-//#line 249 "grammar.y"
+//#line 255 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
 break;
 case 119:
-//#line 278 "grammar.y"
+//#line 284 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
 break;
-//#line 1030 "Parser.java"
+//#line 1033 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

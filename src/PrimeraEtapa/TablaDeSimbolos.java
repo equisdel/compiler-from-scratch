@@ -11,16 +11,37 @@ public class TablaDeSimbolos {
         symbols = new LinkedHashMap<>();
     }
 
-    public void add_entry(String lexema, String type, String subtype, int linea) {
-        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase(), linea);   // Se pasa todo a upper case
+    public void add_entry(String lexema, String type, String subtype) {
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase());   // Se pasa todo a upper case
         symbols.put(lexema.toUpperCase(),new_entry);
     }
+
+
 
     public Simbolo get_entry(String key) {
         Simbolo retorno = symbols.get(key);
         if (AnalizadorLexico.isdebug())System.out.println(retorno==null);
         return retorno;
     }
+
+    public int get_line(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return -1;
+        return retorno.getLine();
+    }
+
+    public String get_type(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return null;
+        return retorno.getTipo();
+    }
+
+    public String get_subtype(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return null;
+        return retorno.getSubtipo();
+    }
+
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
@@ -43,7 +64,7 @@ public class TablaDeSimbolos {
         // Creación de la tabla de símbolos
         TablaDeSimbolos ts = new TablaDeSimbolos();
         // Inserción de una entrada piloto
-        ts.add_entry("","test_0","type_any",0);
+        ts.add_entry("","test_0","type_any");
         // Impresión de la tabla
         ts.display();
 

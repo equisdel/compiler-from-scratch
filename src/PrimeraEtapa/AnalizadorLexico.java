@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class AnalizadorLexico {
 
 	public static Automata automata;
-	static TablaDeSimbolos t_simbolos;
+	public static TablaDeSimbolos t_simbolos;
 	static AccionSemantica[] acciones;
 
 	// Variables relativas a la lectura
@@ -144,7 +144,7 @@ public class AnalizadorLexico {
 			AnalizadorLexico.t_simbolos = new TablaDeSimbolos();
 			//AnalizadorLexico.t_simbolos.clear();
 			for (String p_reservada : reserved)
-				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved", -1);
+				t_simbolos.add_entry(p_reservada.toUpperCase(), p_reservada.toUpperCase(), "reserved");
 		
 			// Inicialización de las acciones semánticas
 			AccionSemantica.main(new String[0]);

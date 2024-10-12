@@ -9,15 +9,14 @@ public class Simbolo {
     private int line; // linea en la que se leyó
 
     // Implementar getters y setters
-    Simbolo(String type, String subtype, int linea) {
+    Simbolo(String type, String subtype) {
         this.type = type;
         this.subtype = subtype;
-        this.line = linea;
         //this.id = Simbolo.counter++;
     }
 
     Simbolo(String type, int linea) {
-        this(type,null, linea);
+        this(type,null);
     }
 
     public String getTipo(){
