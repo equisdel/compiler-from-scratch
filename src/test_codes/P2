@@ -26,7 +26,7 @@ repeat begin
 end
 until ();
 repeat begin
-    aux := aux + 1;
+    aux := aux1 + 1;
 end
 until (aux = 10;
 

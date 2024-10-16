@@ -679,7 +679,7 @@ final static String yyrule[] = {
 "goto_statement : GOTO error",
 };
 
-//#line 285 "grammar.y"
+//#line 290 "grammar.y"
 
 
 	public static void yyerror(String msg){
@@ -980,7 +980,7 @@ break;
 case 53:
 //#line 145 "grammar.y"
 {
-                System.out.println("$$: "+yyval.sval+" $4: "+val_peek(2).sval); /*$3 devuelve el primer lexema de la condicion*/
+                System.out.println("$1: "+val_peek(5).sval+" $$: "+yyval.sval+" $4: "+val_peek(2).sval); /*$3 devuelve el primer lexema de la condicion*/
                 System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+val_peek(2).sval+"."); }
 break;
 case 54:
@@ -1039,71 +1039,88 @@ case 70:
 //#line 175 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
 break;
+case 77:
+//#line 189 "grammar.y"
+{System.out.println("expresion: "+val_peek(0).sval);}
+break;
 case 79:
 //#line 191 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
 break;
+case 80:
+//#line 194 "grammar.y"
+{
+                                yyval.sval = "5";
+                                System.out.println("$$: "+yyval.sval);
+                                System.out.println("$1: "+val_peek(2).sval);
+                                System.out.println("$3: "+val_peek(0).sval);
+                        }
+break;
+case 81:
+//#line 200 "grammar.y"
+{/*$$ = $1 - $2;*/}
+break;
 case 83:
-//#line 197 "grammar.y"
+//#line 202 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
 break;
 case 96:
-//#line 222 "grammar.y"
+//#line 227 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
 break;
 case 98:
-//#line 227 "grammar.y"
+//#line 232 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
 break;
 case 99:
-//#line 228 "grammar.y"
+//#line 233 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
 break;
 case 101:
-//#line 236 "grammar.y"
+//#line 241 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
 break;
 case 102:
-//#line 237 "grammar.y"
+//#line 242 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
 break;
 case 103:
-//#line 238 "grammar.y"
+//#line 243 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 104:
-//#line 240 "grammar.y"
+//#line 245 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
 break;
 case 105:
-//#line 241 "grammar.y"
+//#line 246 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
 break;
 case 106:
-//#line 242 "grammar.y"
+//#line 247 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
 break;
 case 107:
-//#line 243 "grammar.y"
+//#line 248 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
 break;
 case 108:
-//#line 244 "grammar.y"
+//#line 249 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
 break;
 case 109:
-//#line 245 "grammar.y"
+//#line 250 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
 break;
 case 111:
-//#line 251 "grammar.y"
+//#line 256 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
 break;
 case 119:
-//#line 280 "grammar.y"
+//#line 285 "grammar.y"
 {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
 break;
-//#line 1029 "Parser.java"
+//#line 1046 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

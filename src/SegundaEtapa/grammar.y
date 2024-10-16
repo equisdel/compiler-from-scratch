@@ -140,10 +140,10 @@ var_type
 
 
 if_statement
-        : IF '(' cond ')' THEN ctrl_block_statement END_IF
+        : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
         | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
-                //System.out.println("$$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
+                System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
                 System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
         | IF cond ')' THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
@@ -151,7 +151,7 @@ if_statement
         | IF '(' cond ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
 
 
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+        | if_cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
         | IF '(' cond ')' THEN ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
         | IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
         | IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
@@ -164,6 +164,9 @@ if_statement
         /*| IF error  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia IF incorrecta");}*/
         ;
 
+if_cond
+        : IF '(' cond ')' {$$ = Terceto.addTerceto("BF",$3,null)}
+        ;
 
 ctrl_block_statement
         : executable_statement_list
@@ -171,7 +174,7 @@ ctrl_block_statement
         
 
 cond
-        : expr cond_op expr
+        : expr cond_op expr {$$ = Terceto.addTerceto($2,$1,$3);}
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
         /*| fun_invoc */
         ;
@@ -186,27 +189,33 @@ cond_op
         ;
 
 assign_statement
-        : ID ASSIGN expr
+        : ID ASSIGN expr {$$ = Terceto.addTerceto($2,$1,$3);}
         | expr_pair ASSIGN expr 
         | var_type ID ASSIGN expr {System.out.println("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
 
-expr    : expr '+' term
-        | expr '-' term
-        | term
+expr    : expr '+' term     {
+                                $$ = Terceto.addTerceto('+',$1,$3);
+                                // Para ambos términos: se visita la tabla de símbolos (subtype) y se chequea la compatibilidad de
+                               /* $$.sval = "5";
+                                System.out.println("$$: "+$$.sval);
+                                System.out.println("$1: "+$1.sval);
+                                System.out.println("$3: "+$3.sval);*/
+                        }
+        | expr '-' term         {$$ = Terceto.addTerceto('-',$1,$3)}
+        | term 
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
         ;
-        
 
-
-term    : term '*' fact
-        | term '/' fact
+term    : term '*' fact {Terceto('*',$1,$3);}      /* */
+        | term '/' fact {Terceto ('/',$1,$3);}
         | fact
         ;
 
+/* toda regla por default, hace $$ = $1*/
 fact    : ID
         | CTE
-        | '-' CTE /* En semantica se chequea que CTE sea del tipo single*/
+        | '-' CTE /* En semantica se chequea que CTE sea del tipo single*/ {Terceto.addTerceto('-',0,$2);}
         | '-' ID /* En semantica se chequea que ID sea del tipo single */
         | fun_invoc
         | expr_pair
@@ -283,6 +292,7 @@ goto_statement
 
 %%
 
+        private String actualScope = "";
 
 	public static void yyerror(String msg){
 	        System.out.println("Error en linea "+AnalizadorLexico.line_number+": "+msg);
