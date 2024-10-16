@@ -5,8 +5,9 @@ public class Simbolo {
 
     private String type;        // 'ID', 'CTE', 'CHARCH', 'IF', 'NEQ' ...
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
-    // scope, modificadores, punteros, etc.
-    private int line; // linea en la que se leyó
+    // scope, modificadores, punteros, etc. 
+    private String scope; // alcance en el que se encuentra (ambito)
+    private String usage;
 
     // Implementar getters y setters
     Simbolo(String type, String subtype) {
@@ -15,9 +16,6 @@ public class Simbolo {
         //this.id = Simbolo.counter++;
     }
 
-    Simbolo(String type, int linea) {
-        this(type,null);
-    }
 
     public String getTipo(){
         return this.type;
@@ -31,8 +29,8 @@ public class Simbolo {
         this.type = typo;
     }
 
-    public int getLine(){
-        return this.line;
+    public void setUse(String uso){
+        this.usage = uso;
     }
     
     public void display() {

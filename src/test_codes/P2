@@ -7,7 +7,7 @@ outf([impresion])
 sing1,sing2 := 1.2s+2 , 1.2s-2;
 uinteger fun testeveryverylarge(uinteger intval)
 begin
-    if (intval < 10 then
+    if (intval < 10 THEN
         goto SALTITO@;
     end_if;
 end

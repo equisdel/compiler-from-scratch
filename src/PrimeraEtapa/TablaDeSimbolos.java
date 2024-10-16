@@ -16,18 +16,19 @@ public class TablaDeSimbolos {
         symbols.put(lexema.toUpperCase(),new_entry);
     }
 
-
+    public void add_entry_typedef(String lexema, String type, String subtype) { 
+        // podria pasarse menos cosas, pero es un tipo. En nuestro caso, es un tipo de 'tipo' PAIR.
+        // solo tenemos pair pero podriamos contemplar más..
+        //si 'pairsito' es el lexema, hay conflictos con posibles variables que se llamen igual..
+        // asiq no se q poner de lexema, pero de tipo seria ID, y de subtipo PAIR
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase());   // Se pasa todo a upper case
+        symbols.put(lexema.toUpperCase(),new_entry);
+    }
 
     public Simbolo get_entry(String key) {
         Simbolo retorno = symbols.get(key);
         if (AnalizadorLexico.isdebug())System.out.println(retorno==null);
         return retorno;
-    }
-
-    public int get_line(String key) {
-        Simbolo retorno = symbols.get(key);
-        if (retorno == null) return -1;
-        return retorno.getLine();
     }
 
     public String get_type(String key) {
@@ -42,6 +43,11 @@ public class TablaDeSimbolos {
         return retorno.getSubtipo();
     }
 
+    public void set_use(String key, String uso) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return;
+        retorno.setUse(uso);
+    }
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");

@@ -26,7 +26,7 @@ public class AnalizadorLexico {
 	// Variables de comunicación entre el A.L. y las acciones semánticas
 	static protected String lexema 		= "";
 	static protected String lexema_type = ""; 		//ID', 'CTE', 'CHARCH',
-	static protected String lexema_subtype = "";	//'uinteger', 'single', 'reserved'
+	static protected String lexema_subtype = "";	//'uinteger', 'single', 'reserved', 'pair ? si es pair, tiene dos componentes q son o uinteger o single, como los diferenciamos? otro campo?'
 	static protected String next_char;
 
 	//debugging
@@ -51,7 +51,7 @@ public class AnalizadorLexico {
 	}
 	
 
-	public static int yylex() {
+	public static int yylex(ParserVal yylval) {
 
 		acciones[0].execute();		// Resetea el estado de las variables estáticas.
 		automata.reset();				// Resetea el autómata: estado inicial (0).
@@ -75,6 +75,8 @@ public class AnalizadorLexico {
 				if (next_char == -1) automata.finalize();
 			} catch (IOException e) { e.printStackTrace(); }
 		}
+		yylval.sval = new String(AnalizadorLexico.lexema); // creo nuevo objeto para que no aputnen los dos al mismo string, q va cambiando...
+														   // ( el parser debe quedarse con varios valores de los lexemas para las reglas, no solo con el ultimo)
 		int token =lexToToken(lexema);
 		if (aldebug) System.out.println(">>>  ["+AnalizadorLexico.lexema+"] -> {"+AnalizadorLexico.lexema_type+"|"+AnalizadorLexico.lexema_subtype+"}");
 		if (aldebug == false) System.out.println(">>> Lexema: '"+AnalizadorLexico.lexema+"' -> Token: "+token);
@@ -136,8 +138,8 @@ public class AnalizadorLexico {
 
 	public static void main(String[] args) {
 			// Inicialización del autómata
-			String matrizE_filePath = "PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
-			String matrizA_filePath = "PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
+			String matrizE_filePath = "src/PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
+			String matrizA_filePath = "src/PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)
 			AnalizadorLexico.automata = new Automata(matrizE_filePath,matrizA_filePath);	
 
 			// Inicialización de la tabla de símbolos + precarga de palabras reservadas

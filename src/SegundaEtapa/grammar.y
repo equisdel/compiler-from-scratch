@@ -2,7 +2,6 @@
 %{
         import java.io.*;
         import PrimeraEtapa.AnalizadorLexico;
-        
 
 %}
 
@@ -94,9 +93,6 @@ declare_fun
 
 declare_pair
         : TYPEDEF PAIR '<' var_type '>' ID  {
-                System.out.println("$6 : "+$6.sval);
-                System.out.println("$4 : "+$4.sval);
-                AnalizadorLexico.t_simbolos.add_entry($6.sval,"ID", $4.sval);
         }
         | TYPEDEF '<' var_type '>' ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
         | TYPEDEF PAIR var_type ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
@@ -147,8 +143,8 @@ if_statement
         : IF '(' cond ')' THEN ctrl_block_statement END_IF
         | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
-                $$ = $3;
-                System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion. "); }
+                //System.out.println("$$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
+                System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
         | IF cond ')' THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
         | IF '(' cond ')' THEN END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
@@ -288,13 +284,13 @@ goto_statement
 %%
 
 
-
-
 	public static void yyerror(String msg){
 	        System.out.println("Error en linea "+AnalizadorLexico.line_number+": "+msg);
 	}
 
-        public int yylex(){
-                return AnalizadorLexico.yylex();
+        public int yylex(){ // tambien devuelve el yylval ...
+                yylval = new ParserVal();       //se deberia modificar la variable de clase Parser 
+                return AnalizadorLexico.yylex(yylval);
         }
+
         // valor a yylval (lexema)
