@@ -1,7 +1,8 @@
 
 %{
         import java.io.*;
-        import PrimeraEtapa.AnalizadorLexico;
+        import PrimeraEtapa.*;
+        import TercerEtapa.*;
 
 %}
 
@@ -79,20 +80,55 @@ executable_statement_list
         ;
 
 declare_var
-        : var_type var_list ';'
+        : var_type var_list ';' //agregar a cada variable (separada por ','') su tipo y scope
         | var_type var_list error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia ");}
-        | var_type ID ';'
-        | var_type ID error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia o estas tratando de declarar varias variables sin ','");}
+        | var_type ID ';' {
+                if (!AnalizadorSemantico.validID($1.sval,$2.sval)) {System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
+                // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado.
+                // si ya fue declarada , warning
+                // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
+                AnalizadorLexico.t_simbolos.del_entry($2.sval);
+                AnalizadorLexico.t_simbolos.add_entry($2.sval+":"+actualScope,"ID",$1.sval);
+                //debuging:
+                System.out.println("Variable "+$2.sval+" de tipo "+$1.sval+" declarada en linea "+AnalizadorLexico.line_number+" en el scope "+actualScope);
+                }
+        | var_type ID error {
+                System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia o estas tratando de declarar varias variables sin ','");
+                }
         ;
 
 declare_fun
-        : var_type FUN ID '(' parametro ')' BEGIN fun_body END 
-        | var_type FUN error '(' parametro ')' BEGIN fun_body END {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ; }
-        | var_type FUN ID '(' error ')' BEGIN fun_body END  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto. Verifica solo haya 1 parametro ");} 
+        : declare_fun_header fun_body END {
+                popScope();
+        }
+        ;
+
+/* necesario para poder apilar y desapilar ambito */
+declare_fun_header
+        : var_type FUN ID '(' parametro ')' BEGIN {
+                if (!AnalizadorSemantico.validID($1.sval,$3.sval)) {
+                        System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
+                // guardar el scope de la funcion
+                pushScope($3.sval); 
+        }
+        | var_type FUN error '(' parametro ')' BEGIN {
+                System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ;}
+        | var_type FUN ID '(' error ')' BEGIN {
+                // guardar el scope de la funcion
+                pushScope($3.sval); 
+                System.out.println("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto. Verifica solo haya 1 parametro ");
+                if (!AnalizadorSemantico.validID($1.sval,$3.sval)){
+                        System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
+                }
+        }
         ;
 
 declare_pair
         : TYPEDEF PAIR '<' var_type '>' ID  {
+                // OJO ESTO ES UN TIPO, NO UN NOMBRE DE VARIABLE.. 
+                if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
+                
+                // cambiar el scope del tipo !???o asumir es globla, es decir en cualq parte del programa se podra definir una variable de este tipo.
         }
         | TYPEDEF '<' var_type '>' ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
         | TYPEDEF PAIR var_type ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
@@ -140,6 +176,7 @@ var_type
 
 
 if_statement
+/* 
         : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
         | IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
@@ -151,7 +188,7 @@ if_statement
         | IF '(' cond ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
 
 
-        | if_cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
         | IF '(' cond ')' THEN ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
         | IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
         | IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
@@ -161,11 +198,33 @@ if_statement
         | IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
         | IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
-        /*| IF error  {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia IF incorrecta");}*/
         ;
+*/
+: IF '(' cond ')' THEN ctrl_block_statement END_IF {}
+| IF cond THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
+| IF '(' cond THEN ctrl_block_statement END_IF {
+        System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
+        System.out.println("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
+| IF cond ')' THEN ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+| IF '(' cond ')' THEN ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
+| IF '(' cond ')' THEN END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
+| IF '(' cond ')' THEN error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
+
+
+| IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+| IF '(' cond ')' THEN ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
+| IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
+| IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+| IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
+| IF '(' cond ')' THEN error ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; }
+| IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este dentro de parentesis. ") ; }
+| IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+| IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+| IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+;
 
 if_cond
-        : IF '(' cond ')' {$$ = Terceto.addTerceto("BF",$3,null)}
+        : IF '(' cond ')' //{$$.sval = Terceto.addTerceto("BF",$3,null)}
         ;
 
 ctrl_block_statement
@@ -174,7 +233,8 @@ ctrl_block_statement
         
 
 cond
-        : expr cond_op expr {$$ = Terceto.addTerceto($2,$1,$3);}
+        : expr cond_op expr {
+                $$.sval = Terceto.addTerceto($2.sval,strToTID($1.sval),strToTID($3.sval));}
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
         /*| fun_invoc */
         ;
@@ -189,33 +249,37 @@ cond_op
         ;
 
 assign_statement
-        : ID ASSIGN expr {$$ = Terceto.addTerceto($2,$1,$3);}
+        : ID ASSIGN expr {$$.sval = Terceto.addTerceto($2.sval,strToTID($1.sval),strToTID($3.sval));}
         | expr_pair ASSIGN expr 
         | var_type ID ASSIGN expr {System.out.println("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
 
-expr    : expr '+' term     {
-                                $$ = Terceto.addTerceto('+',$1,$3);
-                                // Para ambos términos: se visita la tabla de símbolos (subtype) y se chequea la compatibilidad de
-                               /* $$.sval = "5";
-                                System.out.println("$$: "+$$.sval);
-                                System.out.println("$1: "+$1.sval);
-                                System.out.println("$3: "+$3.sval);*/
-                        }
-        | expr '-' term         {$$ = Terceto.addTerceto('-',$1,$3)}
+expr    : expr '+' term    
+                                /*
+                                if ($1.tipo != $3.tipo) {
+                                        //cambio tipo del $1 al de $3
+                                        $1 = "toUint("+$1+")";
+                                        // o 
+                                        // cambio del $3 al $1
+                                        // o warning
+                                }
+                                $$.sval = Terceto.addTerceto('+',$1,$3);}
+                                */
+        | expr '-' term         {$$.sval = Terceto.addTerceto("-",strToTID($1.sval),strToTID($3.sval));}
         | term 
         | error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
         ;
+        // a := 5 + sing1 - 3 * 2 + 1;
 
-term    : term '*' fact {Terceto('*',$1,$3);}      /* */
-        | term '/' fact {Terceto ('/',$1,$3);}
+term    : term '*' fact {Terceto.addTerceto("*",strToTID($1.sval),strToTID($3.sval));}      /* */
+        | term '/' fact {Terceto.addTerceto("/",strToTID($1.sval),strToTID($3.sval));}
         | fact
         ;
 
-/* toda regla por default, hace $$ = $1*/
-fact    : ID
+/* toda regla por default, hace $$.sval = $1*/
+fact    : ID 
         | CTE
-        | '-' CTE /* En semantica se chequea que CTE sea del tipo single*/ {Terceto.addTerceto('-',0,$2);}
+        | '-' CTE /* En semantica se chequea que CTE sea del tipo single*/ {Terceto.addTerceto("-","0",strToTID($2.sval));}
         | '-' ID /* En semantica se chequea que ID sea del tipo single */
         | fun_invoc
         | expr_pair
@@ -292,7 +356,7 @@ goto_statement
 
 %%
 
-        private String actualScope = "";
+        private String actualScope = "main";
 
 	public static void yyerror(String msg){
 	        System.out.println("Error en linea "+AnalizadorLexico.line_number+": "+msg);
@@ -303,4 +367,20 @@ goto_statement
                 return AnalizadorLexico.yylex(yylval);
         }
 
-        // valor a yylval (lexema)
+        public String strToTID(String id){
+                return ("<"+id+">");
+        }
+        
+        public void pushScope(String scope){
+                actualScope = actualScope + ":" + scope;
+        }
+
+        public void popScope(){
+                // quita ultimo scope, q esta delimitado con ':'
+                int index = actualScope.lastIndexOf(":");
+                if (index != -1) {
+                        actualScope = actualScope.substring(0, index);
+                } // else actualScope queda igual
+        }
+
+

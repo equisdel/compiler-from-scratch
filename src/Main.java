@@ -14,6 +14,7 @@ public class Main {
       String var1 = "src/test_codes";
       File var2 = new File(var1);
       File[] var3 = var2.listFiles();
+
       if (var3 != null && var3.length != 0) {
          System.out.println("Seleccione un archivo para leer:");
 

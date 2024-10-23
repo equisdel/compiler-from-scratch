@@ -25,6 +25,10 @@ public class TablaDeSimbolos {
         symbols.put(lexema.toUpperCase(),new_entry);
     }
 
+    public void del_entry(String key){
+        symbols.remove(key);
+    }
+
     public Simbolo get_entry(String key) {
         Simbolo retorno = symbols.get(key);
         if (AnalizadorLexico.isdebug())System.out.println(retorno==null);

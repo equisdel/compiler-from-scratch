@@ -7,6 +7,7 @@ outf([impresion])
 sing1,sing2 := 1.2s+2 , 1.2s-2;
 uinteger fun testeveryverylarge(uinteger intval)
 begin
+    single saru;
     if (intval < 10 THEN
         goto SALTITO@;
     end_if;
@@ -16,6 +17,8 @@ typedef pair uinteger pairsito;
 typedef <uinteger> parsito2 ;
 
 typedef pair <uinteger> parsito3;
+
+parsito3 prueba;
 
 uinteger aux, aux2;
 aux := testeveryverylarge(5);

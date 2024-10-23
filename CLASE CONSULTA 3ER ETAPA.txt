@@ -1,0 +1,29 @@
+duda corcho:
+tipos embebidos (no nos toco)
+
+duda mia:
+
+¿ porqué chequeo de tipos de polaca se hace desp?
+porque si queres llevar los tipos meintras generas la polaca, debes ir pasando cosas por la gramatica, calculando los tipos..
+
+ej: expr -> expr + term (a+b  entonces a es factor, int. entonces debo pasar el tipo al lado izquierdo, y seguir asii..)
+y la generacion de la polaca es muy directa, no se pasa nada  la aizq de la regla.
+es mas conveniente hacer el chequeo cuando se lee la polaca, al generar assembler.
+NOSOTROS CON TERCETOS EL CHEQUEO LO HACEMOS PASANDO A LA IZQUIERDA? NO PORQ PASAMOS TERCETO ... entonces como?
+expr -> expr + term (puede q sean dos constantes o pued que no)
+{if (tiposComptbl($1,$3))} pero ahi se le pasa o un obj q podes acceder a la TS, o un terceto..
+y si es un terceto .. ? 
+
+duda laza: dif entre warning y error:
+warning: léxico dice 'id largo' y lo trunca. PORQUE LE AVISA AL PROGRAMADOR QUE MODIFICASTE ALGO.
+sintactico no nos poidieron q hagamos correccion de error (no hay warnings, solo errores)
+SI HAY ERRORES, SEGUIR GENERANDO CODIGO INTERMEDIO (AUNQ ESE CODIGO VA A ESTAR MAL)
+entonces cuando termina todo, si todo salio bien, genera codigo assembler. si hay errores, ahi no genera codigo assembler,y 
+da error (tendria q terminar ysaber si hubo errores, entonces llevar lista de errores).
+
+
+en el terceto debe estar la variable (lexema) con su ambito correspondiente.
+
+otra duda laza: las funciones pueden recibir parametro de un subitipo (ya lo contemplamos)
+
+creo entendi: pair pasarlo como dos elementos? no etendi.
