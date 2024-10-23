@@ -5,8 +5,8 @@ public class Simbolo {
 
     private String type;        // 'ID', 'CTE', 'CHARCH', 'IF', 'NEQ' ...
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
-    // scope, modificadores, punteros, etc.
-    private String usage;
+    private String usage; //nombre de variable, nombre de función, nombre de tipo, nombre de parámetro, etc..
+
 
     // Implementar getters y setters
     Simbolo(String type, String subtype) {

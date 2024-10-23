@@ -80,20 +80,19 @@ executable_statement_list
         ;
 
 declare_var
-        : var_type var_list ';' //agregar a cada variable (separada por ','') su tipo y scope
-        | var_type var_list error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia ");}
+        : var_type var_list ';' //agregar a cada variable (separada por ',') su tipo, scope,uso
+        | var_type var_list error {System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia ");
+                                // agregar a cada variable (separar por ',') su tipo,scope,uso
+                                }
         | var_type ID ';' {
-                if (!AnalizadorSemantico.validID($1.sval,$2.sval)) {System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado.
-                // si ya fue declarada , warning
-                // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
-                AnalizadorLexico.t_simbolos.del_entry($2.sval);
-                AnalizadorLexico.t_simbolos.add_entry($2.sval+":"+actualScope,"ID",$1.sval);
-                //debuging:
+                chkAndDeclareVar($1.sval, $2.sval);
+        }
+                /*//debuging:
                 System.out.println("Variable "+$2.sval+" de tipo "+$1.sval+" declarada en linea "+AnalizadorLexico.line_number+" en el scope "+actualScope);
-                }
+                }*/
         | var_type ID error {
                 System.out.println("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia o estas tratando de declarar varias variables sin ','");
+                chkAndDeclareVar($1.sval, $2.sval);
                 }
         ;
 
@@ -127,8 +126,10 @@ declare_pair
         : TYPEDEF PAIR '<' var_type '>' ID  {
                 // OJO ESTO ES UN TIPO, NO UN NOMBRE DE VARIABLE.. 
                 if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                
-                // cambiar el scope del tipo !???o asumir es globla, es decir en cualq parte del programa se podra definir una variable de este tipo.
+                //if (isRedeclared){error de redeclaracion?} si coincide el tipo con nombre de otra variable da error? o solo si coincide con otro tipo?
+                AnalizadorLexico.t_simbolos.add_entry($6.sval+":"+actualScope,"ID","pair");
+                AnalizadorLexico.t_simbolos.set_use($6.sval+":"+actualScope,"type_name");
+                // observar que el tipo definido por el usuario tambien tiene alcance.
         }
         | TYPEDEF '<' var_type '>' ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
         | TYPEDEF PAIR var_type ID {System.out.println("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
@@ -137,7 +138,6 @@ declare_pair
         /* por lo que entiendo, si pongo error, cualquier otra cosa (por lo q no coincide con otra) matchea */
         /* si no pusiera error y simplemente no pongo lo q puede faltar, es muy especifica la regla de error */
         /* PONER EL ';' AL FINAL QUITA AMBIGUEDADES */
-/* al definir un tipo pair, el tipo de variable es personalizado, como se chequea despues ese tipo? es semantica?*/
 
 
 var_list
@@ -383,4 +383,24 @@ goto_statement
                 } // else actualScope queda igual
         }
 
+        public boolean isRedeclared(String id, String tipo){
+                // chequea si ya fue declarada en el scope actual u otro anterior ( va pregutnando con cada scope, sacando el ultimo)
+                while (actualScope.lastIndexOf(":") != -1){
+                        if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {return true;}
+                        popScope();
+                }
+                return false;
+        }
+
+        public chkAndDeclareVar(String tipo, String id){
+                if (!AnalizadorSemantico.validID(tipo,id)) {System.out.println("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
+                // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado y es el actual.
+                if (isRedeclared(id,tipo)) {System.out.println("WARNING: La variable "+id+" ya fue declarada en el scope actual. ");}
+                else {
+                // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
+                AnalizadorLexico.t_simbolos.del_entry(id);
+                AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
+                AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
+                }
+        }
 
