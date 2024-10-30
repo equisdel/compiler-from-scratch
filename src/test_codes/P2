@@ -19,7 +19,7 @@ typedef <uinteger> parsito2 ;
 typedef pair <uinteger> parsito3;
 
 parsito3 prueba;
-
+single prueba;
 uinteger aux, aux2;
 aux := testeveryverylarge(5);
 SALTITO@

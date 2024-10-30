@@ -14,7 +14,7 @@ public class AnalizadorLexico {
 
 	// Variables relativas a la lectura
 	static BufferedReader program_file_reader;
-	static public int line_number = 0;
+	static public int line_number = 1;
 	static private ArrayList<String> lex_list = new ArrayList<>();
 
 	// Especificaciones del lenguaje
