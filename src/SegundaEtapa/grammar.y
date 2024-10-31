@@ -203,35 +203,41 @@ if_statement
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
         ;
 */
-: if_cond THEN ctrl_block_statement END_IF {}
-| IF cond ')' THEN ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
-| IF '(' cond ')' THEN ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
-| IF '(' cond ')' THEN END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
-| IF '(' cond ')' THEN error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
+: if_cond then_statement END_IF {}
+| if_cond then_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
+| if_cond then_statement END_IF 
 
+| if_cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
+| if_cond THEN ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
+| if_cond THEN ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
 
-| IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
-| IF '(' cond ')' THEN ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
-| IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
-| IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
-| IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
-| IF '(' cond ')' THEN error ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; }
-| IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este dentro de parentesis. ") ; }
-| IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
-| IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
-| IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+| if_cond THEN ctrl_block_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+| if_cond THEN ctrl_block_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
+| if_cond THEN error ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; } 
+| if_cond THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 ;
 
 if_cond
-        : IF '(' cond ')' //{$$.sval = Terceto.addTerceto("BF",$3,null)}
+        : IF '(' cond ')' {
+                $$.sval = Terceto.addTerceto("BF",$3,null)
+                Terceto.pushTerceto($$.sval) //apilo terceto incompleto.
+        } 
         | IF cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond {
                 yyerror("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
                 yyerror("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
-        | IF cond ')' 
-        |
-        |
-        |
+        | IF cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+        ;
+
+then_statement
+        : THEN ctrl_block_statement {
+                // completo el terceto
+                aux = Terceto.popTerceto();
+                Terceto.completeTerceto(aux,null,$$.sval);
+                $$ = Terceto.addTercetoT("BI",null,null,null); //incompleto, segundo componente se completara despues.
+        }
+        | THEN  /* va a dar shift reduce, probar THEN error */ {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
+        | THEN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
         ;
 
 ctrl_block_statement
@@ -247,11 +253,10 @@ cond
                 String id2;
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
-                $$.sval=Terceto.addTercetoT("*",id1,id2, t_subtype);
+                $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
                 // compatiblidades de comparacion??
         }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
-        /*| fun_invoc */
         ;
 
 cond_op
@@ -264,8 +269,17 @@ cond_op
         ;
 
 assign_statement
-        : ID ASSIGN expr {$$.sval = Terceto.addTerceto($2.sval,strToTID($1.sval),strToTID($3.sval));}
-        | expr_pair ASSIGN expr 
+        : ID ASSIGN expr {
+                //chequear id exista
+                // chequear tipos sean el mismo? o compatiblidad y conversion implcita
+                //crear terceto
+        }
+        | expr_pair ASSIGN expr {
+                //chequear id exista, sea tipo pair
+                // chequear tipos
+                //crear terceto
+                
+        }
         | var_type ID ASSIGN expr {yyerror("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
 
