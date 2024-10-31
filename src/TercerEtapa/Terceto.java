@@ -58,9 +58,4 @@ public class Terceto {
         if (op1 != null) {t.op1 = op1;}
         if (op2!= null) {t.op2 = op2;}
     }
-
-
-
-
-
 }

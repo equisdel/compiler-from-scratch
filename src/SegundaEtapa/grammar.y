@@ -203,18 +203,21 @@ if_statement
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
         ;
 */
-: if_cond then_statement END_IF {}
+: if_cond then_statement END_IF {
+        // si no hay else, hay un terceto de salto menos.
+        // entonces aca no se hace nada, que el programa siga.
+}
 | if_cond then_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 | if_cond then_statement END_IF 
 
-| if_cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
-| if_cond THEN ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
-| if_cond THEN ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
-
-| if_cond THEN ctrl_block_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
-| if_cond THEN ctrl_block_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
-| if_cond THEN error ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; } 
-| if_cond THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+| if_cond then_statement ELSE ctrl_block_statement END_IF{
+        // completo el terceto
+        Terceto.completeTerceto(Terceto.popTerceto(),$$.sval,null); // creo seria $$.sval+1
+}
+| if_cond then_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+| if_cond then_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
+| if_cond then_statement ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; } 
+| if_cond then_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 ;
 
 if_cond
@@ -232,9 +235,9 @@ if_cond
 then_statement
         : THEN ctrl_block_statement {
                 // completo el terceto
-                aux = Terceto.popTerceto();
-                Terceto.completeTerceto(aux,null,$$.sval);
-                $$ = Terceto.addTercetoT("BI",null,null,null); //incompleto, segundo componente se completara despues.
+                $$.sval = Terceto.addTercetoT("BI",null,null,null); //incompleto, segundo componente se completara despues.
+                Terceto.completeTerceto(Terceto.popTerceto(),null,$$.sval);//creo seria $$.sval + 1 (pasar a int y luego volver a string)
+                Terceto.pushTerceto($$.sval); 
         }
         | THEN  /* va a dar shift reduce, probar THEN error */ {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
         | THEN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
@@ -243,7 +246,6 @@ then_statement
 ctrl_block_statement
         : executable_statement_list
         ;
-        
 
 cond
         : expr cond_op expr {
