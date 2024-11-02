@@ -6,8 +6,6 @@
 
 %}
 
-
-/*Puntos flotantes: ¿están bajo el mismo token que las uinteger y las hexadecimales? ID es un token, CTE es otro*/
 %token ID CTE CHARCH NEQ LEQ MEQ ASSIGN TAG IF THEN ELSE BEGIN END END_IF OUTF TYPEDEF FUN RET UINTEGER SINGLE REPEAT UNTIL PAIR GOTO 
 
 
@@ -15,7 +13,10 @@
 
 %%
 
-prog    : ID BEGIN statement_list END
+prog    : ID BEGIN statement_list END {
+        //TODO: FIN DEL PROGRAMA, CHEQUEAR:
+        //TODO: - si hubo goto, chequear tag estaba y era alcanzada
+}
         | error BEGIN statement_list END {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta el nombre del programa en la primer linea. "); }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta del programa." ); } 
         | ID statement_list END {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta delimitador del programa 'BEGIN'. "); }
@@ -70,7 +71,9 @@ executable_statement
         | mult_assign_statement optional_semicolon{yyerror("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number);}
         /*| mult_assign_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; }*/
         | return_statement optional_semicolon {yyerror("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number);}
-        | TAG optional_not_semicolon/* asumimos esta sentencia no termina con ';' */ {yyerror("Sentencia de TAG");}
+        | TAG optional_not_semicolon/* asumimos esta sentencia no termina con ';' */ {yyerror("Sentencia de TAG");
+                //chequear no exista otro tag igual en todo el programa
+        }
         /*| error ';'*/
         ;
 
@@ -128,11 +131,11 @@ declare_pair
         : TYPEDEF PAIR '<' var_type '>' ID  {
                 // OJO ESTO ES UN TIPO, NO UN NOMBRE DE VARIABLE.. 
                 if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                //if (isRedeclared){error de redeclaracion?} si coincide el tipo con nombre de otra variable da error? o solo si coincide con otro tipo?
+                if (isDeclared){yyerror("Error: variable ya declarada, linea "+AnalizadorLexico.line_number);} 
                 AnalizadorLexico.t_simbolos.add_entry($6.sval+":"+actualScope,"ID","pair");
                 AnalizadorLexico.t_simbolos.set_use($6.sval+":"+actualScope,"type_name");
-                // falta agregar var_type
-                // observar que el tipo definido por el usuario tambien tiene alcance.
+
+
         }
         | TYPEDEF '<' var_type '>' ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
         | TYPEDEF PAIR var_type ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
@@ -174,7 +177,7 @@ fun_body
 var_type
         : UINTEGER
         | SINGLE
-        | ID /* en semantica se verifica que el tipo haya sido definido por el usuario */
+        /*| ID  -> NO SE PUEDE PAIR DE PAIR */
         ;
 
 
@@ -208,15 +211,13 @@ if_statement
         // entonces aca no se hace nada, que el programa siga.
 }
 | if_cond then_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
-| if_cond then_statement END_IF 
 
 | if_cond then_statement ELSE ctrl_block_statement END_IF{
         // completo el terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),$$.sval,null); // creo seria $$.sval+1
+        Terceto.completeTerceto(Terceto.popTerceto(),$4.sval,null); // creo seria $$.sval+1
 }
 | if_cond then_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
-| if_cond then_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
-| if_cond then_statement ELSE ctrl_block_statement END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; } 
+| if_cond then_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; } 
 | if_cond then_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 ;
 
@@ -227,10 +228,12 @@ if_cond
         } 
         | IF cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond {
-                yyerror("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
-                yyerror("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
+                yyerror("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion"); }
         | IF cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         ;
+
+/* LA ACCION DEL THEN ES DISTINTA SI HAY ELSE O SI NO HAY... */
+
 
 then_statement
         : THEN ctrl_block_statement {
@@ -239,7 +242,7 @@ then_statement
                 Terceto.completeTerceto(Terceto.popTerceto(),null,$$.sval);//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval); 
         }
-        | THEN  /* va a dar shift reduce, probar THEN error */ {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }
+        /*| THEN  {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }*/
         | THEN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
         ;
 
@@ -256,7 +259,7 @@ cond
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
                 $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
-                // compatiblidades de comparacion??
+                // compatiblidades de comparacion?? igual que en operaciones
         }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
         ;
@@ -273,9 +276,30 @@ cond_op
 assign_statement
         : ID ASSIGN expr {
                 //chequear id exista
-                // chequear tipos sean el mismo? o compatiblidad y conversion implcita
-                //crear terceto
-        }
+                if (!isDeclared($1.sval))
+                        {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+$1.sval+" no declarada. "); }
+                else {
+                        String subtypeT;
+                        String id;
+                        chkAndGetTerc($3,subtypeT,id);
+                        String subtypeID = AnalizadorLexico.t_simbolos.get_subtype($1.sval);
+                        if (subtypeT = subtypeID){
+                                Terceto.addTerceto(":=",$1.sval,$3.sval);
+                        }
+                        else if (subtypeID = "SINGLE" && subtypeT = "UINTEGER"){
+                                Terceto.addTercetoT("utos",$3.sval,null,"SINGLE");
+                                Terceto.addTerceto(":=",$1.sval,$3.sval);
+                        }
+                        else if (subtypeID = "UINTEGER" && subtypeT = "SINGLE"){
+                                Terceto.addTercetoT("utos",$3.sval,null,"SINGLE");
+                                Terceto.addTerceto(":=",$1.sval,$3.sval);
+                        }
+                        else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
+
+                        }
+                        
+                }
+             
         | expr_pair ASSIGN expr {
                 //chequear id exista, sea tipo pair
                 // chequear tipos
@@ -292,10 +316,15 @@ expr    : expr '+' term    {
                 String id2;
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
-                //deducir tipo de terceto resultante (es implicito, usar logica de AnalizadorSemantico)
-                if (isCompatible(t_subtype1,t_subtype2)){
-                        $$.sval= Terceto.addTercetoT("+",id1,id2, t_subtype);}
-                else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en multiplicacion. "); }
+                if (t_subtype1 = t_subtype2){
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("SUMA_S",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("SUMA_U",id1,id2, t_subtype);}
+                        else {yyerror("Tipo no valido..")}
+                } else if (isCompatible(t_subtype1,t_subtype2)){
+                        if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
+                        else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                        $$.sval= Terceto.addTercetoT("SUMA_S",id1,id2, t_subtype);}
+                else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en suma. "); }
 }
         | expr '-' term         {
                 String t_subtype1;
@@ -304,10 +333,16 @@ expr    : expr '+' term    {
                 String id2;
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
-                //deducir tipo de terceto resultante (es implicito, usar logica de AnalizadorSemantico)
-                if (isCompatible(t_subtype1,t_subtype2)){
-                        $$.sval= Terceto.addTercetoT("+",id1,id2, t_subtype);}
-                else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en multiplicacion. "); }}
+                if (t_subtype1 = t_subtype2){
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("RESTA_S",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("RESTA_U",id1,id2, t_subtype);}
+                        else {yyerror("Tipo no valido..")}
+                } else if (isCompatible(t_subtype1,t_subtype2)){
+                        if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
+                        else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                        $$.sval= Terceto.addTercetoT("RESTA_S",id1,id2, t_subtype);}
+                else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en resta. "); }
+        }
         | term 
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
         ;
@@ -320,11 +355,15 @@ term    : term '*' fact {
                 String id2;
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
-                //deducir tipo de terceto resultante (es implicito, usar logica de AnalizadorSemantico)
-                if (isCompatible(t_subtype1,t_subtype2)){
-                        $$.sval=Terceto.addTercetoT("*",id1,id2, t_subtype);}
+                if (t_subtype1 = t_subtype2){
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("MUL_S",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("MUL_U",id1,id2, t_subtype);}
+                        else {yyerror("Tipo no valido..")}
+                } else if (isCompatible(t_subtype1,t_subtype2)){
+                        if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
+                        else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                        $$.sval= Terceto.addTercetoT("MUL_S",id1,id2, t_subtype);}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en multiplicacion. "); }
-                
 }
         | term '/' fact {
                 String t_subtype1;
@@ -333,11 +372,16 @@ term    : term '*' fact {
                 String id2;
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
-                if (isCompatible(t_subtype1,t_subtype2)){
-                        // CONVERSION IMPLICTA DENTRO DE isCompatible
-                        $$.sval=Terceto.addTercetoT("*",id1,id2, t_subtype);}
-                else{yyerror("Error en linea "+ AnalizadorLexico.line_number+" :tipos incompatibles en division"); }
-                }
+                        if (t_subtype1 = t_subtype2){
+                                if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("DIV_S",id1,id2, t_subtype);}
+                                else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("DIV_U",id1,id2, t_subtype);}
+                                else {yyerror("Tipo no valido..")}
+                        } else if (isCompatible(t_subtype1,t_subtype2)){
+                                if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
+                                else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                                $$.sval= Terceto.addTercetoT("DIV_S",id1,id2, t_subtype);}
+                else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en division. "); }
+        }
         | fact 
         ;
 
@@ -354,10 +398,7 @@ fact    : ID
                 else {
                         $$.sval=Terceto.addTercetoT("-","0",strToTID($2.sval),AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
-        | fun_invoc     //como lleva el tipo esto?? en tabla de funcion guardar el tipo que devuelve.. capaz para toda tabla implementar interfaz comun..
-                        //pero igual hay q mandarlo a la tabla de funciones..
-                        // podria tomarse el tipo de la funcion aca, o en la regla fun_invoc, y directamente se usa el subtipo del terceto que llega a aca o a term(o expr)
-                        // en esta invocacion, guardar el terceto, el tipo de lo que se espera. (y chequear coincida el tipo del parametro esperado, el formal)
+        | fun_invoc     
         | expr_pair     //este tipo se saca de manera disitinta.. o no?
         | CHARCH
         ;
@@ -385,8 +426,6 @@ outf_statement
         | OUTF error {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
         ;
         /* en semantica: tipo de parametro incorrecto */
-
-
 
 repeat_statement
         : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
@@ -432,8 +471,20 @@ expr_list       /* solo se usa en asignacion multiple */
         /*| error {yyerror("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
         ;
 
+tag_statement
+        :TAG {
+                ponerle scope y chequear no este 'redeclarada'
+                si no está, agregar a tabla de etiquetas
+        }
+        ;
+
 goto_statement
-        : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */
+        : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */{
+                //if eiste en TS {
+
+                //}
+                //
+        }
         | GOTO error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
         ;
 /* ejemplo de un tag:     tagsito@ */
@@ -460,14 +511,14 @@ goto_statement
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
         }
 
-        public void chkAndGetTerc(ParseVal varParser, String t_subtype1, String id1){
+        public void chkAndGetTerc(ParseVal varParser, String t_subtype1, String id1){   //t_subtype1 y id1 vienen vacios, vuelven modificadosf
                 if isTerceto(varParser.sval) {
                         t_subtype1 = varParser.getSubtipo(varParser.sval);
                         id1 = varParser.sval;
                         }
                 else {
                         t_subtype1 = AnalizadorLexico.t_simbolos.get_subtype(varParser.sval);
-                        id1 = strToTID(varParser.sval);
+                        id1 = strToTID(varParser.sval); // para que ??
                         }
         }
 
@@ -485,11 +536,11 @@ goto_statement
                 } // else actualScope queda igual
         }
 
-        public boolean isRedeclared(String id, String tipo){
+        public boolean isDeclared(String id){
                 // chequea si ya fue declarada en el scope actual u otro anterior ( va pregutnando con cada scope, sacando el ultimo)
                 String scopeaux = actualScope;
                 while (actualScope.lastIndexOf(":") != -1){
-                        if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {
+                        if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {       
                                 actualScope = scopeaux;
                                 return true;}
                         popScope();
@@ -498,18 +549,31 @@ goto_statement
                 return false;
         }
 
+        public Boolean chkVar(String tipo, String id){
+                if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
+                else if (isDeclared(id)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
+                else { AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
+                        AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
+                        return true;
+                        
+                }
+
         public chkAndDeclareVar(String tipo, String id){
                 if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado y es el actual.
-                if (isRedeclared(id,tipo)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
+                if (isDeclared(id)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
                 else {
                 // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
                 AnalizadorLexico.t_simbolos.del_entry(id);      //no tiene sentido borrarlo, porque seguro despues vuelva a estar..
                 // ej: declaracion de una variable 'var1': el lexico agrega var1 a la tabla de simbolos. luego el sintactico la agrega con su tipo y scope.
                 // pero al usarse, ej: var1 := 10;  el lexico agrega var1 a la TS (porque no esta.. esta var1:main) y ahi queda esa suelta 
                 // para mi no está mal, lo piden en tp1, pero si va a quedar no tiene sentido borrarla cuando se declara.
+                //solucion: en accion semantica chequear (agregnado el socpe actual) si ya esta o no (isDeclared) 
                 AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
                 AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
                 }
         }
 
+        public bool isCompatible(String t_subtype1,String t_subtype2){
+                return AnalizadorSemantico.isCompatible(t_subtype1,t_subtype2)
+        }

@@ -10,6 +10,7 @@ public class AnalizadorSemantico {
             "hexa", 2
     );
 
+    private static TablaPair tabla = new TablaPair();
 
     public static boolean validID(String type, String ID) {
         String inicial = ID.substring(0,0);
@@ -29,24 +30,23 @@ public class AnalizadorSemantico {
         return tipos.getOrDefault(key, -1);
     }
 
-    String[][] tablaCompatibilidadTipos = {                 // Válido para las operaciones aritméticas
-            {"-",            "single",       "-"     },
-            {"uinteger",     "-",            "uinteger" },
-            {"uinteger",     "uinteger",     "-"        },
-            // Hexa + Single = se pasan ambas a uinteger
-    };
+    // String[][] tablaCompatibilidadTipos = {                 // Válido para las operaciones aritméticas
+    //         {"-",            "single",       "-"     },
+    //         {"uinteger",     "-",            "uinteger" },
+    //         {"uinteger",     "uinteger",     "-"        },
+    //         // Hexa + Single = se pasan ambas a uinteger
+    // };
 
-    public String getCompatibilidad(String tipo1, String tipo2) {   
-        // AGREGAR LOGICA DE CONVERSION IMPLICITA SI SON COMPATIBLESSS
-        int i = getTipo(tipo1);
-        int j = getTipo(tipo2);
-        if (i == -1 || j == -1) return null;
-        return tablaCompatibilidadTipos[i][j];
-    }
+    // public String getCompatibilidad(String tipo1, String tipo2) {
+    //     int i = getTipo(tipo1);
+    //     int j = getTipo(tipo2);
+    //     if (i == -1 || j == -1) return null;
+    //     return tablaCompatibilidadTipos[i][j];
+    // }
 
-    public Boolean isCompatible(String tipo1, String tipo2) {
-        return getCompatibilidad(tipo1, tipo2) != null;
-    }
+    // public Boolean isCompatible(String tipo1, String tipo2) {
+    //     return getCompatibilidad(tipo1, tipo2) != null;
+    // }
 
     public static void main(String[] args) {
         

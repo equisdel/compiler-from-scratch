@@ -6,6 +6,7 @@ public class Simbolo {
     private String type;        // 'ID', 'CTE', 'CHARCH', 'IF', 'NEQ' ...
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
     private String usage; //nombre de variable, nombre de función, nombre de tipo, nombre de parámetro, etc..
+    private String value;
 
 
     // Implementar getters y setters
@@ -32,6 +33,10 @@ public class Simbolo {
         this.usage = uso;
     }
     
+    public void setValue(String valor){
+        this.value = valor;
+    }
+
     public void display() {
         System.out.println("Tipo: "+this.type+"; Subtipo: "+this.subtype+";");
     }
