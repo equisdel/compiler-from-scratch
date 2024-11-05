@@ -103,28 +103,48 @@ declare_var
 
 declare_fun
         : declare_fun_header fun_body END {
-                popScope();
-        }
+                // Actualización del scope: fin de la función fuerza retorno al ámbito del padre
+                        popScope();
+                }
         ;
 
 /* necesario para poder apilar y desapilar ambito */
 declare_fun_header
+
         : var_type FUN ID '(' parametro ')' BEGIN {
-                if (!AnalizadorSemantico.validID($1.sval,$3.sval)) {
-                        yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                // guardar el scope de la funcion, en la tabla
-                pushScope($3.sval); 
-        }
+
+                // Control de ID: debe ser único en el scope actual
+                        if (isDeclared())                                       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
+                        else { // ¿La compilación debería seguir? ¿Cómo? }
+
+                // Control de ID: se verifica la primera letra del nombre (algunas iniciales son reservadas)
+                        if (!AnalizadorSemantico.validID($1.sval,$3.sval))      yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
+                        else { // ¿La compilación debería seguir? ¿Cómo? }
+
+                // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
+                        AnalizadorLexico.t_simbolos.del_entry(id);
+                        AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",$5.sval,"fun_name",$1);
+                        AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
+
+                // Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función
+                        pushScope($3.sval); 
+
+                // Posible generación de terceto de tipo LABEL
+                        // $$.sval = Terceto.addTercetoT("LABEL",ID,null);
+
+                }
+
         | var_type FUN error '(' parametro ')' BEGIN {
-                yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ;}
+                yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ;
+                }
+
         | var_type FUN ID '(' error ')' BEGIN {
                 // guardar el scope de la funcion
                 pushScope($3.sval); 
                 yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto. Verifica solo haya 1 parametro ");
-                if (!AnalizadorSemantico.validID($1.sval,$3.sval)){
+                if (!AnalizadorSemantico.validID($1.sval,$3.sval))
                         yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
                 }
-        }
         ;
 
 declare_pair
@@ -155,7 +175,7 @@ var_list        /* solo se usa en declaracion multiple. */
 /* puede reducirse solo despues que aparezcla var_type */
 
 parametro
-        : var_type ID
+        : var_type ID {$$ = $1}
         | ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba tipo del parametro de la funcion. "); }
         | var_type error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de parametro"); }
         ;
@@ -177,7 +197,7 @@ fun_body
 var_type
         : UINTEGER
         | SINGLE
-        /*| ID  -> NO SE PUEDE PAIR DE PAIR */
+        | ID
         ;
 
 
@@ -279,6 +299,7 @@ assign_statement
                 if (!isDeclared($1.sval))
                         {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+$1.sval+" no declarada. "); }
                 else {
+
                         String subtypeT;
                         String id;
                         chkAndGetTerc($3,subtypeT,id);
@@ -521,9 +542,11 @@ goto_statement
                         id1 = strToTID(varParser.sval); // para que ??
                         }
         }
-
-
         
+        public void set_var_scope() {
+
+        }
+
         public void pushScope(String scope){
                 actualScope = actualScope + ":" + scope;
         }
@@ -559,8 +582,10 @@ goto_statement
                 }
 
         public chkAndDeclareVar(String tipo, String id){
+                
                 if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado y es el actual.
+                
                 if (isDeclared(id)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
                 else {
                 // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
