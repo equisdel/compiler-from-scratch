@@ -55,7 +55,15 @@ public class Terceto {
     //completar terceto
     static public void completeTerceto(int id, String op1, String op2){
         Terceto t = TerList.get(id);
-        if (op1 != null) {t.op1 = op1;}
-        if (op2!= null) {t.op2 = op2;}
+        if (op1 != null) {
+            if (t.op1 != null){    
+            t.op1 = op1;
+            } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
+        }
+        if (op2!= null) {
+            if (t.op2 != null){
+            t.op2 = op2;
+        } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
+        }
     }
 }

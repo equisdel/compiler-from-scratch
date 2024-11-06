@@ -122,12 +122,17 @@ declare_fun_header
                         else { // ¿La compilación debería seguir? ¿Cómo? }
 
                 // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
-                        AnalizadorLexico.t_simbolos.del_entry(id);
-                        AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",$5.sval,"fun_name",$1);
-                        AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
+                        AnalizadorLexico.t_simbolos.del_entry($3.sval);
+                        AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$5.sval,"fun_name",$1);
+                        AnalizadorLexico.t_simbolos.set_use($3.sval+":"+actualScope,"variable_name");
 
                 // Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función
                         pushScope($3.sval); 
+                        
+                // Actualización del ID del parámetro: se actualiza el scope al actual
+                        AnalizadorLexico.t_simbolos.del_entry($5.sval);
+                        AnalizadorLexico.t_simbolos.add_entry($5.sval+":"+actualScope,"ID",$5.sval,"fun_name",$1);
+                        AnalizadorLexico.t_simbolos.set_use($5.sval+":"+actualScope,"variable_name");
 
                 // Posible generación de terceto de tipo LABEL
                         // $$.sval = Terceto.addTercetoT("LABEL",ID,null);
@@ -175,7 +180,7 @@ var_list        /* solo se usa en declaracion multiple. */
 /* puede reducirse solo despues que aparezcla var_type */
 
 parametro
-        : var_type ID {$$ = $1}
+        : var_type ID {$$.sval = $1.sval+"-"+$2.sval}
         | ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba tipo del parametro de la funcion. "); }
         | var_type error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de parametro"); }
         ;
@@ -228,22 +233,23 @@ if_statement
 */
 : if_cond then_statement END_IF {
         // si no hay else, hay un terceto de salto menos.
-        // entonces aca no se hace nada, que el programa siga.
+        // aca completo el terceto (por si la condicion no se  cumple)
+
 }
 | if_cond then_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 
-| if_cond then_statement ELSE ctrl_block_statement END_IF{
-        // completo el terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),$4.sval,null); // creo seria $$.sval+1
+| if_cond then_statement_else ctrl_block_statement END_IF{
+        // completo el terceto q iba 
+        Terceto.completeTerceto(Terceto.popTerceto(), Integer.toString(Integer.parseInt($4.sval) + 1), null);
 }
-| if_cond then_statement ELSE END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
-| if_cond then_statement ELSE error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; } 
-| if_cond then_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+| if_cond then_statement_else END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
+| if_cond then_statement_else error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; } 
+| if_cond then_statement_else ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 ;
 
 if_cond
         : IF '(' cond ')' {
-                $$.sval = Terceto.addTerceto("BF",$3,null)
+                $$.sval = Terceto.addTerceto("BF",$3,null)      //$3 devuelve si se cumple o no la cond
                 Terceto.pushTerceto($$.sval) //apilo terceto incompleto.
         } 
         | IF cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
@@ -257,14 +263,16 @@ if_cond
 
 then_statement
         : THEN ctrl_block_statement {
-                // completo el terceto
-                $$.sval = Terceto.addTercetoT("BI",null,null,null); //incompleto, segundo componente se completara despues.
-                Terceto.completeTerceto(Terceto.popTerceto(),null,$$.sval);//creo seria $$.sval + 1 (pasar a int y luego volver a string)
+                $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, segundo componente se completara despues. SI NO ELSE NOO
+                Terceto.completeTerceto(Terceto.popTerceto(),null,Integer.toString(Integer.parseInt($$.sval) + 1));//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval); 
         }
         /*| THEN  {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }*/
         | THEN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
         ;
+
+then_statement_else
+        : THEN ctrl_block_statement ELSE        /* va a dar shift reduce */
 
 ctrl_block_statement
         : executable_statement_list
@@ -387,7 +395,7 @@ term    : term '*' fact {
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en multiplicacion. "); }
 }
         | term '/' fact {
-                String t_subtype1;
+                String t_subtype1;      //probar si anda, en varias reglas declaro estos Strings preo creo dara error de redeclaracion
                 String id1;
                 String t_subtype2;
                 String id2;
@@ -412,12 +420,12 @@ fact    : ID
         | '-' CTE  { 
                 if (AnalizadorLexico.t_simbolos.get_subtype($2.sval) != "SINGLE") {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
                 else {
-                        $$.sval=Terceto.addTercetoT("-","0",strToTID($2.sval),AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
+                        $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
         | '-' ID {
                 if (AnalizadorLexico.t_simbolos.get_subtype($2.sval) != "SINGLE") {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
                 else {
-                        $$.sval=Terceto.addTercetoT("-","0",strToTID($2.sval),AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
+                        $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
         | fun_invoc     
         | expr_pair     //este tipo se saca de manera disitinta.. o no?
@@ -425,7 +433,7 @@ fact    : ID
         ;
 
 expr_pair
-        : ID '{' CTE '}' /* en semantica: •Verificar CTE es 1 o 2     • control de tipo de ID */{
+        : ID '{' CTE '}' /* en semantica:     • control de tipo de ID */{
                 if (AnalizadorLexico.t_simbolos.get_subtype($1.sval) != "PAIR") {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
                 else {
                         if ($3.sval == "1" || $3.sval == "2") {
@@ -442,7 +450,7 @@ fun_invoc
         ;
 
 outf_statement
-        : OUTF '(' expr ')'     // terceto mostrar?
+        : OUTF '(' expr ')'     $$ = Terceto.addTerceto("OUTF", $3.sval, null)  // no hace falta asiganr algo a $$ pero addTerceto devuelve un string
         | OUTF '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
         | OUTF error {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
         ;
@@ -464,47 +472,61 @@ repeat_statement
         ;
 
 mult_assign_statement
-        : id_list ASSIGN expr_list /* chequear cantidades, tipos, crear tercetos */
+        : id_list ASSIGN expr_list /* chequear cantidades, tipos, crear tercetos */{
+                if (cantE != cantID) {yyerror("Error en linea "+AnalizadorLexico.line_number+": cantidad de expresiones no coincide con cantidad de variables. "); }
+                else { // opcion1: recorrer y separar por ',' opcion2: ir l
+
+                }
+                cantE = 0;
+                cantID = 0;
+        }
         | id_list ASSIGN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
         /*si hay mas de 1 id a la izq y solo 1 expr a la der asumimos esta mal..?? ver enunciado*/
         ;
 
 id_list
-        : elem_list ',' elem_list
-        | id_list ',' elem_list
+        : elem_list ',' elem_list {
+                
+                cantID = cantID + 2;
+
+        }
+        | id_list ',' elem_list{
+                cantID = cantID + 1;
+        }
         ;
 
 elem_list
         : ID
         | expr_pair
         ;
-
 /*
 a, pint(2) := 124,20;
-
 a,b,c := 1,2,3;
 */
-
 expr_list       /* solo se usa en asignacion multiple */
-        : expr ',' expr
+        : expr ',' expr{
+                cantE = cantE + 2;
+        }
         /* | expr expr {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba una ',' entre las expresiones en ; }  */
-        | expr_list ',' expr
+        | expr_list ',' expr{
+                cantE = cantE + 1;
+                
+        }
         /*| error {yyerror("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
         ;
 
 tag_statement
         :TAG {
-                ponerle scope y chequear no este 'redeclarada'
-                si no está, agregar a tabla de etiquetas
+                //ponerle scope y chequear no este 'redeclarada'
+                //si no está, agregar a tabla de etiquetas
         }
         ;
 
 goto_statement
         : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */{
-                //if eiste en TS {
+                //if existe en TS {
 
                 //}
-                //
         }
         | GOTO error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
         ;
@@ -512,7 +534,10 @@ goto_statement
 
 %%
         public ArrayList<String> errores = new ArrayList<String>();
-        private String actualScope = "main";
+        public String actualScope = "main";
+        private int CantE = 0;
+        private int CantID = 0;
+
 
 	public static void yyerror(String msg){
                 errores.add(msg);
@@ -524,9 +549,9 @@ goto_statement
                 return AnalizadorLexico.yylex(yylval);
         }
 
-        public String strToTID(String id){      // agrega "<" ">" para indicar es id de terceto, y no clave de TS
+        /*public String strToTID(String id){      // agrega "<" ">" para indicar es id de terceto, y no clave de TS
                 return ("<"+id+">");
-        }
+        }*/
 
         public Boolean isTerceto(String id){
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
@@ -580,6 +605,7 @@ goto_statement
                         return true;
                         
                 }
+        }
 
         public chkAndDeclareVar(String tipo, String id){
                 
