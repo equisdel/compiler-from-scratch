@@ -3,10 +3,12 @@ import java.util.*;
 
 public class Terceto {
 
+    Boolean debug = true;
     String operacion;
     String op1;
     String op2;
     public String subtipo = null;
+
 
     static ArrayList<Terceto> TerList = new ArrayList<>();
 
@@ -30,11 +32,13 @@ public class Terceto {
     static public String addTerceto(String operacion, String op1,String op2){
         Terceto t = new Terceto(operacion,op1,op2);
         Terceto.TerList.add(t);
+        if (debug) {System.out.println("Terceto agregado: "+ (TerList.size()-1) +" ("+ t.operacion + "," + t.op1 + "," + t.op2+")");}
         return ("["+ (TerList.size()-1) +"]"); // DEVUELVE NUMERO DE TERCETO (ID)
     }
     static public String addTercetoT(String operacion, String op1, String op2, String subtipo){
         Terceto t = new Terceto(operacion,op1,op2,subtipo);
         Terceto.TerList.add(t);
+        if (debug) {System.out.println("Terceto agregado: "+ (TerList.size()-1) +" ("+ t.operacion + "," + t.op1 + "," + t.op2+")");}
         return ("["+ (TerList.size()-1) +"]"); // DEVUELVE NUMERO DE TERCETO (ID)
     }
     // tal vez es mejor hacer clase TerList, que tenga un arraylist de tercetos, y metodos para agregar tercetos, y para obtener tercetos por id
@@ -65,5 +69,10 @@ public class Terceto {
             t.op2 = op2;
         } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
         }
+        if (debug){System.out.println("Terceto completado: "+ id);}
     }
+
+    static public int getTercetoCount(){
+        return TerList.size();
+        
 }

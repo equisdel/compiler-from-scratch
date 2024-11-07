@@ -71,7 +71,7 @@ executable_statement
         | mult_assign_statement optional_semicolon{yyerror("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number);}
         /*| mult_assign_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' en ; }*/
         | return_statement optional_semicolon {yyerror("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number);}
-        | TAG optional_not_semicolon/* asumimos esta sentencia no termina con ';' */ {yyerror("Sentencia de TAG");
+        | tag_statement optional_not_semicolon/* asumimos esta sentencia no termina con ';' */ {yyerror("Sentencia de TAG");
                 //chequear no exista otro tag igual en todo el programa
         }
         /*| error ';'*/
@@ -115,11 +115,11 @@ declare_fun_header
 
                 // Control de ID: debe ser único en el scope actual
                         if (isDeclared())                                       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
-                        else { // ¿La compilación debería seguir? ¿Cómo? }
+                        else { }// ¿La compilación debería seguir? ¿Cómo? 
 
                 // Control de ID: se verifica la primera letra del nombre (algunas iniciales son reservadas)
                         if (!AnalizadorSemantico.validID($1.sval,$3.sval))      yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
-                        else { // ¿La compilación debería seguir? ¿Cómo? }
+                        else {} // ¿La compilación debería seguir? ¿Cómo? 
 
                 // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
                         AnalizadorLexico.t_simbolos.del_entry($3.sval);
@@ -478,25 +478,53 @@ fun_invoc
         ;
 
 outf_statement
-        : OUTF '(' expr ')'     $$ = Terceto.addTerceto("OUTF", $3.sval, null)  // no hace falta asiganr algo a $$ pero addTerceto devuelve un string
+        : OUTF '(' expr ')'     {$$.sval = Terceto.addTerceto("OUTF", $3.sval, null)} 
         | OUTF '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
         | OUTF error {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
         ;
         /* en semantica: tipo de parametro incorrecto */
 
-repeat_statement
-        : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
-        | REPEAT BEGIN executable_statement_list END UNTIL cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
-        | REPEAT BEGIN executable_statement_list END UNTIL '(' cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
-        | REPEAT BEGIN executable_statement_list END UNTIL cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+//tercetos repeat:
+//REPEAT BEGIN
+// a := b + c
+//.. (sentencias)
+// END UNTIL (a < c*5)
 
-        | REPEAT BEGIN END UNTIL '(' cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
-        | REPEAT BEGIN END UNTIL cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
-        | REPEAT BEGIN END UNTIL '(' cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
-        | REPEAT BEGIN END UNTIL cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
-        | REPEAT BEGIN executable_statement_list END '(' cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
-        | REPEAT BEGIN executable_statement_list END UNTIL '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
+//Since the condition is evaluated at the end of each iteration,
+//a repeat/until loop will always be executed at least once, even if the condition is already true when execution arrives at the loop.
+/*
+5: (+,a,b)
+6: (:=,a,[5])
+..
+8: (*,c,5)
+9: (<, a, [8])
+10: (BF, [9], [5])              si NO se cumple la condicion, salta a la sentencia 5 (igual que el BF del if)
+*/
+repeat_statement
+        : repeat_statement executable_statement_list END UNTIL '(' cond ')'{
+                $$.sval = Terceto.addTerceto("BF",$6.sval,$1.sval);
+                // si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());
+        }
+        | repeat_statement executable_statement_list END UNTIL cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
+        | repeat_statement executable_statement_list END UNTIL '(' cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
+        | repeat_statement executable_statement_list END UNTIL cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
+
+        | repeat_statement END UNTIL '(' cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
+        | repeat_statement END UNTIL cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
+        | repeat_statement END UNTIL '(' cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
+        | repeat_statement END UNTIL cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
+        | repeat_statement executable_statement_list END '(' cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
+        | repeat_statement executable_statement_list END UNTIL '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
         /*| REPEAT BEGIN executable_statement_list END UNTIL error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL");} */
+        ;
+
+repeat_begin
+        : REPEAT BEGIN {
+                // opcion 1: pila:
+                //UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)
+                // opcion 2:
+                $$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
+        }
         ;
 
 mult_assign_statement
@@ -565,6 +593,7 @@ goto_statement
         public String actualScope = "main";
         private int CantE = 0;
         private int CantID = 0;
+        static Stack<Integer> UntilStack = new Stack<>();
 
 
 	public static void yyerror(String msg){
@@ -577,9 +606,9 @@ goto_statement
                 return AnalizadorLexico.yylex(yylval);
         }
 
-        /*public String strToTID(String id){      // agrega "<" ">" para indicar es id de terceto, y no clave de TS
+        public String strToTID(String id){      // agrega "<" ">" para indicar es id de terceto, y no clave de TS
                 return ("<"+id+">");
-        }*/
+        }
 
         public Boolean isTerceto(String id){
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
@@ -592,7 +621,7 @@ goto_statement
                         }
                 else {
                         t_subtype1 = AnalizadorLexico.t_simbolos.get_subtype(varParser.sval);
-                        id1 = strToTID(varParser.sval); // para que ??
+                        id1 = varParser.sval;
                         }
         }
         

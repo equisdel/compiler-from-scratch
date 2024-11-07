@@ -30,7 +30,7 @@
   23                       | goto_statement optional_semicolon
   24                       | mult_assign_statement optional_semicolon
   25                       | return_statement optional_semicolon
-  26                       | TAG optional_not_semicolon
+  26                       | tag_statement optional_not_semicolon
 
   27  executable_statement_list : executable_statement
   28                            | executable_statement_list executable_statement
@@ -69,86 +69,92 @@
 
   52  if_statement : if_cond then_statement END_IF
   53               | if_cond then_statement error
-  54               | if_cond then_statement ELSE ctrl_block_statement END_IF
-  55               | if_cond then_statement ELSE END_IF
-  56               | if_cond then_statement ELSE error END_IF
-  57               | if_cond then_statement ELSE ctrl_block_statement error
+  54               | if_cond then_statement else_statement
 
-  58  if_cond : IF '(' cond ')'
-  59          | IF cond
-  60          | IF '(' cond
-  61          | IF cond ')'
+  55  if_cond : IF '(' cond ')'
+  56          | IF cond
+  57          | IF '(' cond
+  58          | IF cond ')'
 
-  62  then_statement : THEN ctrl_block_statement
-  63                 | THEN error
+  59  then_statement : THEN ctrl_block_statement
+  60                 | THEN error
 
-  64  ctrl_block_statement : executable_statement_list
+  61  else_statement : else_tk ctrl_block_statement END_IF
+  62                 | else_tk END_IF
+  63                 | else_tk error END_IF
+  64                 | else_tk ctrl_block_statement error
 
-  65  cond : expr cond_op expr
-  66       | error
+  65  else_tk : ELSE
 
-  67  cond_op : '<'
-  68          | '>'
-  69          | '='
-  70          | NEQ
-  71          | LEQ
-  72          | MEQ
+  66  ctrl_block_statement : executable_statement_list
 
-  73  assign_statement : ID ASSIGN expr
-  74                   | expr_pair ASSIGN expr
-  75                   | var_type ID ASSIGN expr
+  67  cond : expr cond_op expr
+  68       | error
 
-  76  expr : expr '+' term
-  77       | expr '-' term
-  78       | term
-  79       | error
+  69  cond_op : '<'
+  70          | '>'
+  71          | '='
+  72          | NEQ
+  73          | LEQ
+  74          | MEQ
 
-  80  term : term '*' fact
-  81       | term '/' fact
-  82       | fact
+  75  assign_statement : ID ASSIGN expr
+  76                   | expr_pair ASSIGN expr
+  77                   | var_type ID ASSIGN expr
 
-  83  fact : ID
-  84       | CTE
-  85       | '-' CTE
-  86       | '-' ID
-  87       | fun_invoc
-  88       | expr_pair
-  89       | CHARCH
+  78  expr : expr '+' term
+  79       | expr '-' term
+  80       | term
+  81       | error
 
-  90  expr_pair : ID '{' CTE '}'
+  82  term : term '*' fact
+  83       | term '/' fact
+  84       | fact
 
-  91  fun_invoc : ID '(' expr ')'
-  92            | ID '(' expr error ')'
+  85  fact : ID
+  86       | CTE
+  87       | '-' CTE
+  88       | '-' ID
+  89       | fun_invoc
+  90       | expr_pair
+  91       | CHARCH
 
-  93  outf_statement : OUTF '(' expr ')'
-  94                 | OUTF '(' ')'
-  95                 | OUTF error
+  92  expr_pair : ID '{' CTE '}'
 
-  96  repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
-  97                   | REPEAT BEGIN executable_statement_list END UNTIL cond
-  98                   | REPEAT BEGIN executable_statement_list END UNTIL '(' cond
-  99                   | REPEAT BEGIN executable_statement_list END UNTIL cond ')'
- 100                   | REPEAT BEGIN END UNTIL '(' cond ')'
- 101                   | REPEAT BEGIN END UNTIL cond
- 102                   | REPEAT BEGIN END UNTIL '(' cond
- 103                   | REPEAT BEGIN END UNTIL cond ')'
- 104                   | REPEAT BEGIN executable_statement_list END '(' cond ')'
- 105                   | REPEAT BEGIN executable_statement_list END UNTIL '(' ')'
+  93  fun_invoc : ID '(' expr ')'
+  94            | ID '(' expr error ')'
 
- 106  mult_assign_statement : id_list ASSIGN expr_list
- 107                        | id_list ASSIGN error
+  95  outf_statement : OUTF '(' expr ')'
+  96                 | OUTF '(' ')'
+  97                 | OUTF error
 
- 108  id_list : elem_list ',' elem_list
- 109          | id_list ',' elem_list
+  98  repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')'
+  99                   | REPEAT BEGIN executable_statement_list END UNTIL cond
+ 100                   | REPEAT BEGIN executable_statement_list END UNTIL '(' cond
+ 101                   | REPEAT BEGIN executable_statement_list END UNTIL cond ')'
+ 102                   | REPEAT BEGIN END UNTIL '(' cond ')'
+ 103                   | REPEAT BEGIN END UNTIL cond
+ 104                   | REPEAT BEGIN END UNTIL '(' cond
+ 105                   | REPEAT BEGIN END UNTIL cond ')'
+ 106                   | REPEAT BEGIN executable_statement_list END '(' cond ')'
+ 107                   | REPEAT BEGIN executable_statement_list END UNTIL '(' ')'
 
- 110  elem_list : ID
- 111            | expr_pair
+ 108  mult_assign_statement : id_list ASSIGN expr_list
+ 109                        | id_list ASSIGN error
 
- 112  expr_list : expr ',' expr
- 113            | expr_list ',' expr
+ 110  id_list : elem_list ',' elem_list
+ 111          | id_list ',' elem_list
 
- 114  goto_statement : GOTO TAG
- 115                 | GOTO error
+ 112  elem_list : ID
+ 113            | expr_pair
+
+ 114  expr_list : expr ',' expr
+ 115            | expr_list ',' expr
+
+ 116  tag_statement : TAG
+
+ 117  goto_statement : GOTO TAG
+ 118                 | GOTO error
 
 state 0
 	$accept : . prog $end  (0)
@@ -202,12 +208,13 @@ state 2
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
 state 3
@@ -232,7 +239,7 @@ state 4
 	GOTO  shift 16
 	.  error
 
-	statement_list  goto 36
+	statement_list  goto 37
 	statement  goto 18
 	executable_statement  goto 19
 	declare_pair  goto 20
@@ -245,78 +252,61 @@ state 4
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
 state 5
 	statement : error . ';'  (14)
 
-	';'  shift 37
+	';'  shift 38
 	.  error
 
 
 state 6
 	var_type : ID .  (51)
-	assign_statement : ID . ASSIGN expr  (73)
-	expr_pair : ID . '{' CTE '}'  (90)
-	elem_list : ID .  (110)
+	assign_statement : ID . ASSIGN expr  (75)
+	expr_pair : ID . '{' CTE '}'  (92)
+	elem_list : ID .  (112)
 
-	ASSIGN  shift 38
-	'{'  shift 39
+	ASSIGN  shift 39
+	'{'  shift 40
 	ID  reduce 51
 	FUN  reduce 51
-	','  reduce 110
+	','  reduce 112
 
 
 state 7
-	executable_statement : TAG . optional_not_semicolon  (26)
-	optional_not_semicolon : .  (18)
+	tag_statement : TAG .  (116)
 
-	';'  shift 40
-	$end  reduce 18
-	error  reduce 18
-	ID  reduce 18
-	TAG  reduce 18
-	IF  reduce 18
-	ELSE  reduce 18
-	END  reduce 18
-	END_IF  reduce 18
-	OUTF  reduce 18
-	TYPEDEF  reduce 18
-	RET  reduce 18
-	UINTEGER  reduce 18
-	SINGLE  reduce 18
-	REPEAT  reduce 18
-	GOTO  reduce 18
-
-	optional_not_semicolon  goto 41
+	.  reduce 116
 
 
 state 8
-	if_cond : IF . '(' cond ')'  (58)
-	if_cond : IF . cond  (59)
-	if_cond : IF . '(' cond  (60)
-	if_cond : IF . cond ')'  (61)
+	if_cond : IF . '(' cond ')'  (55)
+	if_cond : IF . cond  (56)
+	if_cond : IF . '(' cond  (57)
+	if_cond : IF . cond ')'  (58)
 
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'('  shift 46
-	'-'  shift 47
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'('  shift 45
+	'-'  shift 46
 	.  error
 
-	expr  goto 48
-	cond  goto 49
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
+	expr  goto 47
+	cond  goto 48
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 9
@@ -336,7 +326,7 @@ state 9
 	GOTO  shift 16
 	.  error
 
-	statement_list  goto 54
+	statement_list  goto 53
 	statement  goto 18
 	executable_statement  goto 19
 	declare_pair  goto 20
@@ -349,21 +339,22 @@ state 9
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
 state 10
-	outf_statement : OUTF . '(' expr ')'  (93)
-	outf_statement : OUTF . '(' ')'  (94)
-	outf_statement : OUTF . error  (95)
+	outf_statement : OUTF . '(' expr ')'  (95)
+	outf_statement : OUTF . '(' ')'  (96)
+	outf_statement : OUTF . error  (97)
 
-	error  shift 55
-	'('  shift 56
+	error  shift 54
+	'('  shift 55
 	.  error
 
 
@@ -373,8 +364,8 @@ state 11
 	declare_pair : TYPEDEF . PAIR var_type ID  (39)
 	declare_pair : TYPEDEF . PAIR '<' var_type '>' error  (40)
 
-	PAIR  shift 57
-	'<'  shift 58
+	PAIR  shift 56
+	'<'  shift 57
 	.  error
 
 
@@ -382,19 +373,19 @@ state 12
 	return_statement : RET . '(' expr ')'  (46)
 	return_statement : RET . expr  (47)
 
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'('  shift 60
-	'-'  shift 47
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'('  shift 59
+	'-'  shift 46
 	.  error
 
-	expr  goto 61
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
+	expr  goto 60
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 13
@@ -410,27 +401,27 @@ state 14
 
 
 state 15
-	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' cond ')'  (96)
-	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL cond  (97)
-	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' cond  (98)
-	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL cond ')'  (99)
-	repeat_statement : REPEAT . BEGIN END UNTIL '(' cond ')'  (100)
-	repeat_statement : REPEAT . BEGIN END UNTIL cond  (101)
-	repeat_statement : REPEAT . BEGIN END UNTIL '(' cond  (102)
-	repeat_statement : REPEAT . BEGIN END UNTIL cond ')'  (103)
-	repeat_statement : REPEAT . BEGIN executable_statement_list END '(' cond ')'  (104)
-	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' ')'  (105)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' cond ')'  (98)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL cond  (99)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' cond  (100)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL cond ')'  (101)
+	repeat_statement : REPEAT . BEGIN END UNTIL '(' cond ')'  (102)
+	repeat_statement : REPEAT . BEGIN END UNTIL cond  (103)
+	repeat_statement : REPEAT . BEGIN END UNTIL '(' cond  (104)
+	repeat_statement : REPEAT . BEGIN END UNTIL cond ')'  (105)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END '(' cond ')'  (106)
+	repeat_statement : REPEAT . BEGIN executable_statement_list END UNTIL '(' ')'  (107)
 
-	BEGIN  shift 62
+	BEGIN  shift 61
 	.  error
 
 
 state 16
-	goto_statement : GOTO . TAG  (114)
-	goto_statement : GOTO . error  (115)
+	goto_statement : GOTO . TAG  (117)
+	goto_statement : GOTO . error  (118)
 
-	error  shift 63
-	TAG  shift 64
+	error  shift 62
+	TAG  shift 63
 	.  error
 
 
@@ -443,7 +434,7 @@ state 17
 	ID  shift 6
 	TAG  shift 7
 	IF  shift 8
-	END  shift 65
+	END  shift 64
 	OUTF  shift 10
 	TYPEDEF  shift 11
 	RET  shift 12
@@ -453,7 +444,7 @@ state 17
 	GOTO  shift 16
 	$end  reduce 6
 
-	statement  goto 66
+	statement  goto 65
 	executable_statement  goto 19
 	declare_pair  goto 20
 	declare_var  goto 21
@@ -465,12 +456,13 @@ state 17
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
 state 18
@@ -489,7 +481,7 @@ state 20
 	statement : declare_pair . optional_semicolon  (11)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -504,7 +496,7 @@ state 20
 	REPEAT  reduce 16
 	GOTO  reduce 16
 
-	optional_semicolon  goto 68
+	optional_semicolon  goto 67
 
 
 state 21
@@ -523,7 +515,31 @@ state 23
 	executable_statement : if_statement . optional_semicolon  (19)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
+	$end  reduce 16
+	error  reduce 16
+	ID  reduce 16
+	TAG  reduce 16
+	IF  reduce 16
+	ELSE  reduce 16
+	END  reduce 16
+	END_IF  reduce 16
+	OUTF  reduce 16
+	TYPEDEF  reduce 16
+	RET  reduce 16
+	UINTEGER  reduce 16
+	SINGLE  reduce 16
+	REPEAT  reduce 16
+	GOTO  reduce 16
+
+	optional_semicolon  goto 68
+
+
+state 24
+	executable_statement : assign_statement . optional_semicolon  (20)
+	optional_semicolon : .  (16)
+
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -543,11 +559,11 @@ state 23
 	optional_semicolon  goto 69
 
 
-state 24
-	executable_statement : assign_statement . optional_semicolon  (20)
+state 25
+	executable_statement : outf_statement . optional_semicolon  (21)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -567,11 +583,11 @@ state 24
 	optional_semicolon  goto 70
 
 
-state 25
-	executable_statement : outf_statement . optional_semicolon  (21)
+state 26
+	executable_statement : repeat_statement . optional_semicolon  (22)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -591,11 +607,11 @@ state 25
 	optional_semicolon  goto 71
 
 
-state 26
-	executable_statement : repeat_statement . optional_semicolon  (22)
+state 27
+	executable_statement : goto_statement . optional_semicolon  (23)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -615,11 +631,11 @@ state 26
 	optional_semicolon  goto 72
 
 
-state 27
-	executable_statement : goto_statement . optional_semicolon  (23)
+state 28
+	executable_statement : mult_assign_statement . optional_semicolon  (24)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -639,11 +655,11 @@ state 27
 	optional_semicolon  goto 73
 
 
-state 28
-	executable_statement : mult_assign_statement . optional_semicolon  (24)
+state 29
+	executable_statement : return_statement . optional_semicolon  (25)
 	optional_semicolon : .  (16)
 
-	';'  shift 67
+	';'  shift 66
 	$end  reduce 16
 	error  reduce 16
 	ID  reduce 16
@@ -663,31 +679,31 @@ state 28
 	optional_semicolon  goto 74
 
 
-state 29
-	executable_statement : return_statement . optional_semicolon  (25)
-	optional_semicolon : .  (16)
-
-	';'  shift 67
-	$end  reduce 16
-	error  reduce 16
-	ID  reduce 16
-	TAG  reduce 16
-	IF  reduce 16
-	ELSE  reduce 16
-	END  reduce 16
-	END_IF  reduce 16
-	OUTF  reduce 16
-	TYPEDEF  reduce 16
-	RET  reduce 16
-	UINTEGER  reduce 16
-	SINGLE  reduce 16
-	REPEAT  reduce 16
-	GOTO  reduce 16
-
-	optional_semicolon  goto 75
-
-
 state 30
+	executable_statement : tag_statement . optional_not_semicolon  (26)
+	optional_not_semicolon : .  (18)
+
+	';'  shift 75
+	$end  reduce 18
+	error  reduce 18
+	ID  reduce 18
+	TAG  reduce 18
+	IF  reduce 18
+	ELSE  reduce 18
+	END  reduce 18
+	END_IF  reduce 18
+	OUTF  reduce 18
+	TYPEDEF  reduce 18
+	RET  reduce 18
+	UINTEGER  reduce 18
+	SINGLE  reduce 18
+	REPEAT  reduce 18
+	GOTO  reduce 18
+
+	optional_not_semicolon  goto 76
+
+
+state 31
 	declare_var : var_type . var_list ';'  (29)
 	declare_var : var_type . var_list error  (30)
 	declare_var : var_type . ID ';'  (31)
@@ -695,16 +711,16 @@ state 30
 	declare_fun_header : var_type . FUN ID '(' parametro ')' BEGIN  (34)
 	declare_fun_header : var_type . FUN error '(' parametro ')' BEGIN  (35)
 	declare_fun_header : var_type . FUN ID '(' error ')' BEGIN  (36)
-	assign_statement : var_type . ID ASSIGN expr  (75)
+	assign_statement : var_type . ID ASSIGN expr  (77)
 
-	ID  shift 76
-	FUN  shift 77
+	ID  shift 77
+	FUN  shift 78
 	.  error
 
-	var_list  goto 78
+	var_list  goto 79
 
 
-state 31
+state 32
 	declare_fun : declare_fun_header . fun_body END  (33)
 
 	error  shift 5
@@ -720,7 +736,7 @@ state 31
 	GOTO  shift 16
 	.  error
 
-	statement_list  goto 79
+	statement_list  goto 80
 	statement  goto 18
 	executable_statement  goto 19
 	declare_pair  goto 20
@@ -733,55 +749,53 @@ state 31
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	fun_body  goto 80
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 32
-	if_statement : if_cond . then_statement END_IF  (52)
-	if_statement : if_cond . then_statement error  (53)
-	if_statement : if_cond . then_statement ELSE ctrl_block_statement END_IF  (54)
-	if_statement : if_cond . then_statement ELSE END_IF  (55)
-	if_statement : if_cond . then_statement ELSE error END_IF  (56)
-	if_statement : if_cond . then_statement ELSE ctrl_block_statement error  (57)
-
-	THEN  shift 81
-	.  error
-
-	then_statement  goto 82
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	fun_body  goto 81
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
 state 33
-	assign_statement : expr_pair . ASSIGN expr  (74)
-	elem_list : expr_pair .  (111)
+	if_statement : if_cond . then_statement END_IF  (52)
+	if_statement : if_cond . then_statement error  (53)
+	if_statement : if_cond . then_statement else_statement  (54)
 
-	ASSIGN  shift 83
-	','  reduce 111
+	THEN  shift 82
+	.  error
+
+	then_statement  goto 83
 
 
 state 34
-	mult_assign_statement : id_list . ASSIGN expr_list  (106)
-	mult_assign_statement : id_list . ASSIGN error  (107)
-	id_list : id_list . ',' elem_list  (109)
+	assign_statement : expr_pair . ASSIGN expr  (76)
+	elem_list : expr_pair .  (113)
 
 	ASSIGN  shift 84
-	','  shift 85
-	.  error
+	','  reduce 113
 
 
 state 35
-	id_list : elem_list . ',' elem_list  (108)
+	mult_assign_statement : id_list . ASSIGN expr_list  (108)
+	mult_assign_statement : id_list . ASSIGN error  (109)
+	id_list : id_list . ',' elem_list  (111)
 
+	ASSIGN  shift 85
 	','  shift 86
 	.  error
 
 
 state 36
+	id_list : elem_list . ',' elem_list  (110)
+
+	','  shift 87
+	.  error
+
+
+state 37
 	prog : error BEGIN statement_list . END  (2)
 	statement_list : statement_list . statement  (9)
 
@@ -789,7 +803,7 @@ state 36
 	ID  shift 6
 	TAG  shift 7
 	IF  shift 8
-	END  shift 87
+	END  shift 88
 	OUTF  shift 10
 	TYPEDEF  shift 11
 	RET  shift 12
@@ -799,7 +813,7 @@ state 36
 	GOTO  shift 16
 	.  error
 
-	statement  goto 66
+	statement  goto 65
 	executable_statement  goto 19
 	declare_pair  goto 20
 	declare_var  goto 21
@@ -811,206 +825,1340 @@ state 36
 	goto_statement  goto 27
 	mult_assign_statement  goto 28
 	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
-state 37
+state 38
 	statement : error ';' .  (14)
 
 	.  reduce 14
 
 
-state 38
-	assign_statement : ID ASSIGN . expr  (73)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 88
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
 state 39
-	expr_pair : ID '{' . CTE '}'  (90)
+	assign_statement : ID ASSIGN . expr  (75)
 
-	CTE  shift 89
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
 	.  error
+
+	expr  goto 89
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 40
+	expr_pair : ID '{' . CTE '}'  (92)
+
+	CTE  shift 90
+	.  error
+
+
+state 41
+	cond : error .  (68)
+	expr : error .  (81)
+
+	$end  reduce 68
+	error  reduce 68
+	ID  reduce 68
+	NEQ  reduce 81
+	LEQ  reduce 81
+	MEQ  reduce 81
+	TAG  reduce 68
+	IF  reduce 68
+	THEN  reduce 68
+	ELSE  reduce 68
+	END  reduce 68
+	END_IF  reduce 68
+	OUTF  reduce 68
+	TYPEDEF  reduce 68
+	RET  reduce 68
+	UINTEGER  reduce 68
+	SINGLE  reduce 68
+	REPEAT  reduce 68
+	GOTO  reduce 68
+	';'  reduce 68
+	')'  reduce 68
+	'<'  reduce 81
+	'>'  reduce 81
+	'='  reduce 81
+	'+'  reduce 81
+	'-'  reduce 81
+
+
+state 42
+	fact : ID .  (85)
+	expr_pair : ID . '{' CTE '}'  (92)
+	fun_invoc : ID . '(' expr ')'  (93)
+	fun_invoc : ID . '(' expr error ')'  (94)
+
+	'('  shift 91
+	'{'  shift 40
+	$end  reduce 85
+	error  reduce 85
+	ID  reduce 85
+	NEQ  reduce 85
+	LEQ  reduce 85
+	MEQ  reduce 85
+	TAG  reduce 85
+	IF  reduce 85
+	THEN  reduce 85
+	ELSE  reduce 85
+	END  reduce 85
+	END_IF  reduce 85
+	OUTF  reduce 85
+	TYPEDEF  reduce 85
+	RET  reduce 85
+	UINTEGER  reduce 85
+	SINGLE  reduce 85
+	REPEAT  reduce 85
+	GOTO  reduce 85
+	';'  reduce 85
+	')'  reduce 85
+	'<'  reduce 85
+	'>'  reduce 85
+	','  reduce 85
+	'='  reduce 85
+	'+'  reduce 85
+	'-'  reduce 85
+	'*'  reduce 85
+	'/'  reduce 85
+
+
+state 43
+	fact : CTE .  (86)
+
+	.  reduce 86
+
+
+state 44
+	fact : CHARCH .  (91)
+
+	.  reduce 91
+
+
+state 45
+	if_cond : IF '(' . cond ')'  (55)
+	if_cond : IF '(' . cond  (57)
+
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 47
+	cond  goto 92
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 46
+	fact : '-' . CTE  (87)
+	fact : '-' . ID  (88)
+
+	ID  shift 93
+	CTE  shift 94
+	.  error
+
+
+state 47
+	cond : expr . cond_op expr  (67)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	NEQ  shift 95
+	LEQ  shift 96
+	MEQ  shift 97
+	'<'  shift 98
+	'>'  shift 99
+	'='  shift 100
+	'+'  shift 101
+	'-'  shift 102
+	.  error
+
+	cond_op  goto 103
+
+
+state 48
+	if_cond : IF cond .  (56)
+	if_cond : IF cond . ')'  (58)
+
+	')'  shift 104
+	THEN  reduce 56
+
+
+state 49
+	fact : expr_pair .  (90)
+
+	.  reduce 90
+
+
+state 50
+	expr : term .  (80)
+	term : term . '*' fact  (82)
+	term : term . '/' fact  (83)
+
+	'*'  shift 105
+	'/'  shift 106
+	$end  reduce 80
+	error  reduce 80
+	ID  reduce 80
+	NEQ  reduce 80
+	LEQ  reduce 80
+	MEQ  reduce 80
+	TAG  reduce 80
+	IF  reduce 80
+	THEN  reduce 80
+	ELSE  reduce 80
+	END  reduce 80
+	END_IF  reduce 80
+	OUTF  reduce 80
+	TYPEDEF  reduce 80
+	RET  reduce 80
+	UINTEGER  reduce 80
+	SINGLE  reduce 80
+	REPEAT  reduce 80
+	GOTO  reduce 80
+	';'  reduce 80
+	')'  reduce 80
+	'<'  reduce 80
+	'>'  reduce 80
+	','  reduce 80
+	'='  reduce 80
+	'+'  reduce 80
+	'-'  reduce 80
+
+
+state 51
+	term : fact .  (84)
+
+	.  reduce 84
+
+
+state 52
+	fact : fun_invoc .  (89)
+
+	.  reduce 89
+
+
+state 53
+	prog : ID BEGIN statement_list . END  (1)
+	prog : ID BEGIN statement_list . error  (5)
+	statement_list : statement_list . statement  (9)
+
+	error  shift 107
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	END  shift 108
+	OUTF  shift 10
+	TYPEDEF  shift 11
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	.  error
+
+	statement  goto 65
+	executable_statement  goto 19
+	declare_pair  goto 20
+	declare_var  goto 21
+	declare_fun  goto 22
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 54
+	outf_statement : OUTF error .  (97)
+
+	.  reduce 97
+
+
+state 55
+	outf_statement : OUTF '(' . expr ')'  (95)
+	outf_statement : OUTF '(' . ')'  (96)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	')'  shift 109
+	'-'  shift 46
+	.  error
+
+	expr  goto 110
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 56
+	declare_pair : TYPEDEF PAIR . '<' var_type '>' ID  (37)
+	declare_pair : TYPEDEF PAIR . var_type ID  (39)
+	declare_pair : TYPEDEF PAIR . '<' var_type '>' error  (40)
+
+	ID  shift 111
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	'<'  shift 112
+	.  error
+
+	var_type  goto 113
+
+
+state 57
+	declare_pair : TYPEDEF '<' . var_type '>' ID  (38)
+
+	ID  shift 111
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	.  error
+
+	var_type  goto 114
+
+
+state 58
+	expr : error .  (81)
+
+	.  reduce 81
+
+
+state 59
+	return_statement : RET '(' . expr ')'  (46)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 115
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 60
+	return_statement : RET expr .  (47)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 47
+	error  reduce 47
+	ID  reduce 47
+	TAG  reduce 47
+	IF  reduce 47
+	ELSE  reduce 47
+	END  reduce 47
+	END_IF  reduce 47
+	OUTF  reduce 47
+	TYPEDEF  reduce 47
+	RET  reduce 47
+	UINTEGER  reduce 47
+	SINGLE  reduce 47
+	REPEAT  reduce 47
+	GOTO  reduce 47
+	';'  reduce 47
+
+
+state 61
+	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' cond ')'  (98)
+	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL cond  (99)
+	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' cond  (100)
+	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL cond ')'  (101)
+	repeat_statement : REPEAT BEGIN . END UNTIL '(' cond ')'  (102)
+	repeat_statement : REPEAT BEGIN . END UNTIL cond  (103)
+	repeat_statement : REPEAT BEGIN . END UNTIL '(' cond  (104)
+	repeat_statement : REPEAT BEGIN . END UNTIL cond ')'  (105)
+	repeat_statement : REPEAT BEGIN . executable_statement_list END '(' cond ')'  (106)
+	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' ')'  (107)
+
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	END  shift 116
+	OUTF  shift 10
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	.  error
+
+	executable_statement  goto 117
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	executable_statement_list  goto 118
+	var_type  goto 119
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 62
+	goto_statement : GOTO error .  (118)
+
+	.  reduce 118
+
+
+state 63
+	goto_statement : GOTO TAG .  (117)
+
+	.  reduce 117
+
+
+state 64
+	prog : ID statement_list END .  (4)
+
+	.  reduce 4
+
+
+state 65
+	statement_list : statement_list statement .  (9)
+
+	.  reduce 9
+
+
+state 66
+	optional_semicolon : ';' .  (15)
+
+	.  reduce 15
+
+
+state 67
+	statement : declare_pair optional_semicolon .  (11)
+
+	.  reduce 11
+
+
+state 68
+	executable_statement : if_statement optional_semicolon .  (19)
+
+	.  reduce 19
+
+
+state 69
+	executable_statement : assign_statement optional_semicolon .  (20)
+
+	.  reduce 20
+
+
+state 70
+	executable_statement : outf_statement optional_semicolon .  (21)
+
+	.  reduce 21
+
+
+state 71
+	executable_statement : repeat_statement optional_semicolon .  (22)
+
+	.  reduce 22
+
+
+state 72
+	executable_statement : goto_statement optional_semicolon .  (23)
+
+	.  reduce 23
+
+
+state 73
+	executable_statement : mult_assign_statement optional_semicolon .  (24)
+
+	.  reduce 24
+
+
+state 74
+	executable_statement : return_statement optional_semicolon .  (25)
+
+	.  reduce 25
+
+
+state 75
 	optional_not_semicolon : ';' .  (17)
 
 	.  reduce 17
 
 
-state 41
-	executable_statement : TAG optional_not_semicolon .  (26)
+state 76
+	executable_statement : tag_statement optional_not_semicolon .  (26)
 
 	.  reduce 26
 
 
-state 42
-	cond : error .  (66)
-	expr : error .  (79)
+state 77
+	declare_var : var_type ID . ';'  (31)
+	declare_var : var_type ID . error  (32)
+	var_list : ID . ',' ID  (41)
+	assign_statement : var_type ID . ASSIGN expr  (77)
 
-	$end  reduce 66
-	error  reduce 66
-	ID  reduce 66
-	NEQ  reduce 79
-	LEQ  reduce 79
-	MEQ  reduce 79
-	TAG  reduce 66
-	IF  reduce 66
-	THEN  reduce 66
-	ELSE  reduce 66
-	END  reduce 66
-	END_IF  reduce 66
-	OUTF  reduce 66
-	TYPEDEF  reduce 66
-	RET  reduce 66
-	UINTEGER  reduce 66
-	SINGLE  reduce 66
-	REPEAT  reduce 66
-	GOTO  reduce 66
-	';'  reduce 66
-	')'  reduce 66
-	'<'  reduce 79
-	'>'  reduce 79
-	'='  reduce 79
-	'+'  reduce 79
-	'-'  reduce 79
-
-
-state 43
-	fact : ID .  (83)
-	expr_pair : ID . '{' CTE '}'  (90)
-	fun_invoc : ID . '(' expr ')'  (91)
-	fun_invoc : ID . '(' expr error ')'  (92)
-
-	'('  shift 90
-	'{'  shift 39
-	$end  reduce 83
-	error  reduce 83
-	ID  reduce 83
-	NEQ  reduce 83
-	LEQ  reduce 83
-	MEQ  reduce 83
-	TAG  reduce 83
-	IF  reduce 83
-	THEN  reduce 83
-	ELSE  reduce 83
-	END  reduce 83
-	END_IF  reduce 83
-	OUTF  reduce 83
-	TYPEDEF  reduce 83
-	RET  reduce 83
-	UINTEGER  reduce 83
-	SINGLE  reduce 83
-	REPEAT  reduce 83
-	GOTO  reduce 83
-	';'  reduce 83
-	')'  reduce 83
-	'<'  reduce 83
-	'>'  reduce 83
-	','  reduce 83
-	'='  reduce 83
-	'+'  reduce 83
-	'-'  reduce 83
-	'*'  reduce 83
-	'/'  reduce 83
-
-
-state 44
-	fact : CTE .  (84)
-
-	.  reduce 84
-
-
-state 45
-	fact : CHARCH .  (89)
-
-	.  reduce 89
-
-
-state 46
-	if_cond : IF '(' . cond ')'  (58)
-	if_cond : IF '(' . cond  (60)
-
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 48
-	cond  goto 91
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 47
-	fact : '-' . CTE  (85)
-	fact : '-' . ID  (86)
-
-	ID  shift 92
-	CTE  shift 93
+	error  shift 120
+	ASSIGN  shift 121
+	';'  shift 122
+	','  shift 123
 	.  error
 
 
-state 48
-	cond : expr . cond_op expr  (65)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
+state 78
+	declare_fun_header : var_type FUN . ID '(' parametro ')' BEGIN  (34)
+	declare_fun_header : var_type FUN . error '(' parametro ')' BEGIN  (35)
+	declare_fun_header : var_type FUN . ID '(' error ')' BEGIN  (36)
 
-	NEQ  shift 94
-	LEQ  shift 95
-	MEQ  shift 96
-	'<'  shift 97
-	'>'  shift 98
-	'='  shift 99
-	'+'  shift 100
-	'-'  shift 101
+	error  shift 124
+	ID  shift 125
 	.  error
 
-	cond_op  goto 102
+
+state 79
+	declare_var : var_type var_list . ';'  (29)
+	declare_var : var_type var_list . error  (30)
+	var_list : var_list . ',' ID  (42)
+
+	error  shift 126
+	';'  shift 127
+	','  shift 128
+	.  error
 
 
-state 49
-	if_cond : IF cond .  (59)
-	if_cond : IF cond . ')'  (61)
+state 80
+	statement_list : statement_list . statement  (9)
+	fun_body : statement_list .  (48)
 
-	')'  shift 103
-	THEN  reduce 59
+	error  shift 5
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	OUTF  shift 10
+	TYPEDEF  shift 11
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	END  reduce 48
+
+	statement  goto 65
+	executable_statement  goto 19
+	declare_pair  goto 20
+	declare_var  goto 21
+	declare_fun  goto 22
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	var_type  goto 31
+	declare_fun_header  goto 32
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
 
 
-state 50
-	fact : expr_pair .  (88)
+state 81
+	declare_fun : declare_fun_header fun_body . END  (33)
+
+	END  shift 129
+	.  error
+
+
+state 82
+	then_statement : THEN . ctrl_block_statement  (59)
+	then_statement : THEN . error  (60)
+
+	error  shift 130
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	OUTF  shift 10
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	.  error
+
+	executable_statement  goto 117
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	executable_statement_list  goto 131
+	var_type  goto 119
+	if_cond  goto 33
+	ctrl_block_statement  goto 132
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 83
+	if_statement : if_cond then_statement . END_IF  (52)
+	if_statement : if_cond then_statement . error  (53)
+	if_statement : if_cond then_statement . else_statement  (54)
+
+	error  shift 133
+	ELSE  shift 134
+	END_IF  shift 135
+	.  error
+
+	else_statement  goto 136
+	else_tk  goto 137
+
+
+state 84
+	assign_statement : expr_pair ASSIGN . expr  (76)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 138
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 85
+	mult_assign_statement : id_list ASSIGN . expr_list  (108)
+	mult_assign_statement : id_list ASSIGN . error  (109)
+
+	error  shift 139
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 140
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+	expr_list  goto 141
+
+
+state 86
+	id_list : id_list ',' . elem_list  (111)
+
+	ID  shift 142
+	.  error
+
+	expr_pair  goto 143
+	elem_list  goto 144
+
+
+state 87
+	id_list : elem_list ',' . elem_list  (110)
+
+	ID  shift 142
+	.  error
+
+	expr_pair  goto 143
+	elem_list  goto 145
+
+
+state 88
+	prog : error BEGIN statement_list END .  (2)
+
+	.  reduce 2
+
+
+state 89
+	assign_statement : ID ASSIGN expr .  (75)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 75
+	error  reduce 75
+	ID  reduce 75
+	TAG  reduce 75
+	IF  reduce 75
+	ELSE  reduce 75
+	END  reduce 75
+	END_IF  reduce 75
+	OUTF  reduce 75
+	TYPEDEF  reduce 75
+	RET  reduce 75
+	UINTEGER  reduce 75
+	SINGLE  reduce 75
+	REPEAT  reduce 75
+	GOTO  reduce 75
+	';'  reduce 75
+
+
+state 90
+	expr_pair : ID '{' CTE . '}'  (92)
+
+	'}'  shift 146
+	.  error
+
+
+state 91
+	fun_invoc : ID '(' . expr ')'  (93)
+	fun_invoc : ID '(' . expr error ')'  (94)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 147
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 92
+	if_cond : IF '(' cond . ')'  (55)
+	if_cond : IF '(' cond .  (57)
+
+	')'  shift 148
+	THEN  reduce 57
+
+
+state 93
+	fact : '-' ID .  (88)
 
 	.  reduce 88
 
 
-state 51
-	expr : term .  (78)
-	term : term . '*' fact  (80)
-	term : term . '/' fact  (81)
+state 94
+	fact : '-' CTE .  (87)
 
-	'*'  shift 104
-	'/'  shift 105
+	.  reduce 87
+
+
+state 95
+	cond_op : NEQ .  (72)
+
+	.  reduce 72
+
+
+state 96
+	cond_op : LEQ .  (73)
+
+	.  reduce 73
+
+
+state 97
+	cond_op : MEQ .  (74)
+
+	.  reduce 74
+
+
+state 98
+	cond_op : '<' .  (69)
+
+	.  reduce 69
+
+
+state 99
+	cond_op : '>' .  (70)
+
+	.  reduce 70
+
+
+state 100
+	cond_op : '=' .  (71)
+
+	.  reduce 71
+
+
+state 101
+	expr : expr '+' . term  (78)
+
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr_pair  goto 49
+	term  goto 149
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 102
+	expr : expr '-' . term  (79)
+
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr_pair  goto 49
+	term  goto 150
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 103
+	cond : expr cond_op . expr  (67)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 151
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 104
+	if_cond : IF cond ')' .  (58)
+
+	.  reduce 58
+
+
+state 105
+	term : term '*' . fact  (82)
+
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr_pair  goto 49
+	fact  goto 152
+	fun_invoc  goto 52
+
+
+state 106
+	term : term '/' . fact  (83)
+
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr_pair  goto 49
+	fact  goto 153
+	fun_invoc  goto 52
+
+
+state 107
+	prog : ID BEGIN statement_list error .  (5)
+	statement : error . ';'  (14)
+
+	';'  shift 38
+	$end  reduce 5
+
+
+state 108
+	prog : ID BEGIN statement_list END .  (1)
+
+	.  reduce 1
+
+
+state 109
+	outf_statement : OUTF '(' ')' .  (96)
+
+	.  reduce 96
+
+
+state 110
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+	outf_statement : OUTF '(' expr . ')'  (95)
+
+	')'  shift 154
+	'+'  shift 101
+	'-'  shift 102
+	.  error
+
+
+state 111
+	var_type : ID .  (51)
+
+	.  reduce 51
+
+
+state 112
+	declare_pair : TYPEDEF PAIR '<' . var_type '>' ID  (37)
+	declare_pair : TYPEDEF PAIR '<' . var_type '>' error  (40)
+
+	ID  shift 111
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	.  error
+
+	var_type  goto 155
+
+
+state 113
+	declare_pair : TYPEDEF PAIR var_type . ID  (39)
+
+	ID  shift 156
+	.  error
+
+
+state 114
+	declare_pair : TYPEDEF '<' var_type . '>' ID  (38)
+
+	'>'  shift 157
+	.  error
+
+
+state 115
+	return_statement : RET '(' expr . ')'  (46)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	')'  shift 158
+	'+'  shift 101
+	'-'  shift 102
+	.  error
+
+
+state 116
+	repeat_statement : REPEAT BEGIN END . UNTIL '(' cond ')'  (102)
+	repeat_statement : REPEAT BEGIN END . UNTIL cond  (103)
+	repeat_statement : REPEAT BEGIN END . UNTIL '(' cond  (104)
+	repeat_statement : REPEAT BEGIN END . UNTIL cond ')'  (105)
+
+	UNTIL  shift 159
+	.  error
+
+
+state 117
+	executable_statement_list : executable_statement .  (27)
+
+	.  reduce 27
+
+
+state 118
+	executable_statement_list : executable_statement_list . executable_statement  (28)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' cond ')'  (98)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL cond  (99)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' cond  (100)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL cond ')'  (101)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END '(' cond ')'  (106)
+	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' ')'  (107)
+
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	END  shift 160
+	OUTF  shift 10
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	.  error
+
+	executable_statement  goto 161
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	var_type  goto 119
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 119
+	assign_statement : var_type . ID ASSIGN expr  (77)
+
+	ID  shift 162
+	.  error
+
+
+state 120
+	declare_var : var_type ID error .  (32)
+
+	.  reduce 32
+
+
+state 121
+	assign_statement : var_type ID ASSIGN . expr  (77)
+
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 163
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 122
+	declare_var : var_type ID ';' .  (31)
+
+	.  reduce 31
+
+
+state 123
+	var_list : ID ',' . ID  (41)
+
+	ID  shift 164
+	.  error
+
+
+state 124
+	declare_fun_header : var_type FUN error . '(' parametro ')' BEGIN  (35)
+
+	'('  shift 165
+	.  error
+
+
+state 125
+	declare_fun_header : var_type FUN ID . '(' parametro ')' BEGIN  (34)
+	declare_fun_header : var_type FUN ID . '(' error ')' BEGIN  (36)
+
+	'('  shift 166
+	.  error
+
+
+state 126
+	declare_var : var_type var_list error .  (30)
+
+	.  reduce 30
+
+
+state 127
+	declare_var : var_type var_list ';' .  (29)
+
+	.  reduce 29
+
+
+state 128
+	var_list : var_list ',' . ID  (42)
+
+	ID  shift 167
+	.  error
+
+
+state 129
+	declare_fun : declare_fun_header fun_body END .  (33)
+
+	.  reduce 33
+
+
+state 130
+	then_statement : THEN error .  (60)
+
+	.  reduce 60
+
+
+state 131
+	executable_statement_list : executable_statement_list . executable_statement  (28)
+	ctrl_block_statement : executable_statement_list .  (66)
+
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	OUTF  shift 10
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	error  reduce 66
+	ELSE  reduce 66
+	END_IF  reduce 66
+
+	executable_statement  goto 161
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	var_type  goto 119
+	if_cond  goto 33
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 132
+	then_statement : THEN ctrl_block_statement .  (59)
+
+	.  reduce 59
+
+
+state 133
+	if_statement : if_cond then_statement error .  (53)
+
+	.  reduce 53
+
+
+state 134
+	else_tk : ELSE .  (65)
+
+	.  reduce 65
+
+
+state 135
+	if_statement : if_cond then_statement END_IF .  (52)
+
+	.  reduce 52
+
+
+state 136
+	if_statement : if_cond then_statement else_statement .  (54)
+
+	.  reduce 54
+
+
+state 137
+	else_statement : else_tk . ctrl_block_statement END_IF  (61)
+	else_statement : else_tk . END_IF  (62)
+	else_statement : else_tk . error END_IF  (63)
+	else_statement : else_tk . ctrl_block_statement error  (64)
+
+	error  shift 168
+	ID  shift 6
+	TAG  shift 7
+	IF  shift 8
+	END_IF  shift 169
+	OUTF  shift 10
+	RET  shift 12
+	UINTEGER  shift 13
+	SINGLE  shift 14
+	REPEAT  shift 15
+	GOTO  shift 16
+	.  error
+
+	executable_statement  goto 117
+	if_statement  goto 23
+	assign_statement  goto 24
+	outf_statement  goto 25
+	repeat_statement  goto 26
+	goto_statement  goto 27
+	mult_assign_statement  goto 28
+	return_statement  goto 29
+	tag_statement  goto 30
+	executable_statement_list  goto 131
+	var_type  goto 119
+	if_cond  goto 33
+	ctrl_block_statement  goto 170
+	expr_pair  goto 34
+	id_list  goto 35
+	elem_list  goto 36
+
+
+state 138
+	assign_statement : expr_pair ASSIGN expr .  (76)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 76
+	error  reduce 76
+	ID  reduce 76
+	TAG  reduce 76
+	IF  reduce 76
+	ELSE  reduce 76
+	END  reduce 76
+	END_IF  reduce 76
+	OUTF  reduce 76
+	TYPEDEF  reduce 76
+	RET  reduce 76
+	UINTEGER  reduce 76
+	SINGLE  reduce 76
+	REPEAT  reduce 76
+	GOTO  reduce 76
+	';'  reduce 76
+
+
+state 139
+	expr : error .  (81)
+	mult_assign_statement : id_list ASSIGN error .  (109)
+
+	$end  reduce 109
+	error  reduce 109
+	ID  reduce 109
+	TAG  reduce 109
+	IF  reduce 109
+	ELSE  reduce 109
+	END  reduce 109
+	END_IF  reduce 109
+	OUTF  reduce 109
+	TYPEDEF  reduce 109
+	RET  reduce 109
+	UINTEGER  reduce 109
+	SINGLE  reduce 109
+	REPEAT  reduce 109
+	GOTO  reduce 109
+	';'  reduce 109
+	','  reduce 81
+	'+'  reduce 81
+	'-'  reduce 81
+
+
+state 140
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+	expr_list : expr . ',' expr  (114)
+
+	','  shift 171
+	'+'  shift 101
+	'-'  shift 102
+	.  error
+
+
+state 141
+	mult_assign_statement : id_list ASSIGN expr_list .  (108)
+	expr_list : expr_list . ',' expr  (115)
+
+	','  shift 172
+	$end  reduce 108
+	error  reduce 108
+	ID  reduce 108
+	TAG  reduce 108
+	IF  reduce 108
+	ELSE  reduce 108
+	END  reduce 108
+	END_IF  reduce 108
+	OUTF  reduce 108
+	TYPEDEF  reduce 108
+	RET  reduce 108
+	UINTEGER  reduce 108
+	SINGLE  reduce 108
+	REPEAT  reduce 108
+	GOTO  reduce 108
+	';'  reduce 108
+
+
+state 142
+	expr_pair : ID . '{' CTE '}'  (92)
+	elem_list : ID .  (112)
+
+	'{'  shift 40
+	ASSIGN  reduce 112
+	','  reduce 112
+
+
+state 143
+	elem_list : expr_pair .  (113)
+
+	.  reduce 113
+
+
+state 144
+	id_list : id_list ',' elem_list .  (111)
+
+	.  reduce 111
+
+
+state 145
+	id_list : elem_list ',' elem_list .  (110)
+
+	.  reduce 110
+
+
+state 146
+	expr_pair : ID '{' CTE '}' .  (92)
+
+	.  reduce 92
+
+
+state 147
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+	fun_invoc : ID '(' expr . ')'  (93)
+	fun_invoc : ID '(' expr . error ')'  (94)
+
+	error  shift 173
+	')'  shift 174
+	'+'  shift 101
+	'-'  shift 102
+	.  error
+
+
+state 148
+	if_cond : IF '(' cond ')' .  (55)
+
+	.  reduce 55
+
+
+state 149
+	expr : expr '+' term .  (78)
+	term : term . '*' fact  (82)
+	term : term . '/' fact  (83)
+
+	'*'  shift 105
+	'/'  shift 106
 	$end  reduce 78
 	error  reduce 78
 	ID  reduce 78
@@ -1040,1136 +2188,174 @@ state 51
 	'-'  reduce 78
 
 
-state 52
-	term : fact .  (82)
-
-	.  reduce 82
-
-
-state 53
-	fact : fun_invoc .  (87)
-
-	.  reduce 87
-
-
-state 54
-	prog : ID BEGIN statement_list . END  (1)
-	prog : ID BEGIN statement_list . error  (5)
-	statement_list : statement_list . statement  (9)
-
-	error  shift 106
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	END  shift 107
-	OUTF  shift 10
-	TYPEDEF  shift 11
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	.  error
-
-	statement  goto 66
-	executable_statement  goto 19
-	declare_pair  goto 20
-	declare_var  goto 21
-	declare_fun  goto 22
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 55
-	outf_statement : OUTF error .  (95)
-
-	.  reduce 95
-
-
-state 56
-	outf_statement : OUTF '(' . expr ')'  (93)
-	outf_statement : OUTF '(' . ')'  (94)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	')'  shift 108
-	'-'  shift 47
-	.  error
-
-	expr  goto 109
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 57
-	declare_pair : TYPEDEF PAIR . '<' var_type '>' ID  (37)
-	declare_pair : TYPEDEF PAIR . var_type ID  (39)
-	declare_pair : TYPEDEF PAIR . '<' var_type '>' error  (40)
-
-	ID  shift 110
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	'<'  shift 111
-	.  error
-
-	var_type  goto 112
-
-
-state 58
-	declare_pair : TYPEDEF '<' . var_type '>' ID  (38)
-
-	ID  shift 110
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	.  error
-
-	var_type  goto 113
-
-
-state 59
-	expr : error .  (79)
-
-	.  reduce 79
-
-
-state 60
-	return_statement : RET '(' . expr ')'  (46)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 114
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 61
-	return_statement : RET expr .  (47)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 47
-	error  reduce 47
-	ID  reduce 47
-	TAG  reduce 47
-	IF  reduce 47
-	ELSE  reduce 47
-	END  reduce 47
-	END_IF  reduce 47
-	OUTF  reduce 47
-	TYPEDEF  reduce 47
-	RET  reduce 47
-	UINTEGER  reduce 47
-	SINGLE  reduce 47
-	REPEAT  reduce 47
-	GOTO  reduce 47
-	';'  reduce 47
-
-
-state 62
-	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' cond ')'  (96)
-	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL cond  (97)
-	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' cond  (98)
-	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL cond ')'  (99)
-	repeat_statement : REPEAT BEGIN . END UNTIL '(' cond ')'  (100)
-	repeat_statement : REPEAT BEGIN . END UNTIL cond  (101)
-	repeat_statement : REPEAT BEGIN . END UNTIL '(' cond  (102)
-	repeat_statement : REPEAT BEGIN . END UNTIL cond ')'  (103)
-	repeat_statement : REPEAT BEGIN . executable_statement_list END '(' cond ')'  (104)
-	repeat_statement : REPEAT BEGIN . executable_statement_list END UNTIL '(' ')'  (105)
-
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	END  shift 115
-	OUTF  shift 10
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	.  error
-
-	executable_statement  goto 116
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	executable_statement_list  goto 117
-	var_type  goto 118
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 63
-	goto_statement : GOTO error .  (115)
-
-	.  reduce 115
-
-
-state 64
-	goto_statement : GOTO TAG .  (114)
-
-	.  reduce 114
-
-
-state 65
-	prog : ID statement_list END .  (4)
-
-	.  reduce 4
-
-
-state 66
-	statement_list : statement_list statement .  (9)
-
-	.  reduce 9
-
-
-state 67
-	optional_semicolon : ';' .  (15)
-
-	.  reduce 15
-
-
-state 68
-	statement : declare_pair optional_semicolon .  (11)
-
-	.  reduce 11
-
-
-state 69
-	executable_statement : if_statement optional_semicolon .  (19)
-
-	.  reduce 19
-
-
-state 70
-	executable_statement : assign_statement optional_semicolon .  (20)
-
-	.  reduce 20
-
-
-state 71
-	executable_statement : outf_statement optional_semicolon .  (21)
-
-	.  reduce 21
-
-
-state 72
-	executable_statement : repeat_statement optional_semicolon .  (22)
-
-	.  reduce 22
-
-
-state 73
-	executable_statement : goto_statement optional_semicolon .  (23)
-
-	.  reduce 23
-
-
-state 74
-	executable_statement : mult_assign_statement optional_semicolon .  (24)
-
-	.  reduce 24
-
-
-state 75
-	executable_statement : return_statement optional_semicolon .  (25)
-
-	.  reduce 25
-
-
-state 76
-	declare_var : var_type ID . ';'  (31)
-	declare_var : var_type ID . error  (32)
-	var_list : ID . ',' ID  (41)
-	assign_statement : var_type ID . ASSIGN expr  (75)
-
-	error  shift 119
-	ASSIGN  shift 120
-	';'  shift 121
-	','  shift 122
-	.  error
-
-
-state 77
-	declare_fun_header : var_type FUN . ID '(' parametro ')' BEGIN  (34)
-	declare_fun_header : var_type FUN . error '(' parametro ')' BEGIN  (35)
-	declare_fun_header : var_type FUN . ID '(' error ')' BEGIN  (36)
-
-	error  shift 123
-	ID  shift 124
-	.  error
-
-
-state 78
-	declare_var : var_type var_list . ';'  (29)
-	declare_var : var_type var_list . error  (30)
-	var_list : var_list . ',' ID  (42)
-
-	error  shift 125
-	';'  shift 126
-	','  shift 127
-	.  error
-
-
-state 79
-	statement_list : statement_list . statement  (9)
-	fun_body : statement_list .  (48)
-
-	error  shift 5
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	OUTF  shift 10
-	TYPEDEF  shift 11
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	END  reduce 48
-
-	statement  goto 66
-	executable_statement  goto 19
-	declare_pair  goto 20
-	declare_var  goto 21
-	declare_fun  goto 22
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	var_type  goto 30
-	declare_fun_header  goto 31
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 80
-	declare_fun : declare_fun_header fun_body . END  (33)
-
-	END  shift 128
-	.  error
-
-
-state 81
-	then_statement : THEN . ctrl_block_statement  (62)
-	then_statement : THEN . error  (63)
-
-	error  shift 129
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	OUTF  shift 10
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	.  error
-
-	executable_statement  goto 116
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	executable_statement_list  goto 130
-	var_type  goto 118
-	if_cond  goto 32
-	ctrl_block_statement  goto 131
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 82
-	if_statement : if_cond then_statement . END_IF  (52)
-	if_statement : if_cond then_statement . error  (53)
-	if_statement : if_cond then_statement . ELSE ctrl_block_statement END_IF  (54)
-	if_statement : if_cond then_statement . ELSE END_IF  (55)
-	if_statement : if_cond then_statement . ELSE error END_IF  (56)
-	if_statement : if_cond then_statement . ELSE ctrl_block_statement error  (57)
-
-	error  shift 132
-	ELSE  shift 133
-	END_IF  shift 134
-	.  error
-
-
-state 83
-	assign_statement : expr_pair ASSIGN . expr  (74)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 135
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 84
-	mult_assign_statement : id_list ASSIGN . expr_list  (106)
-	mult_assign_statement : id_list ASSIGN . error  (107)
-
-	error  shift 136
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 137
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-	expr_list  goto 138
-
-
-state 85
-	id_list : id_list ',' . elem_list  (109)
-
-	ID  shift 139
-	.  error
-
-	expr_pair  goto 140
-	elem_list  goto 141
-
-
-state 86
-	id_list : elem_list ',' . elem_list  (108)
-
-	ID  shift 139
-	.  error
-
-	expr_pair  goto 140
-	elem_list  goto 142
-
-
-state 87
-	prog : error BEGIN statement_list END .  (2)
-
-	.  reduce 2
-
-
-state 88
-	assign_statement : ID ASSIGN expr .  (73)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 73
-	error  reduce 73
-	ID  reduce 73
-	TAG  reduce 73
-	IF  reduce 73
-	ELSE  reduce 73
-	END  reduce 73
-	END_IF  reduce 73
-	OUTF  reduce 73
-	TYPEDEF  reduce 73
-	RET  reduce 73
-	UINTEGER  reduce 73
-	SINGLE  reduce 73
-	REPEAT  reduce 73
-	GOTO  reduce 73
-	';'  reduce 73
-
-
-state 89
-	expr_pair : ID '{' CTE . '}'  (90)
-
-	'}'  shift 143
-	.  error
-
-
-state 90
-	fun_invoc : ID '(' . expr ')'  (91)
-	fun_invoc : ID '(' . expr error ')'  (92)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 144
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 91
-	if_cond : IF '(' cond . ')'  (58)
-	if_cond : IF '(' cond .  (60)
-
-	')'  shift 145
-	THEN  reduce 60
-
-
-state 92
-	fact : '-' ID .  (86)
-
-	.  reduce 86
-
-
-state 93
-	fact : '-' CTE .  (85)
-
-	.  reduce 85
-
-
-state 94
-	cond_op : NEQ .  (70)
-
-	.  reduce 70
-
-
-state 95
-	cond_op : LEQ .  (71)
-
-	.  reduce 71
-
-
-state 96
-	cond_op : MEQ .  (72)
-
-	.  reduce 72
-
-
-state 97
-	cond_op : '<' .  (67)
-
-	.  reduce 67
-
-
-state 98
-	cond_op : '>' .  (68)
-
-	.  reduce 68
-
-
-state 99
-	cond_op : '=' .  (69)
-
-	.  reduce 69
-
-
-state 100
-	expr : expr '+' . term  (76)
-
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr_pair  goto 50
-	term  goto 146
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 101
-	expr : expr '-' . term  (77)
-
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr_pair  goto 50
-	term  goto 147
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 102
-	cond : expr cond_op . expr  (65)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 148
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 103
-	if_cond : IF cond ')' .  (61)
-
-	.  reduce 61
-
-
-state 104
-	term : term '*' . fact  (80)
-
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr_pair  goto 50
-	fact  goto 149
-	fun_invoc  goto 53
-
-
-state 105
-	term : term '/' . fact  (81)
-
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr_pair  goto 50
-	fact  goto 150
-	fun_invoc  goto 53
-
-
-state 106
-	prog : ID BEGIN statement_list error .  (5)
-	statement : error . ';'  (14)
-
-	';'  shift 37
-	$end  reduce 5
-
-
-state 107
-	prog : ID BEGIN statement_list END .  (1)
-
-	.  reduce 1
-
-
-state 108
-	outf_statement : OUTF '(' ')' .  (94)
-
-	.  reduce 94
-
-
-state 109
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-	outf_statement : OUTF '(' expr . ')'  (93)
-
-	')'  shift 151
-	'+'  shift 100
-	'-'  shift 101
-	.  error
-
-
-state 110
-	var_type : ID .  (51)
-
-	.  reduce 51
-
-
-state 111
-	declare_pair : TYPEDEF PAIR '<' . var_type '>' ID  (37)
-	declare_pair : TYPEDEF PAIR '<' . var_type '>' error  (40)
-
-	ID  shift 110
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	.  error
-
-	var_type  goto 152
-
-
-state 112
-	declare_pair : TYPEDEF PAIR var_type . ID  (39)
-
-	ID  shift 153
-	.  error
-
-
-state 113
-	declare_pair : TYPEDEF '<' var_type . '>' ID  (38)
-
-	'>'  shift 154
-	.  error
-
-
-state 114
-	return_statement : RET '(' expr . ')'  (46)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	')'  shift 155
-	'+'  shift 100
-	'-'  shift 101
-	.  error
-
-
-state 115
-	repeat_statement : REPEAT BEGIN END . UNTIL '(' cond ')'  (100)
-	repeat_statement : REPEAT BEGIN END . UNTIL cond  (101)
-	repeat_statement : REPEAT BEGIN END . UNTIL '(' cond  (102)
-	repeat_statement : REPEAT BEGIN END . UNTIL cond ')'  (103)
-
-	UNTIL  shift 156
-	.  error
-
-
-state 116
-	executable_statement_list : executable_statement .  (27)
-
-	.  reduce 27
-
-
-state 117
-	executable_statement_list : executable_statement_list . executable_statement  (28)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' cond ')'  (96)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL cond  (97)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' cond  (98)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL cond ')'  (99)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END '(' cond ')'  (104)
-	repeat_statement : REPEAT BEGIN executable_statement_list . END UNTIL '(' ')'  (105)
-
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	END  shift 157
-	OUTF  shift 10
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	.  error
-
-	executable_statement  goto 158
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	var_type  goto 118
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 118
-	assign_statement : var_type . ID ASSIGN expr  (75)
-
-	ID  shift 159
-	.  error
-
-
-state 119
-	declare_var : var_type ID error .  (32)
-
-	.  reduce 32
-
-
-state 120
-	assign_statement : var_type ID ASSIGN . expr  (75)
-
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 160
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 121
-	declare_var : var_type ID ';' .  (31)
-
-	.  reduce 31
-
-
-state 122
-	var_list : ID ',' . ID  (41)
-
-	ID  shift 161
-	.  error
-
-
-state 123
-	declare_fun_header : var_type FUN error . '(' parametro ')' BEGIN  (35)
-
-	'('  shift 162
-	.  error
-
-
-state 124
-	declare_fun_header : var_type FUN ID . '(' parametro ')' BEGIN  (34)
-	declare_fun_header : var_type FUN ID . '(' error ')' BEGIN  (36)
-
-	'('  shift 163
-	.  error
-
-
-state 125
-	declare_var : var_type var_list error .  (30)
-
-	.  reduce 30
-
-
-state 126
-	declare_var : var_type var_list ';' .  (29)
-
-	.  reduce 29
-
-
-state 127
-	var_list : var_list ',' . ID  (42)
-
-	ID  shift 164
-	.  error
-
-
-state 128
-	declare_fun : declare_fun_header fun_body END .  (33)
-
-	.  reduce 33
-
-
-state 129
-	then_statement : THEN error .  (63)
-
-	.  reduce 63
-
-
-state 130
-	executable_statement_list : executable_statement_list . executable_statement  (28)
-	ctrl_block_statement : executable_statement_list .  (64)
-
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	OUTF  shift 10
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	error  reduce 64
-	ELSE  reduce 64
-	END_IF  reduce 64
-
-	executable_statement  goto 158
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	var_type  goto 118
-	if_cond  goto 32
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 131
-	then_statement : THEN ctrl_block_statement .  (62)
-
-	.  reduce 62
-
-
-state 132
-	if_statement : if_cond then_statement error .  (53)
-
-	.  reduce 53
-
-
-state 133
-	if_statement : if_cond then_statement ELSE . ctrl_block_statement END_IF  (54)
-	if_statement : if_cond then_statement ELSE . END_IF  (55)
-	if_statement : if_cond then_statement ELSE . error END_IF  (56)
-	if_statement : if_cond then_statement ELSE . ctrl_block_statement error  (57)
-
-	error  shift 165
-	ID  shift 6
-	TAG  shift 7
-	IF  shift 8
-	END_IF  shift 166
-	OUTF  shift 10
-	RET  shift 12
-	UINTEGER  shift 13
-	SINGLE  shift 14
-	REPEAT  shift 15
-	GOTO  shift 16
-	.  error
-
-	executable_statement  goto 116
-	if_statement  goto 23
-	assign_statement  goto 24
-	outf_statement  goto 25
-	repeat_statement  goto 26
-	goto_statement  goto 27
-	mult_assign_statement  goto 28
-	return_statement  goto 29
-	executable_statement_list  goto 130
-	var_type  goto 118
-	if_cond  goto 32
-	ctrl_block_statement  goto 167
-	expr_pair  goto 33
-	id_list  goto 34
-	elem_list  goto 35
-
-
-state 134
-	if_statement : if_cond then_statement END_IF .  (52)
-
-	.  reduce 52
-
-
-state 135
-	assign_statement : expr_pair ASSIGN expr .  (74)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 74
-	error  reduce 74
-	ID  reduce 74
-	TAG  reduce 74
-	IF  reduce 74
-	ELSE  reduce 74
-	END  reduce 74
-	END_IF  reduce 74
-	OUTF  reduce 74
-	TYPEDEF  reduce 74
-	RET  reduce 74
-	UINTEGER  reduce 74
-	SINGLE  reduce 74
-	REPEAT  reduce 74
-	GOTO  reduce 74
-	';'  reduce 74
-
-
-state 136
-	expr : error .  (79)
-	mult_assign_statement : id_list ASSIGN error .  (107)
-
-	$end  reduce 107
-	error  reduce 107
-	ID  reduce 107
-	TAG  reduce 107
-	IF  reduce 107
-	ELSE  reduce 107
-	END  reduce 107
-	END_IF  reduce 107
-	OUTF  reduce 107
-	TYPEDEF  reduce 107
-	RET  reduce 107
-	UINTEGER  reduce 107
-	SINGLE  reduce 107
-	REPEAT  reduce 107
-	GOTO  reduce 107
-	';'  reduce 107
+state 150
+	expr : expr '-' term .  (79)
+	term : term . '*' fact  (82)
+	term : term . '/' fact  (83)
+
+	'*'  shift 105
+	'/'  shift 106
+	$end  reduce 79
+	error  reduce 79
+	ID  reduce 79
+	NEQ  reduce 79
+	LEQ  reduce 79
+	MEQ  reduce 79
+	TAG  reduce 79
+	IF  reduce 79
+	THEN  reduce 79
+	ELSE  reduce 79
+	END  reduce 79
+	END_IF  reduce 79
+	OUTF  reduce 79
+	TYPEDEF  reduce 79
+	RET  reduce 79
+	UINTEGER  reduce 79
+	SINGLE  reduce 79
+	REPEAT  reduce 79
+	GOTO  reduce 79
+	';'  reduce 79
+	')'  reduce 79
+	'<'  reduce 79
+	'>'  reduce 79
 	','  reduce 79
+	'='  reduce 79
 	'+'  reduce 79
 	'-'  reduce 79
 
 
-state 137
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-	expr_list : expr . ',' expr  (112)
+state 151
+	cond : expr cond_op expr .  (67)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
 
-	','  shift 168
-	'+'  shift 100
-	'-'  shift 101
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 67
+	error  reduce 67
+	ID  reduce 67
+	TAG  reduce 67
+	IF  reduce 67
+	THEN  reduce 67
+	ELSE  reduce 67
+	END  reduce 67
+	END_IF  reduce 67
+	OUTF  reduce 67
+	TYPEDEF  reduce 67
+	RET  reduce 67
+	UINTEGER  reduce 67
+	SINGLE  reduce 67
+	REPEAT  reduce 67
+	GOTO  reduce 67
+	';'  reduce 67
+	')'  reduce 67
+
+
+state 152
+	term : term '*' fact .  (82)
+
+	.  reduce 82
+
+
+state 153
+	term : term '/' fact .  (83)
+
+	.  reduce 83
+
+
+state 154
+	outf_statement : OUTF '(' expr ')' .  (95)
+
+	.  reduce 95
+
+
+state 155
+	declare_pair : TYPEDEF PAIR '<' var_type . '>' ID  (37)
+	declare_pair : TYPEDEF PAIR '<' var_type . '>' error  (40)
+
+	'>'  shift 175
 	.  error
 
 
-state 138
-	mult_assign_statement : id_list ASSIGN expr_list .  (106)
-	expr_list : expr_list . ',' expr  (113)
+state 156
+	declare_pair : TYPEDEF PAIR var_type ID .  (39)
 
-	','  shift 169
-	$end  reduce 106
-	error  reduce 106
-	ID  reduce 106
-	TAG  reduce 106
-	IF  reduce 106
-	ELSE  reduce 106
-	END  reduce 106
-	END_IF  reduce 106
-	OUTF  reduce 106
-	TYPEDEF  reduce 106
-	RET  reduce 106
-	UINTEGER  reduce 106
-	SINGLE  reduce 106
-	REPEAT  reduce 106
-	GOTO  reduce 106
-	';'  reduce 106
+	.  reduce 39
 
 
-state 139
-	expr_pair : ID . '{' CTE '}'  (90)
-	elem_list : ID .  (110)
+state 157
+	declare_pair : TYPEDEF '<' var_type '>' . ID  (38)
 
-	'{'  shift 39
-	ASSIGN  reduce 110
-	','  reduce 110
-
-
-state 140
-	elem_list : expr_pair .  (111)
-
-	.  reduce 111
-
-
-state 141
-	id_list : id_list ',' elem_list .  (109)
-
-	.  reduce 109
-
-
-state 142
-	id_list : elem_list ',' elem_list .  (108)
-
-	.  reduce 108
-
-
-state 143
-	expr_pair : ID '{' CTE '}' .  (90)
-
-	.  reduce 90
-
-
-state 144
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-	fun_invoc : ID '(' expr . ')'  (91)
-	fun_invoc : ID '(' expr . error ')'  (92)
-
-	error  shift 170
-	')'  shift 171
-	'+'  shift 100
-	'-'  shift 101
+	ID  shift 176
 	.  error
 
 
-state 145
-	if_cond : IF '(' cond ')' .  (58)
+state 158
+	return_statement : RET '(' expr ')' .  (46)
 
-	.  reduce 58
-
-
-state 146
-	expr : expr '+' term .  (76)
-	term : term . '*' fact  (80)
-	term : term . '/' fact  (81)
-
-	'*'  shift 104
-	'/'  shift 105
-	$end  reduce 76
-	error  reduce 76
-	ID  reduce 76
-	NEQ  reduce 76
-	LEQ  reduce 76
-	MEQ  reduce 76
-	TAG  reduce 76
-	IF  reduce 76
-	THEN  reduce 76
-	ELSE  reduce 76
-	END  reduce 76
-	END_IF  reduce 76
-	OUTF  reduce 76
-	TYPEDEF  reduce 76
-	RET  reduce 76
-	UINTEGER  reduce 76
-	SINGLE  reduce 76
-	REPEAT  reduce 76
-	GOTO  reduce 76
-	';'  reduce 76
-	')'  reduce 76
-	'<'  reduce 76
-	'>'  reduce 76
-	','  reduce 76
-	'='  reduce 76
-	'+'  reduce 76
-	'-'  reduce 76
+	.  reduce 46
 
 
-state 147
-	expr : expr '-' term .  (77)
-	term : term . '*' fact  (80)
-	term : term . '/' fact  (81)
+state 159
+	repeat_statement : REPEAT BEGIN END UNTIL . '(' cond ')'  (102)
+	repeat_statement : REPEAT BEGIN END UNTIL . cond  (103)
+	repeat_statement : REPEAT BEGIN END UNTIL . '(' cond  (104)
+	repeat_statement : REPEAT BEGIN END UNTIL . cond ')'  (105)
 
-	'*'  shift 104
-	'/'  shift 105
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'('  shift 177
+	'-'  shift 46
+	.  error
+
+	expr  goto 47
+	cond  goto 178
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 160
+	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' cond ')'  (98)
+	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL cond  (99)
+	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' cond  (100)
+	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL cond ')'  (101)
+	repeat_statement : REPEAT BEGIN executable_statement_list END . '(' cond ')'  (106)
+	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' ')'  (107)
+
+	UNTIL  shift 179
+	'('  shift 180
+	.  error
+
+
+state 161
+	executable_statement_list : executable_statement_list executable_statement .  (28)
+
+	.  reduce 28
+
+
+state 162
+	assign_statement : var_type ID . ASSIGN expr  (77)
+
+	ASSIGN  shift 121
+	.  error
+
+
+state 163
+	assign_statement : var_type ID ASSIGN expr .  (77)
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+
+	'+'  shift 101
+	'-'  shift 102
 	$end  reduce 77
 	error  reduce 77
 	ID  reduce 77
-	NEQ  reduce 77
-	LEQ  reduce 77
-	MEQ  reduce 77
 	TAG  reduce 77
 	IF  reduce 77
-	THEN  reduce 77
 	ELSE  reduce 77
 	END  reduce 77
 	END_IF  reduce 77
@@ -2181,366 +2367,214 @@ state 147
 	REPEAT  reduce 77
 	GOTO  reduce 77
 	';'  reduce 77
-	')'  reduce 77
-	'<'  reduce 77
-	'>'  reduce 77
-	','  reduce 77
-	'='  reduce 77
-	'+'  reduce 77
-	'-'  reduce 77
 
 
-state 148
-	cond : expr cond_op expr .  (65)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 65
-	error  reduce 65
-	ID  reduce 65
-	TAG  reduce 65
-	IF  reduce 65
-	THEN  reduce 65
-	ELSE  reduce 65
-	END  reduce 65
-	END_IF  reduce 65
-	OUTF  reduce 65
-	TYPEDEF  reduce 65
-	RET  reduce 65
-	UINTEGER  reduce 65
-	SINGLE  reduce 65
-	REPEAT  reduce 65
-	GOTO  reduce 65
-	';'  reduce 65
-	')'  reduce 65
-
-
-state 149
-	term : term '*' fact .  (80)
-
-	.  reduce 80
-
-
-state 150
-	term : term '/' fact .  (81)
-
-	.  reduce 81
-
-
-state 151
-	outf_statement : OUTF '(' expr ')' .  (93)
-
-	.  reduce 93
-
-
-state 152
-	declare_pair : TYPEDEF PAIR '<' var_type . '>' ID  (37)
-	declare_pair : TYPEDEF PAIR '<' var_type . '>' error  (40)
-
-	'>'  shift 172
-	.  error
-
-
-state 153
-	declare_pair : TYPEDEF PAIR var_type ID .  (39)
-
-	.  reduce 39
-
-
-state 154
-	declare_pair : TYPEDEF '<' var_type '>' . ID  (38)
-
-	ID  shift 173
-	.  error
-
-
-state 155
-	return_statement : RET '(' expr ')' .  (46)
-
-	.  reduce 46
-
-
-state 156
-	repeat_statement : REPEAT BEGIN END UNTIL . '(' cond ')'  (100)
-	repeat_statement : REPEAT BEGIN END UNTIL . cond  (101)
-	repeat_statement : REPEAT BEGIN END UNTIL . '(' cond  (102)
-	repeat_statement : REPEAT BEGIN END UNTIL . cond ')'  (103)
-
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'('  shift 174
-	'-'  shift 47
-	.  error
-
-	expr  goto 48
-	cond  goto 175
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 157
-	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' cond ')'  (96)
-	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL cond  (97)
-	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' cond  (98)
-	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL cond ')'  (99)
-	repeat_statement : REPEAT BEGIN executable_statement_list END . '(' cond ')'  (104)
-	repeat_statement : REPEAT BEGIN executable_statement_list END . UNTIL '(' ')'  (105)
-
-	UNTIL  shift 176
-	'('  shift 177
-	.  error
-
-
-state 158
-	executable_statement_list : executable_statement_list executable_statement .  (28)
-
-	.  reduce 28
-
-
-state 159
-	assign_statement : var_type ID . ASSIGN expr  (75)
-
-	ASSIGN  shift 120
-	.  error
-
-
-state 160
-	assign_statement : var_type ID ASSIGN expr .  (75)
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 75
-	error  reduce 75
-	ID  reduce 75
-	TAG  reduce 75
-	IF  reduce 75
-	ELSE  reduce 75
-	END  reduce 75
-	END_IF  reduce 75
-	OUTF  reduce 75
-	TYPEDEF  reduce 75
-	RET  reduce 75
-	UINTEGER  reduce 75
-	SINGLE  reduce 75
-	REPEAT  reduce 75
-	GOTO  reduce 75
-	';'  reduce 75
-
-
-state 161
+state 164
 	var_list : ID ',' ID .  (41)
 
 	.  reduce 41
 
 
-state 162
+state 165
 	declare_fun_header : var_type FUN error '(' . parametro ')' BEGIN  (35)
 
-	ID  shift 178
+	ID  shift 181
 	UINTEGER  shift 13
 	SINGLE  shift 14
 	.  error
 
-	var_type  goto 179
-	parametro  goto 180
+	var_type  goto 182
+	parametro  goto 183
 
 
-state 163
+state 166
 	declare_fun_header : var_type FUN ID '(' . parametro ')' BEGIN  (34)
 	declare_fun_header : var_type FUN ID '(' . error ')' BEGIN  (36)
 
-	error  shift 181
-	ID  shift 178
+	error  shift 184
+	ID  shift 181
 	UINTEGER  shift 13
 	SINGLE  shift 14
 	.  error
 
-	var_type  goto 179
-	parametro  goto 182
+	var_type  goto 182
+	parametro  goto 185
 
 
-state 164
+state 167
 	var_list : var_list ',' ID .  (42)
 
 	.  reduce 42
 
 
-state 165
-	if_statement : if_cond then_statement ELSE error . END_IF  (56)
-
-	END_IF  shift 183
-	.  error
-
-
-state 166
-	if_statement : if_cond then_statement ELSE END_IF .  (55)
-
-	.  reduce 55
-
-
-state 167
-	if_statement : if_cond then_statement ELSE ctrl_block_statement . END_IF  (54)
-	if_statement : if_cond then_statement ELSE ctrl_block_statement . error  (57)
-
-	error  shift 184
-	END_IF  shift 185
-	.  error
-
-
 state 168
-	expr_list : expr ',' . expr  (112)
+	else_statement : else_tk error . END_IF  (63)
 
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
+	END_IF  shift 186
 	.  error
-
-	expr  goto 186
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
 
 
 state 169
-	expr_list : expr_list ',' . expr  (113)
+	else_statement : else_tk END_IF .  (62)
 
-	error  shift 59
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 187
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
+	.  reduce 62
 
 
 state 170
-	fun_invoc : ID '(' expr error . ')'  (92)
+	else_statement : else_tk ctrl_block_statement . END_IF  (61)
+	else_statement : else_tk ctrl_block_statement . error  (64)
 
-	')'  shift 188
+	error  shift 187
+	END_IF  shift 188
 	.  error
 
 
 state 171
-	fun_invoc : ID '(' expr ')' .  (91)
+	expr_list : expr ',' . expr  (114)
 
-	.  reduce 91
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 189
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 172
-	declare_pair : TYPEDEF PAIR '<' var_type '>' . ID  (37)
-	declare_pair : TYPEDEF PAIR '<' var_type '>' . error  (40)
+	expr_list : expr_list ',' . expr  (115)
 
-	error  shift 189
-	ID  shift 190
+	error  shift 58
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
 	.  error
+
+	expr  goto 190
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 173
+	fun_invoc : ID '(' expr error . ')'  (94)
+
+	')'  shift 191
+	.  error
+
+
+state 174
+	fun_invoc : ID '(' expr ')' .  (93)
+
+	.  reduce 93
+
+
+state 175
+	declare_pair : TYPEDEF PAIR '<' var_type '>' . ID  (37)
+	declare_pair : TYPEDEF PAIR '<' var_type '>' . error  (40)
+
+	error  shift 192
+	ID  shift 193
+	.  error
+
+
+state 176
 	declare_pair : TYPEDEF '<' var_type '>' ID .  (38)
 
 	.  reduce 38
 
 
-state 174
-	repeat_statement : REPEAT BEGIN END UNTIL '(' . cond ')'  (100)
-	repeat_statement : REPEAT BEGIN END UNTIL '(' . cond  (102)
-
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
-	.  error
-
-	expr  goto 48
-	cond  goto 191
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
-state 175
-	repeat_statement : REPEAT BEGIN END UNTIL cond .  (101)
-	repeat_statement : REPEAT BEGIN END UNTIL cond . ')'  (103)
-
-	')'  shift 192
-	$end  reduce 101
-	error  reduce 101
-	ID  reduce 101
-	TAG  reduce 101
-	IF  reduce 101
-	ELSE  reduce 101
-	END  reduce 101
-	END_IF  reduce 101
-	OUTF  reduce 101
-	TYPEDEF  reduce 101
-	RET  reduce 101
-	UINTEGER  reduce 101
-	SINGLE  reduce 101
-	REPEAT  reduce 101
-	GOTO  reduce 101
-	';'  reduce 101
-
-
-state 176
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' cond ')'  (96)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . cond  (97)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' cond  (98)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . cond ')'  (99)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' ')'  (105)
-
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'('  shift 193
-	'-'  shift 47
-	.  error
-
-	expr  goto 48
-	cond  goto 194
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
 state 177
-	repeat_statement : REPEAT BEGIN executable_statement_list END '(' . cond ')'  (104)
+	repeat_statement : REPEAT BEGIN END UNTIL '(' . cond ')'  (102)
+	repeat_statement : REPEAT BEGIN END UNTIL '(' . cond  (104)
 
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	'-'  shift 47
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
 	.  error
 
-	expr  goto 48
-	cond  goto 195
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
+	expr  goto 47
+	cond  goto 194
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
 
 
 state 178
+	repeat_statement : REPEAT BEGIN END UNTIL cond .  (103)
+	repeat_statement : REPEAT BEGIN END UNTIL cond . ')'  (105)
+
+	')'  shift 195
+	$end  reduce 103
+	error  reduce 103
+	ID  reduce 103
+	TAG  reduce 103
+	IF  reduce 103
+	ELSE  reduce 103
+	END  reduce 103
+	END_IF  reduce 103
+	OUTF  reduce 103
+	TYPEDEF  reduce 103
+	RET  reduce 103
+	UINTEGER  reduce 103
+	SINGLE  reduce 103
+	REPEAT  reduce 103
+	GOTO  reduce 103
+	';'  reduce 103
+
+
+state 179
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' cond ')'  (98)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . cond  (99)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' cond  (100)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . cond ')'  (101)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL . '(' ')'  (107)
+
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'('  shift 196
+	'-'  shift 46
+	.  error
+
+	expr  goto 47
+	cond  goto 197
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 180
+	repeat_statement : REPEAT BEGIN executable_statement_list END '(' . cond ')'  (106)
+
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	'-'  shift 46
+	.  error
+
+	expr  goto 47
+	cond  goto 198
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 181
 	parametro : ID .  (44)
 	var_type : ID .  (51)
 
@@ -2549,307 +2583,307 @@ state 178
 	')'  reduce 44
 
 
-state 179
+state 182
 	parametro : var_type . ID  (43)
 	parametro : var_type . error  (45)
 
-	error  shift 196
-	ID  shift 197
-	.  error
-
-
-state 180
-	declare_fun_header : var_type FUN error '(' parametro . ')' BEGIN  (35)
-
-	')'  shift 198
-	.  error
-
-
-state 181
-	declare_fun_header : var_type FUN ID '(' error . ')' BEGIN  (36)
-
-	')'  shift 199
-	.  error
-
-
-state 182
-	declare_fun_header : var_type FUN ID '(' parametro . ')' BEGIN  (34)
-
-	')'  shift 200
+	error  shift 199
+	ID  shift 200
 	.  error
 
 
 state 183
-	if_statement : if_cond then_statement ELSE error END_IF .  (56)
+	declare_fun_header : var_type FUN error '(' parametro . ')' BEGIN  (35)
 
-	.  reduce 56
+	')'  shift 201
+	.  error
 
 
 state 184
-	if_statement : if_cond then_statement ELSE ctrl_block_statement error .  (57)
+	declare_fun_header : var_type FUN ID '(' error . ')' BEGIN  (36)
 
-	.  reduce 57
+	')'  shift 202
+	.  error
 
 
 state 185
-	if_statement : if_cond then_statement ELSE ctrl_block_statement END_IF .  (54)
+	declare_fun_header : var_type FUN ID '(' parametro . ')' BEGIN  (34)
 
-	.  reduce 54
+	')'  shift 203
+	.  error
 
 
 state 186
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-	expr_list : expr ',' expr .  (112)
+	else_statement : else_tk error END_IF .  (63)
 
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 112
-	error  reduce 112
-	ID  reduce 112
-	TAG  reduce 112
-	IF  reduce 112
-	ELSE  reduce 112
-	END  reduce 112
-	END_IF  reduce 112
-	OUTF  reduce 112
-	TYPEDEF  reduce 112
-	RET  reduce 112
-	UINTEGER  reduce 112
-	SINGLE  reduce 112
-	REPEAT  reduce 112
-	GOTO  reduce 112
-	';'  reduce 112
-	','  reduce 112
+	.  reduce 63
 
 
 state 187
-	expr : expr . '+' term  (76)
-	expr : expr . '-' term  (77)
-	expr_list : expr_list ',' expr .  (113)
+	else_statement : else_tk ctrl_block_statement error .  (64)
 
-	'+'  shift 100
-	'-'  shift 101
-	$end  reduce 113
-	error  reduce 113
-	ID  reduce 113
-	TAG  reduce 113
-	IF  reduce 113
-	ELSE  reduce 113
-	END  reduce 113
-	END_IF  reduce 113
-	OUTF  reduce 113
-	TYPEDEF  reduce 113
-	RET  reduce 113
-	UINTEGER  reduce 113
-	SINGLE  reduce 113
-	REPEAT  reduce 113
-	GOTO  reduce 113
-	';'  reduce 113
-	','  reduce 113
+	.  reduce 64
 
 
 state 188
-	fun_invoc : ID '(' expr error ')' .  (92)
+	else_statement : else_tk ctrl_block_statement END_IF .  (61)
 
-	.  reduce 92
+	.  reduce 61
 
 
 state 189
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+	expr_list : expr ',' expr .  (114)
+
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 114
+	error  reduce 114
+	ID  reduce 114
+	TAG  reduce 114
+	IF  reduce 114
+	ELSE  reduce 114
+	END  reduce 114
+	END_IF  reduce 114
+	OUTF  reduce 114
+	TYPEDEF  reduce 114
+	RET  reduce 114
+	UINTEGER  reduce 114
+	SINGLE  reduce 114
+	REPEAT  reduce 114
+	GOTO  reduce 114
+	';'  reduce 114
+	','  reduce 114
+
+
+state 190
+	expr : expr . '+' term  (78)
+	expr : expr . '-' term  (79)
+	expr_list : expr_list ',' expr .  (115)
+
+	'+'  shift 101
+	'-'  shift 102
+	$end  reduce 115
+	error  reduce 115
+	ID  reduce 115
+	TAG  reduce 115
+	IF  reduce 115
+	ELSE  reduce 115
+	END  reduce 115
+	END_IF  reduce 115
+	OUTF  reduce 115
+	TYPEDEF  reduce 115
+	RET  reduce 115
+	UINTEGER  reduce 115
+	SINGLE  reduce 115
+	REPEAT  reduce 115
+	GOTO  reduce 115
+	';'  reduce 115
+	','  reduce 115
+
+
+state 191
+	fun_invoc : ID '(' expr error ')' .  (94)
+
+	.  reduce 94
+
+
+state 192
 	declare_pair : TYPEDEF PAIR '<' var_type '>' error .  (40)
 
 	.  reduce 40
 
 
-state 190
+state 193
 	declare_pair : TYPEDEF PAIR '<' var_type '>' ID .  (37)
 
 	.  reduce 37
 
 
-state 191
-	repeat_statement : REPEAT BEGIN END UNTIL '(' cond . ')'  (100)
-	repeat_statement : REPEAT BEGIN END UNTIL '(' cond .  (102)
-
-	')'  shift 201
-	$end  reduce 102
-	error  reduce 102
-	ID  reduce 102
-	TAG  reduce 102
-	IF  reduce 102
-	ELSE  reduce 102
-	END  reduce 102
-	END_IF  reduce 102
-	OUTF  reduce 102
-	TYPEDEF  reduce 102
-	RET  reduce 102
-	UINTEGER  reduce 102
-	SINGLE  reduce 102
-	REPEAT  reduce 102
-	GOTO  reduce 102
-	';'  reduce 102
-
-
-state 192
-	repeat_statement : REPEAT BEGIN END UNTIL cond ')' .  (103)
-
-	.  reduce 103
-
-
-state 193
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . cond ')'  (96)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . cond  (98)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . ')'  (105)
-
-	error  shift 42
-	ID  shift 43
-	CTE  shift 44
-	CHARCH  shift 45
-	')'  shift 202
-	'-'  shift 47
-	.  error
-
-	expr  goto 48
-	cond  goto 203
-	expr_pair  goto 50
-	term  goto 51
-	fact  goto 52
-	fun_invoc  goto 53
-
-
 state 194
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond .  (97)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond . ')'  (99)
+	repeat_statement : REPEAT BEGIN END UNTIL '(' cond . ')'  (102)
+	repeat_statement : REPEAT BEGIN END UNTIL '(' cond .  (104)
 
 	')'  shift 204
-	$end  reduce 97
-	error  reduce 97
-	ID  reduce 97
-	TAG  reduce 97
-	IF  reduce 97
-	ELSE  reduce 97
-	END  reduce 97
-	END_IF  reduce 97
-	OUTF  reduce 97
-	TYPEDEF  reduce 97
-	RET  reduce 97
-	UINTEGER  reduce 97
-	SINGLE  reduce 97
-	REPEAT  reduce 97
-	GOTO  reduce 97
-	';'  reduce 97
+	$end  reduce 104
+	error  reduce 104
+	ID  reduce 104
+	TAG  reduce 104
+	IF  reduce 104
+	ELSE  reduce 104
+	END  reduce 104
+	END_IF  reduce 104
+	OUTF  reduce 104
+	TYPEDEF  reduce 104
+	RET  reduce 104
+	UINTEGER  reduce 104
+	SINGLE  reduce 104
+	REPEAT  reduce 104
+	GOTO  reduce 104
+	';'  reduce 104
 
 
 state 195
-	repeat_statement : REPEAT BEGIN executable_statement_list END '(' cond . ')'  (104)
+	repeat_statement : REPEAT BEGIN END UNTIL cond ')' .  (105)
 
-	')'  shift 205
-	.  error
+	.  reduce 105
 
 
 state 196
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . cond ')'  (98)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . cond  (100)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' . ')'  (107)
+
+	error  shift 41
+	ID  shift 42
+	CTE  shift 43
+	CHARCH  shift 44
+	')'  shift 205
+	'-'  shift 46
+	.  error
+
+	expr  goto 47
+	cond  goto 206
+	expr_pair  goto 49
+	term  goto 50
+	fact  goto 51
+	fun_invoc  goto 52
+
+
+state 197
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond .  (99)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond . ')'  (101)
+
+	')'  shift 207
+	$end  reduce 99
+	error  reduce 99
+	ID  reduce 99
+	TAG  reduce 99
+	IF  reduce 99
+	ELSE  reduce 99
+	END  reduce 99
+	END_IF  reduce 99
+	OUTF  reduce 99
+	TYPEDEF  reduce 99
+	RET  reduce 99
+	UINTEGER  reduce 99
+	SINGLE  reduce 99
+	REPEAT  reduce 99
+	GOTO  reduce 99
+	';'  reduce 99
+
+
+state 198
+	repeat_statement : REPEAT BEGIN executable_statement_list END '(' cond . ')'  (106)
+
+	')'  shift 208
+	.  error
+
+
+state 199
 	parametro : var_type error .  (45)
 
 	.  reduce 45
 
 
-state 197
+state 200
 	parametro : var_type ID .  (43)
 
 	.  reduce 43
 
 
-state 198
+state 201
 	declare_fun_header : var_type FUN error '(' parametro ')' . BEGIN  (35)
 
-	BEGIN  shift 206
+	BEGIN  shift 209
 	.  error
-
-
-state 199
-	declare_fun_header : var_type FUN ID '(' error ')' . BEGIN  (36)
-
-	BEGIN  shift 207
-	.  error
-
-
-state 200
-	declare_fun_header : var_type FUN ID '(' parametro ')' . BEGIN  (34)
-
-	BEGIN  shift 208
-	.  error
-
-
-state 201
-	repeat_statement : REPEAT BEGIN END UNTIL '(' cond ')' .  (100)
-
-	.  reduce 100
 
 
 state 202
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' ')' .  (105)
+	declare_fun_header : var_type FUN ID '(' error ')' . BEGIN  (36)
 
-	.  reduce 105
+	BEGIN  shift 210
+	.  error
 
 
 state 203
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond . ')'  (96)
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond .  (98)
+	declare_fun_header : var_type FUN ID '(' parametro ')' . BEGIN  (34)
 
-	')'  shift 209
-	$end  reduce 98
-	error  reduce 98
-	ID  reduce 98
-	TAG  reduce 98
-	IF  reduce 98
-	ELSE  reduce 98
-	END  reduce 98
-	END_IF  reduce 98
-	OUTF  reduce 98
-	TYPEDEF  reduce 98
-	RET  reduce 98
-	UINTEGER  reduce 98
-	SINGLE  reduce 98
-	REPEAT  reduce 98
-	GOTO  reduce 98
-	';'  reduce 98
+	BEGIN  shift 211
+	.  error
 
 
 state 204
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond ')' .  (99)
+	repeat_statement : REPEAT BEGIN END UNTIL '(' cond ')' .  (102)
 
-	.  reduce 99
+	.  reduce 102
 
 
 state 205
-	repeat_statement : REPEAT BEGIN executable_statement_list END '(' cond ')' .  (104)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' ')' .  (107)
 
-	.  reduce 104
+	.  reduce 107
 
 
 state 206
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond . ')'  (98)
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond .  (100)
+
+	')'  shift 212
+	$end  reduce 100
+	error  reduce 100
+	ID  reduce 100
+	TAG  reduce 100
+	IF  reduce 100
+	ELSE  reduce 100
+	END  reduce 100
+	END_IF  reduce 100
+	OUTF  reduce 100
+	TYPEDEF  reduce 100
+	RET  reduce 100
+	UINTEGER  reduce 100
+	SINGLE  reduce 100
+	REPEAT  reduce 100
+	GOTO  reduce 100
+	';'  reduce 100
+
+
+state 207
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL cond ')' .  (101)
+
+	.  reduce 101
+
+
+state 208
+	repeat_statement : REPEAT BEGIN executable_statement_list END '(' cond ')' .  (106)
+
+	.  reduce 106
+
+
+state 209
 	declare_fun_header : var_type FUN error '(' parametro ')' BEGIN .  (35)
 
 	.  reduce 35
 
 
-state 207
+state 210
 	declare_fun_header : var_type FUN ID '(' error ')' BEGIN .  (36)
 
 	.  reduce 36
 
 
-state 208
+state 211
 	declare_fun_header : var_type FUN ID '(' parametro ')' BEGIN .  (34)
 
 	.  reduce 34
 
 
-state 209
-	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')' .  (96)
+state 212
+	repeat_statement : REPEAT BEGIN executable_statement_list END UNTIL '(' cond ')' .  (98)
 
-	.  reduce 96
+	.  reduce 98
 
 
-39 terminals, 36 nonterminals
-116 grammar rules, 210 states
+39 terminals, 39 nonterminals
+119 grammar rules, 213 states
