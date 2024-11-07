@@ -206,6 +206,7 @@ var_type
         ;
 
 
+
 if_statement
 /* 
         : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
@@ -231,25 +232,22 @@ if_statement
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
         ;
 */
-: if_cond then_statement END_IF {
-        // si no hay else, hay un terceto de salto menos.
-        // aca completo el terceto (por si la condicion no se  cumple)
-
+: if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_Statement y hacer esto ahi.
+        //completo terceto
+        Terceto.completeTerceto(Terceto.popTerceto(), null,String.valueOf(Integer.parseInt($2.sval) + 1)); 
 }
 | if_cond then_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 
-| if_cond then_statement_else ctrl_block_statement END_IF{
-        // completo el terceto q iba 
-        Terceto.completeTerceto(Terceto.popTerceto(), Integer.toString(Integer.parseInt($4.sval) + 1), null);
+| if_cond then_statement else_statement {
+        // completo el terceto
+        Terceto.completeTerceto(Terceto.popTerceto(),String.valueOf(Integer.parseInt($3.sval) + 1),null); 
+
 }
-| if_cond then_statement_else END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. ") ; }
-| if_cond then_statement_else error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta ") ; } 
-| if_cond then_statement_else ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 ;
 
 if_cond
         : IF '(' cond ')' {
-                $$.sval = Terceto.addTerceto("BF",$3,null)      //$3 devuelve si se cumple o no la cond
+                $$.sval = Terceto.addTerceto("BF",$3,null)
                 Terceto.pushTerceto($$.sval) //apilo terceto incompleto.
         } 
         | IF cond {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
@@ -258,22 +256,52 @@ if_cond
         | IF cond ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         ;
 
-/* LA ACCION DEL THEN ES DISTINTA SI HAY ELSE O SI NO HAY... */
+// if_cond {terceto incompleto 1, salto a rama else o fin del if}
+// then ctrl_statement {terceto incompleto 2, salto a fin del if y completo terceto 1}
+// else ctrl_statement {completo terceto 2}
 
+//si hay else:
+// if_cond {terceto incompleto 1, salto a rama else}
+// then ctrl_statement {terceto incompleto 2, salto a fin del if y completo terceto 1}
+// else ctrl_statement {completo terceto 2}
+//fin del ifelse (nada? podria hacer lo q viene desp de else ctrl_statement)
+// si no hay else:
+// if_cond {terceto incompleto, salto a fin del if}
+// then ctrl_statement {completo}
+// fin del ifcomun (nada?)
+
+//compatiblidad entre ambas posibilidades:
+// inf_cond {apilo terceto incompleto para salto si no se cumple cond}
+// then ctrl_statement {NO COMPLETO NADA. } 
+//FIN IF COMUN: completo terceto
+//else: apilo terceto incompleto para salto a fin del if y completo terceto cond
+// else ctrl_statement : NO HAGO NADA
+// fin if else completo terceto incompleto de salto a fin del if
+//hay 1 distincion en ambos casos, en el then. para lograrlo:
+//
 
 then_statement
         : THEN ctrl_block_statement {
-                $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, segundo componente se completara despues. SI NO ELSE NOO
-                Terceto.completeTerceto(Terceto.popTerceto(),null,Integer.toString(Integer.parseInt($$.sval) + 1));//creo seria $$.sval + 1 (pasar a int y luego volver a string)
-                Terceto.pushTerceto($$.sval); 
+                $$.sval = $2.sval       //devuelve ultimo terceto
         }
         /*| THEN  {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia/s ejecutable/s dentro del IF "); }*/
         | THEN error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
         ;
 
-then_statement_else
-        : THEN ctrl_block_statement ELSE        /* va a dar shift reduce */
+else_statement
+        : else_tk ctrl_block_statement END_IF {$$.sval = $2.sval;}      //devulve ultimo terceto
+        | else_tk END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. "); }
+        | else_tk error END_IF {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta "); }
+        | else_tk ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
+        ;
 
+else_tk
+        : ELSE {
+                $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, primer operando se completara despues.
+                Terceto.completeTerceto(Terceto.popTerceto(),null,String.valueOf(Integer.parseInt($$.sval) + 1));//creo seria $$.sval + 1 (pasar a int y luego volver a string)
+                Terceto.pushTerceto($$.sval);
+        }
+        ;
 ctrl_block_statement
         : executable_statement_list
         ;
