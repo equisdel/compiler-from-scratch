@@ -100,15 +100,29 @@ declare_var
                 chkAndDeclareVar($1.sval, $2.sval);
                 }
         ;     
-
+//--> DUDA: recursion??? alcance de la misma funcion dentro de la misma?
+// TP4: nos toco chequear recursion en ejecución. (ademas de overflow en productos de enteros y resultados negativos en restas de uintegers)
+// chequear quien invoca y a quien
+// FUNCIONES SE HACEN A PARTE, (POR EJ AL FINAL, DELIMITADOS POR TERCETO DELIMITADOR, PARA INICIO Y FIN) PARA PODER DESP LLAMARLAS (O EN LISTA APARTE)
+// EN ASSEMBLER, PONER SIOSI RETURN (ASSEMBLER LO NECESITA)
 declare_fun
-        : declare_fun_header fun_body END {
+        : declare_fun_header fun_body END { 
                 // Actualización del scope: fin de la función fuerza retorno al ámbito del padre
                         popScope();
                 }
         ;
+// --> DUDA: USO PILA PARA QUE HAYA RETURNS? no hace falta.
+//  si hay mas de 1 return no puedo distinguir si es porq estaban segudos o uno estaba en un if, caso que estaria bien. asiq ni lo chequeo
+// se hara un ret 0 en ejecucion (assmebler) por las duads
+// si puedo chequear (es facil) que exista al menos 1 return en la funcion.
 
-/* necesario para poder apilar y desapilar ambito */
+// --> si el/los return estan en un if, es decir, puede que termine la funcion y no haya return
+// se asume return = 0 , por lo que es un warning  A DETECTAR Y AVISAR, EN EJECUCION. ¿Como???
+// --> opcion1: hacer terceto una vez terminada la funcion (antes de END) para
+//     dar warning (TERCETO DE WARNING, NO YYERROR ACA SINO UN TERCETO DE OUTF QUE IMPRIMA EN EJEC)
+// de que no hubo return (xq si llega a ahi es xq no retorno) y el terceto de return default.
+// pero y  hay mas de 1 return? hay que dar error semantico. asiq la pila hara falta igual.
+// ERRORES en ejecucion abortan la ejec.
 declare_fun_header
 
         : var_type FUN ID '(' parametro ')' BEGIN {
@@ -156,9 +170,13 @@ declare_pair
         : TYPEDEF PAIR '<' var_type '>' ID  {
                 // OJO ESTO ES UN TIPO, NO UN NOMBRE DE VARIABLE.. 
                 if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                if (isDeclared){yyerror("Error: variable ya declarada, linea "+AnalizadorLexico.line_number);} 
-                AnalizadorLexico.t_simbolos.add_entry($6.sval+":"+actualScope,"ID","pair");
-                AnalizadorLexico.t_simbolos.set_use($6.sval+":"+actualScope,"type_name");
+                // chequeo si está redeclarado
+                if (AnalizadorLexico.t_simbolos.get_entry($6.sval) != null && AnalizadorLexico.t_simbolos.get_entry($6.sval).getUse() == "type_name") {
+                        yyerror("Error: tipo ya declarado, linea "+AnalizadorLexico.line_number);
+                } else {
+                        AnalizadorLexico.t_simbolos.add_entry($6.sval+":"+actualScope,"ID","pair");
+                        AnalizadorLexico.t_simbolos.set_use($6.sval+":"+actualScope,"type_name");
+                }
 
 
         }
@@ -199,10 +217,15 @@ fun_body
         /*si no va nada mas está al pedo la regla*/
         /* POSIBLE ERROR: NO HAY RETURN  (semantica)*/
 
+//--> DUDAS!!
 var_type
         : UINTEGER
         | SINGLE
-        | ID
+        | ID{   // chequear: tipo no definido por el usuario (debe estar definido antes.)
+                // chequear: tipo no puede ser igual a nombre de variable ??
+                // chequear: tipo no puede ser igual a nombre de funcion ??
+                // 
+                }
         ;
 
 
@@ -356,7 +379,7 @@ assign_statement
                         }
                         
                 }
-             
+
         | expr_pair ASSIGN expr {
                 //chequear id exista, sea tipo pair
                 // chequear tipos
@@ -526,11 +549,12 @@ repeat_begin
                 $$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
         }
         ;
-
+// DUDA --> ir concatenando strings, con ',' y aca separar y hacer los tercetos individuales.
 mult_assign_statement
         : id_list ASSIGN expr_list /* chequear cantidades, tipos, crear tercetos */{
+                // COMO VOY A RECORRER TODO IGUAL, EN VEZ DE LLEVAR CANTE Y CANTID, LO CUENTO CUANDO RECORRO.
                 if (cantE != cantID) {yyerror("Error en linea "+AnalizadorLexico.line_number+": cantidad de expresiones no coincide con cantidad de variables. "); }
-                else { // opcion1: recorrer y separar por ',' opcion2: ir l
+                else { 
 
                 }
                 cantE = 0;
@@ -642,7 +666,7 @@ goto_statement
         }
 
         public boolean isDeclared(String id){
-                // chequea si ya fue declarada en el scope actual u otro anterior ( va pregutnando con cada scope, sacando el ultimo)
+                // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo)
                 String scopeaux = actualScope;
                 while (actualScope.lastIndexOf(":") != -1){
                         if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {       
@@ -656,20 +680,23 @@ goto_statement
 
         public Boolean chkVar(String tipo, String id){
                 if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                else if (isDeclared(id)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
+                else if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) == null) {
+                        yyerror("WARNING: La variable "+id+" esta siendo redeclarada. Ya fue declarada en el scope actual ");}
+                        // WARNING O ERROR? PODRIA SER WARNING AL NO TENER ENCUENTA ESTA REDECLARACION. ACLARAR SI SE DESCARTA LA REDECLARACION.
                 else { AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
                         AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"variable_name");
                         return true;
                         
                 }
         }
-
+// DUDA --> SOLUCIONAMOS ESOS LEXEMAS SUELTOS O NO JODEN? SE PEDIAN PARA TP1
         public chkAndDeclareVar(String tipo, String id){
                 
                 if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 // chequear si la variable ya fue declarada en el scope actual:  si tiene scope asociado y es el actual.
                 
-                if (isDeclared(id)) {yyerror("WARNING: La variable "+id+" ya fue declarada en el scope actual o uno anterior. ");}
+                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {
+                        yyerror("WARNING: La variable "+id+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");}
                 else {
                 // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo. (elimino y agrego con esto):
                 AnalizadorLexico.t_simbolos.del_entry(id);      //no tiene sentido borrarlo, porque seguro despues vuelva a estar..
