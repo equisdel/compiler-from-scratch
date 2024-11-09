@@ -41,9 +41,8 @@ statement
         /* | return_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' ; } */
         ;       
 /* cada una debe terminar con ;*/
-/*Las sentencias declarativas pueden aparecer en cualquier lugar del código fuente, exceptuando los*/
-/*bloques de las sentencias de control.*/
-/*Los elementos declarados sólo serán visibles a partir de su declaración (esto será chequeado en etapas posteriores).*/
+/*Las sentencias declarativas pueden aparecer en cualquier lugar del código fuente, exceptuando los
+bloques de las sentencias de control.*/
 
 optional_semicolon
     : ';'
@@ -100,9 +99,18 @@ declare_var
                 chkAndDeclareVar($1.sval, $2.sval);
                 }
         ;     
+
+var_list        /* solo se usa en declaracion multiple. */
+        : ID ',' ID
+        | var_list ',' ID
+       /* | ID error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de lista de variables. Asegurate haya ',' entre las variables ") ; }*/
+        ;
+
+/* no hay problema de ambiguedad porque a diferencia de id_list, esta regla*/
+/* puede reducirse solo despues que aparezcla var_type */
 //--> DUDA: recursion??? alcance de la misma funcion dentro de la misma?
 // TP4: nos toco chequear recursion en ejecución. (ademas de overflow en productos de enteros y resultados negativos en restas de uintegers)
-// chequear quien invoca y a quien
+// chequear quien invoca y a quien      ¿agregamos terceto de chequeoo? no creo. en assembler se hara el chequeo para toda funcion.
 // FUNCIONES SE HACEN A PARTE, (POR EJ AL FINAL, DELIMITADOS POR TERCETO DELIMITADOR, PARA INICIO Y FIN) PARA PODER DESP LLAMARLAS (O EN LISTA APARTE)
 // EN ASSEMBLER, PONER SIOSI RETURN (ASSEMBLER LO NECESITA)
 declare_fun
@@ -112,16 +120,10 @@ declare_fun
                 }
         ;
 // --> DUDA: USO PILA PARA QUE HAYA RETURNS? no hace falta.
-//  si hay mas de 1 return no puedo distinguir si es porq estaban segudos o uno estaba en un if, caso que estaria bien. asiq ni lo chequeo
-// se hara un ret 0 en ejecucion (assmebler) por las duads
+//  si hay mas de 1 return no puedo distinguir si es porq estaban seguidos o uno estaba en un if, caso que estaria bien. asiq ni lo chequeo
+// se hara un ret 0 en ejecucion (assembler) por las dudas
 // si puedo chequear (es facil) que exista al menos 1 return en la funcion.
 
-// --> si el/los return estan en un if, es decir, puede que termine la funcion y no haya return
-// se asume return = 0 , por lo que es un warning  A DETECTAR Y AVISAR, EN EJECUCION. ¿Como???
-// --> opcion1: hacer terceto una vez terminada la funcion (antes de END) para
-//     dar warning (TERCETO DE WARNING, NO YYERROR ACA SINO UN TERCETO DE OUTF QUE IMPRIMA EN EJEC)
-// de que no hubo return (xq si llega a ahi es xq no retorno) y el terceto de return default.
-// pero y  hay mas de 1 return? hay que dar error semantico. asiq la pila hara falta igual.
 // ERRORES en ejecucion abortan la ejec.
 declare_fun_header
 
@@ -189,13 +191,7 @@ declare_pair
         /* PONER EL ';' AL FINAL QUITA AMBIGUEDADES */
 
 
-var_list        /* solo se usa en declaracion multiple. */
-        : ID ',' ID
-        | var_list ',' ID
-       /* | ID error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de lista de variables. Asegurate haya ',' entre las variables ") ; }*/
-        ;
-/* no hay problema de ambiguedad porque a diferencia de id_list, esta regla*/
-/* puede reducirse solo despues que aparezcla var_type */
+
 
 parametro
         : var_type ID {$$.sval = $1.sval+"-"+$2.sval}
@@ -255,7 +251,7 @@ if_statement
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
         ;
 */
-: if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_Statement y hacer esto ahi.
+: if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_statement y hacer esto ahi.
         //completo terceto
         Terceto.completeTerceto(Terceto.popTerceto(), null,String.valueOf(Integer.parseInt($2.sval) + 1)); 
 }
@@ -389,6 +385,9 @@ assign_statement
         | var_type ID ASSIGN expr {yyerror("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
 
+        // el terceto de operaciones es el mismo para signel o uinteger, ya que el tipo del terceto es
+        // el tipo resultante de la operacion, por ende el tipo de los operadores
+        // ya que antes de operar, se hara la conversion en caso de ser necesario.
 expr    : expr '+' term    {
                 String t_subtype1;
                 String id1;
@@ -397,15 +396,16 @@ expr    : expr '+' term    {
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
-                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("SUMA_S",id1,id2, t_subtype);}
-                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("SUMA_U",id1,id2, t_subtype);}
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("SUMA",id1,id2, t_subtype);}
                         else {yyerror("Tipo no valido..")}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
-                        $$.sval= Terceto.addTercetoT("SUMA_S",id1,id2, t_subtype);}
+                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype);}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en suma. "); }
 }
+
         | expr '-' term         {
                 String t_subtype1;
                 String id1;
@@ -414,13 +414,13 @@ expr    : expr '+' term    {
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
-                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("RESTA_S",id1,id2, t_subtype);}
-                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("RESTA_U",id1,id2, t_subtype);}
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("RESTA",id1,id2, t_subtype);}
                         else {yyerror("Tipo no valido..")}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
-                        $$.sval= Terceto.addTercetoT("RESTA_S",id1,id2, t_subtype);}
+                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype);}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en resta. "); }
         }
         | term 
@@ -436,13 +436,13 @@ term    : term '*' fact {
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
-                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("MUL_S",id1,id2, t_subtype);}
-                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("MUL_U",id1,id2, t_subtype);}
+                        if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype);}
+                        else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("MUL",id1,id2, t_subtype);}
                         else {yyerror("Tipo no valido..")}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
-                        $$.sval= Terceto.addTercetoT("MUL_S",id1,id2, t_subtype);}
+                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype);}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en multiplicacion. "); }
 }
         | term '/' fact {
@@ -453,13 +453,13 @@ term    : term '*' fact {
                 chkAndGetTerc($1,t_subtype1,id1);
                 chkAndGetTerc($3,t_subtype2,id2);
                         if (t_subtype1 = t_subtype2){
-                                if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("DIV_S",id1,id2, t_subtype);}
-                                else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("DIV_U",id1,id2, t_subtype);}
+                                if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype);}
+                                else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("DIV",id1,id2, t_subtype);}
                                 else {yyerror("Tipo no valido..")}
                         } else if (isCompatible(t_subtype1,t_subtype2)){
                                 if (t_subtype1 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                                 else if (t_subtype2 != "SINGLE") {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
-                                $$.sval= Terceto.addTercetoT("DIV_S",id1,id2, t_subtype);}
+                                $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype);}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en division. "); }
         }
         | fact 
@@ -496,16 +496,21 @@ expr_pair
         ;
 
 fun_invoc
-        : ID '(' expr ')'       /* agregamos terceto del llamado???  + verifico si existe la funcion? deberia estar declarada antes (Asumimos) */
+        : ID '(' expr ')' { /* agregamos terceto del llamado???  + verifico si existe la funcion? deberia estar declarada antes (Asumimos) */
+                //chequear si existe la funcion
+                //chequear si la cantidad de parametros es correcta
+                //chequear si los tipos de parametros son correctos
+                //crear terceto
+        }      
         | ID '(' expr error ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
         ;
 
 outf_statement
-        : OUTF '(' expr ')'     {$$.sval = Terceto.addTerceto("OUTF", $3.sval, null)} 
+        : OUTF '(' expr ')'     {       //habria q hacer algun chequeo???
+                $$.sval = Terceto.addTerceto("OUTF", $3.sval, null)} 
         | OUTF '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
         | OUTF error {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
         ;
-        /* en semantica: tipo de parametro incorrecto */
 
 //tercetos repeat:
 //REPEAT BEGIN
@@ -552,7 +557,40 @@ repeat_begin
 // DUDA --> ir concatenando strings, con ',' y aca separar y hacer los tercetos individuales.
 mult_assign_statement
         : id_list ASSIGN expr_list /* chequear cantidades, tipos, crear tercetos */{
-                // COMO VOY A RECORRER TODO IGUAL, EN VEZ DE LLEVAR CANTE Y CANTID, LO CUENTO CUANDO RECORRO.
+                int cantE = 0;
+                int cantID = 0;
+                // recorro el string de $1 y el de $3 , separando por ',' los id y expr, para chequear cantidades y luego individualiazr las asignaciones
+                // chequeando lo mismo que de una asignacion simple, la compatibilidad de tipos, y creando los tercetos.
+                // funcion:
+        
+                String[] idList = $1.sval.split(",");
+                String[] exprList = $3.sval.split(",");
+                if (idList.length != exprList.length){
+                        yyerror("Error en linea "+AnalizadorLexico.line_number+": cantidad de expresiones no coincide con cantidad de variables. ");
+                }
+                else {
+                        for (int i = 0; i < idList.length; i++){
+                                String subtypeT;
+                                String idT;
+                                String subtypeID;
+                                String idID;
+                                chkAndGetTerc(exprList[i],subtypeT,idT);
+                                chkAndGetTerc(idList[i],subtypeID,idID);
+                                if (subtypeT = subtypeID){
+                                        Terceto.addTerceto(":=",idID,idT);
+                                }
+                                else if (subtypeID = "SINGLE" && subtypeT = "UINTEGER"){
+                                        Terceto.addTercetoT("utos",idT,null,"SINGLE");
+                                        Terceto.addTerceto(":=",idID,idT);
+                                }
+                                else if (subtypeID = "UINTEGER" && subtypeT = "SINGLE"){
+                                        Terceto.addTercetoT("utos",idT,null,"SINGLE");
+                                        Terceto.addTerceto(":=",idID,idT);
+                                }
+                                else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
+                        }
+                }
+
                 if (cantE != cantID) {yyerror("Error en linea "+AnalizadorLexico.line_number+": cantidad de expresiones no coincide con cantidad de variables. "); }
                 else { 
 
@@ -567,11 +605,11 @@ mult_assign_statement
 id_list
         : elem_list ',' elem_list {
                 
-                cantID = cantID + 2;
+                $$.sval = $1.sval + "," + $3.sval;
 
         }
         | id_list ',' elem_list{
-                cantID = cantID + 1;
+                $$.sval = $$.sval + ',' + $3.sval;
         }
         ;
 
@@ -585,11 +623,11 @@ a,b,c := 1,2,3;
 */
 expr_list       /* solo se usa en asignacion multiple */
         : expr ',' expr{
-                cantE = cantE + 2;
+                $$.sval = $1.sval + "," + $3.sval;
         }
         /* | expr expr {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba una ',' entre las expresiones en ; }  */
         | expr_list ',' expr{
-                cantE = cantE + 1;
+                $$.sval = $$.sval + ',' + $3.sval;
                 
         }
         /*| error {yyerror("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
@@ -601,6 +639,10 @@ tag_statement
                 //si no está, agregar a tabla de etiquetas
         }
         ;
+
+// hacer lista de gotos pendientes, que al final chequee. evaluar todos los casos aver si esto cumple.
+// no complicarsela.
+// al encontrar tag podria sacarlo, o directamente guardar en algun lado y al final del programa chequear.
 
 goto_statement
         : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */{
@@ -615,9 +657,7 @@ goto_statement
 %%
         public ArrayList<String> errores = new ArrayList<String>();
         public String actualScope = "main";
-        private int CantE = 0;
-        private int CantID = 0;
-        static Stack<Integer> UntilStack = new Stack<>();
+        //static Stack<Integer> UntilStack = new Stack<>();
 
 
 	public static void yyerror(String msg){
@@ -638,6 +678,7 @@ goto_statement
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
         }
 
+        // EVALUAR PASAR PRIMER PARAMETRO A STRING, ASI LO USO EN MAS LUGARESSSS
         public void chkAndGetTerc(ParseVal varParser, String t_subtype1, String id1){   //t_subtype1 y id1 vienen vacios, vuelven modificadosf
                 if isTerceto(varParser.sval) {
                         t_subtype1 = varParser.getSubtipo(varParser.sval);
