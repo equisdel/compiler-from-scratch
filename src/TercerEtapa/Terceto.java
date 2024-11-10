@@ -42,7 +42,7 @@ public class Terceto {
         return ("["+ (TerList.size()-1) +"]"); // DEVUELVE NUMERO DE TERCETO (ID)
     }
     // tal vez es mejor hacer clase TerList, que tenga un arraylist de tercetos, y metodos para agregar tercetos, y para obtener tercetos por id
-    static public String getSubtype(String id){
+    static public String getSubtipo(String id){
         return TerList.get(Integer.parseInt(id)).subtipo;
     }
 

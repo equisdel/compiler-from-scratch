@@ -327,14 +327,12 @@ ctrl_block_statement
 
 cond
         : expr cond_op expr {
-                String t_subtype1;
-                String id1;
-                String t_subtype2;
-                String id2;
-                chkAndGetTerc($1,t_subtype1,id1);
-                chkAndGetTerc($3,t_subtype2,id2);
-                $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
+                String t_subtype1 = chkAndGetTerc($1.sval);
+                String id1 = $1.sval;
+                String t_subtype2 = chkAndGetTerc($3.sval);
+                String id2 = $3.sval;
                 // compatiblidades de comparacion?? igual que en operaciones
+                $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
         }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
         ;
@@ -357,7 +355,7 @@ assign_statement
 
                         String subtypeT;
                         String id;
-                        chkAndGetTerc($3,subtypeT,id);
+                        chkAndGetTerc($3.sval,subtypeT,id);
                         String subtypeID = AnalizadorLexico.t_simbolos.get_subtype($1.sval);
                         if (subtypeT = subtypeID){
                                 Terceto.addTerceto(":=",$1.sval,$3.sval);
@@ -393,8 +391,8 @@ expr    : expr '+' term    {
                 String id1;
                 String t_subtype2;
                 String id2;
-                chkAndGetTerc($1,t_subtype1,id1);
-                chkAndGetTerc($3,t_subtype2,id2);
+                chkAndGetTerc($1.sval,t_subtype1,id1);
+                chkAndGetTerc($3.sval,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
                         if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype);}
                         else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("SUMA",id1,id2, t_subtype);}
@@ -411,8 +409,8 @@ expr    : expr '+' term    {
                 String id1;
                 String t_subtype2;
                 String id2;
-                chkAndGetTerc($1,t_subtype1,id1);
-                chkAndGetTerc($3,t_subtype2,id2);
+                chkAndGetTerc($1.sval,t_subtype1,id1);
+                chkAndGetTerc($3.sval,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
                         if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype);}
                         else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("RESTA",id1,id2, t_subtype);}
@@ -433,8 +431,8 @@ term    : term '*' fact {
                 String id1;
                 String t_subtype2;
                 String id2;
-                chkAndGetTerc($1,t_subtype1,id1);
-                chkAndGetTerc($3,t_subtype2,id2);
+                chkAndGetTerc($1.sval,t_subtype1,id1);
+                chkAndGetTerc($3.sval,t_subtype2,id2);
                 if (t_subtype1 = t_subtype2){
                         if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype);}
                         else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("MUL",id1,id2, t_subtype);}
@@ -450,8 +448,8 @@ term    : term '*' fact {
                 String id1;
                 String t_subtype2;
                 String id2;
-                chkAndGetTerc($1,t_subtype1,id1);
-                chkAndGetTerc($3,t_subtype2,id2);
+                chkAndGetTerc($1.sval,t_subtype1,id1);
+                chkAndGetTerc($3.sval,t_subtype2,id2);
                         if (t_subtype1 = t_subtype2){
                                 if (t_subtype1 = "SINGLE") { $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype);}
                                 else if (t_subtype1 = "UINTEGER") {$$.sval = Terceto.addTercetoT("DIV",id1,id2, t_subtype);}
@@ -554,7 +552,7 @@ repeat_begin
                 $$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
         }
         ;
-// DUDA --> ir concatenando strings, con ',' y aca separar y hacer los tercetos individuales.
+
 mult_assign_statement
         : id_list ASSIGN expr_list /* chequear cantidades, tipos, crear tercetos */{
                 int cantE = 0;
@@ -679,14 +677,12 @@ goto_statement
         }
 
         // EVALUAR PASAR PRIMER PARAMETRO A STRING, ASI LO USO EN MAS LUGARESSSS
-        public void chkAndGetTerc(ParseVal varParser, String t_subtype1, String id1){   //t_subtype1 y id1 vienen vacios, vuelven modificadosf
-                if isTerceto(varParser.sval) {
-                        t_subtype1 = varParser.getSubtipo(varParser.sval);
-                        id1 = varParser.sval;
+        public String chkAndGetType(ParseVal valStr){  
+                if isTerceto(valStr) {
+                        return Terceto.getSubtipo(valStr);
                         }
                 else {
-                        t_subtype1 = AnalizadorLexico.t_simbolos.get_subtype(varParser.sval);
-                        id1 = varParser.sval;
+                        return AnalizadorLexico.t_simbolos.get_subtype(varParser.sval);
                         }
         }
         
