@@ -16,6 +16,11 @@ public class TablaDeSimbolos {
         symbols.put(lexema.toUpperCase(),new_entry);
     }
 
+    public void add_entry(String lexema, String type, String subtype, String uso) {
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase(),uso.toUpperCase());   // Se pasa todo a upper case
+        symbols.put(lexema.toUpperCase(),new_entry);
+    }
+
 
     public void del_entry(String key){
         symbols.remove(key);
@@ -44,6 +49,13 @@ public class TablaDeSimbolos {
         if (retorno == null) return;
         retorno.setUse(uso);
     }
+
+    public void set_value(String key, String valor) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return;
+        retorno.setValue(valor);
+    }
+
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");

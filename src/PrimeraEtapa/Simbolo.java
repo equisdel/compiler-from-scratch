@@ -16,6 +16,12 @@ public class Simbolo {
         //this.id = Simbolo.counter++;
     }
 
+    Simbolo(String type, String subtype, String usage) {
+        this.type = type;
+        this.subtype = subtype;
+        this.usage = usage;
+        //this.id = Simbolo.counter++;
+    }
 
     public String getTipo(){
         return this.type;

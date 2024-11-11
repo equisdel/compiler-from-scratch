@@ -3,14 +3,14 @@ import java.util.*;
 
 public class Terceto {
 
-    Boolean debug = true;
-    String operacion;
-    String op1;
-    String op2;
+    static Boolean debug = true;
+    public String operacion;
+    public String op1;
+    public String op2;
     public String subtipo = null;
 
 
-    static ArrayList<Terceto> TerList = new ArrayList<>();
+    public static ArrayList<Terceto> TerList = new ArrayList<>();
 
     static Stack<Integer> TerStack = new Stack<>();
 
@@ -74,5 +74,6 @@ public class Terceto {
 
     static public int getTercetoCount(){
         return TerList.size();
+    }
         
 }
