@@ -1,5 +1,6 @@
 import PrimeraEtapa.AnalizadorLexico;
 import SegundaEtapa.*;
+import TercerEtapa.Terceto;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -62,6 +63,7 @@ public class Main {
             Parser var21 = new Parser();
             var21.run();
             AnalizadorLexico.display();
+            Terceto.print_all();
          } else {
             System.out.println("Selecci\u00f3n inv\u00e1lida.");
             var19.close();

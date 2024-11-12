@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class TablaDeSimbolos {
 
-    private LinkedHashMap<String,Simbolo> symbols;        // Estructura eficiente. Key = Lexema.
+    private LinkedHashMap<String,Simbolo> symbols;       // Estructura eficiente. Key = Lexema.
 
     public TablaDeSimbolos() {
         symbols = new LinkedHashMap<>();
@@ -13,6 +13,11 @@ public class TablaDeSimbolos {
 
     public void add_entry(String lexema, String type, String subtype) {
         Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase());   // Se pasa todo a upper case
+        symbols.put(lexema.toUpperCase(),new_entry);
+    }
+
+    public void add_entry(String lexema, String type, String subtype, String uso, String value) {
+        Simbolo new_entry = new Simbolo(type.toUpperCase(), subtype.toUpperCase(),uso.toUpperCase(),value.toUpperCase());   // Se pasa todo a upper case
         symbols.put(lexema.toUpperCase(),new_entry);
     }
 
@@ -48,6 +53,12 @@ public class TablaDeSimbolos {
         Simbolo retorno = symbols.get(key);
         if (retorno == null) return;
         retorno.setUse(uso);
+    }
+
+    public String get_use(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return null;
+        return retorno.getUse();
     }
 
     public void set_value(String key, String valor) {

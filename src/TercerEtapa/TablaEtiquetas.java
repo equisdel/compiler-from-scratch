@@ -9,14 +9,14 @@ public class TablaEtiquetas {
     // Registro de scopes en espera
 
     public static class GoToInfo {
-        String tag; String scope; Terceto terceto; int line;
-        public GoToInfo(String tag, String scope, Terceto terceto, int line){
+        String tag; String scope; int terceto; int line;
+        public GoToInfo(String tag, String scope, int terceto, int line){
             this.tag = tag;         this.scope = scope;
             this.terceto = terceto; this.line = line;
         }
     }
     private static Stack<Set<GoToInfo>> gotos_en_espera = new Stack<>();   // representa noción de ámbito
-    private static String scope_actual = Parser.scope_actual;              // apuntan a la misma variable
+    private static String scope_actual = Parser.actualScope;              // apuntan a la misma variable
 
     // debe haber una estructura que marque los gotos "solidificados" (no van a cambiar) en contraposición a los que está en espera
     // idealmente tabla cumple esta función
@@ -59,7 +59,7 @@ public class TablaEtiquetas {
         }
     }
 
-    private static void stealFromParents(String scope) {
+    private static void stealFromParents(String tag, String scope) {
         HashMap<String,Set<GoToInfo>> tag_entry = tabla.get(tag);
         while (!scope.equals("main")) {
             String scope_padre = String.join(":", Arrays.copyOfRange(scope.split(":"), 0, scope.split(":").length - 1));
@@ -76,24 +76,24 @@ public class TablaEtiquetas {
     }
 
     // Cuando se declara una etiqueta en alguna parte del código - se supone que ya se chequeó que no existe?
-    public static void add_tag(String tag, String scope) {
+    public static void add_tag(String tag) {
         // Key: tag; Value: scope - gotos asociados.
         if (!tagIsDeclared(tag)) { 
             HashMap<String,Set<GoToInfo>> value = new HashMap<>();     // 
-            value.put(scope,null);
+            value.put(scope_actual,null);
             tabla.put(tag,value); 
         } else {
-            tabla.get(tag).put(scope,null);
+            tabla.get(tag).put(scope_actual,null);
         }
         // verificacion de gotos en espera (pueden ser asignados a un tag en este momento) - para el caso en que primero se pone el goto, luego la etiqueta
         verifyGoToStack(tag);
         // verificacion de tags de padres: "robos" de gotos que tienen un scope compatible.
-        stealFromParents(scope);
+        stealFromParents(tag,scope_actual);
         // desde el scope actual, recorro los padres.
         // miro cada goto asociado, robo aquellos cuyo scope contienen (substring) al actual.
     }
 
-    public static void add_goto(String tag, Terceto terceto, int line) {
+    public static void add_goto(String tag, int terceto, int line) {
         GoToInfo nuevo_goto = new GoToInfo(tag,scope_actual,terceto,line);    // Agregar número de línea donde se declaró
         // se verifica si ya se declaró la etiqueta localmente: implica búsqueda simple en tabla
         if (tagIsDeclaredLocal(tag,scope_actual)) {     // para el caso en que primero se pone la etiqueta y luego el goto

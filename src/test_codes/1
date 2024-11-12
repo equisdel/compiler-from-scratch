@@ -1,0 +1,17 @@
+programafacil
+begin
+    uinteger FUN fun1 (uinteger x1) begin
+        uinteger u1,u2;
+        u1,u2 := 1,2;
+        outf(u1+u2);
+    end
+    outf(u1+u2);
+    single s1;
+    uinteger u3;
+    ## s1 := 1.0s+1; da error, chequear
+    u3 := 1;    ## SI ES 0, DA ERROR!!! EL LEXICO NO AGREGA EL 0 A TS
+    ## EN ESTE MOMENTO DA ERROREEES
+    outf(fun1(s1));
+   ## fun1(s1); ##DEBERIA DAR ERROR
+
+end

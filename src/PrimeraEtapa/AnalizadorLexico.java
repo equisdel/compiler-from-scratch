@@ -66,7 +66,7 @@ public class AnalizadorLexico {
 				if (aldebug) System.out.println("\nSIG CHAR: \'"+next_char+"\'");	
 				if (next_char == 10) line_number++;			// Presencia de un salto de línea
 				if (next_char == -1) AnalizadorLexico.next_char = "?";	// Fin del programa
-				else AnalizadorLexico.next_char = ""+(char)next_char;
+				else AnalizadorLexico.next_char = (""+(char)next_char).toUpperCase();
 
 				if (aldebug) System.out.println("SIG CHAR: \'"+AnalizadorLexico.next_char+"\'");	// se imprime rarisimo
 				next_accion_semantica = automata.getNext(AnalizadorLexico.next_char);

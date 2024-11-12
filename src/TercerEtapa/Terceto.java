@@ -47,8 +47,8 @@ public class Terceto {
     }
 
     // agregar a la pila
-    static public void pushTerceto(int id){
-        TerStack.push(id);
+    static public void pushTerceto(String id){
+        TerStack.push(Integer.parseInt(id));
     }
 
     // desapilar
@@ -72,8 +72,25 @@ public class Terceto {
         if (debug){System.out.println("Terceto completado: "+ id);}
     }
 
-    static public int getTercetoCount(){
-        return TerList.size();
+    static public String getTercetoCount(){
+        return ""+TerList.size();
     }
-        
+
+    @Override
+    public String toString() {
+        return "Terceto{" +
+                "operacion='" + operacion + '\'' +
+                ", op1='" + op1 + '\'' +
+                ", op2='" + op2 + '\'' +
+                ", subtipo='" + subtipo + '\'' +
+                '}';
+    }
+    
+    static public void print_all() {
+        int i = 0;
+        for (Terceto t : Terceto.TerList) {
+            System.out.println("["+(i++)+"] "+t.toString());
+        }
+    }
+
 }
