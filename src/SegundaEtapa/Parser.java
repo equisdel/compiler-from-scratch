@@ -1144,31 +1144,31 @@ case 36:
 //#line 135 "grammar.y"
 {
 
-                /* Control de ID: debe ser único en el scope actual*/
+                if (!AnalizadorSemantico.validID(val_peek(6).sval,val_peek(4).sval)) yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
+                else {
+                        /* Control de ID: debe ser único en el scope actual*/
                         if (isDeclaredLocal(val_peek(4).sval))       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
-                        else { }/* ¿La compilación debería seguir? ¿Cómo? */
+                        else {
+                                String param_var = val_peek(2).sval.split("-")[1]; 
+                                String param_type = val_peek(2).sval.split("-")[0];
+                        /* Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)*/
+                                AnalizadorLexico.t_simbolos.del_entry(val_peek(4).sval);
+                                AnalizadorLexico.t_simbolos.add_entry(val_peek(4).sval+":"+actualScope,"ID",val_peek(6).sval,"fun_name",param_type);
+                                AnalizadorLexico.t_simbolos.set_use(val_peek(4).sval+":"+actualScope,"VARIABLE_NAME");
 
-                /* Control de ID: se verifica la primera letra del nombre (algunas iniciales son reservadas)*/
-                        if (!AnalizadorSemantico.validID(val_peek(6).sval,val_peek(4).sval))      yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
-                        else {} /* ¿La compilación debería seguir? ¿Cómo? */
+                        /* Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función*/
+                                pushScope(val_peek(4).sval); 
+                                
+                        /* Actualización del ID del parámetro: se actualiza el scope al actual*/
+                                AnalizadorLexico.t_simbolos.del_entry(param_var);
+                                AnalizadorLexico.t_simbolos.add_entry(param_var+":"+actualScope,"ID",val_peek(6).sval,"fun_name",param_type);
+                                AnalizadorLexico.t_simbolos.set_use(param_var+":"+actualScope,"VARIABLE_NAME");
 
-                /* Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)*/
-                        AnalizadorLexico.t_simbolos.del_entry(val_peek(4).sval);
-                        AnalizadorLexico.t_simbolos.add_entry(val_peek(4).sval+":"+actualScope,"ID",val_peek(2).sval,"fun_name",val_peek(6).sval);
-                        AnalizadorLexico.t_simbolos.set_use(val_peek(4).sval+":"+actualScope,"VARIABLE_NAME");
-
-                /* Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función*/
-                        pushScope(val_peek(4).sval); 
-                        
-                /* Actualización del ID del parámetro: se actualiza el scope al actual*/
-                        AnalizadorLexico.t_simbolos.del_entry(val_peek(2).sval);
-                        AnalizadorLexico.t_simbolos.add_entry(val_peek(2).sval+":"+actualScope,"ID",val_peek(2).sval,"fun_name",val_peek(6).sval);
-                        AnalizadorLexico.t_simbolos.set_use(val_peek(2).sval+":"+actualScope,"VARIABLE_NAME");
-
-                /* Posible generación de terceto de tipo LABEL*/
-                        yyval.sval = Terceto.addTerceto("LABEL",ID+":"+actualScope,null);
-
+                        /* Posible generación de terceto de tipo LABEL*/
+                                yyval.sval = Terceto.addTerceto("LABEL",val_peek(4).sval+":"+actualScope,null);
+                        }
                 }
+        }
 break;
 case 37:
 //#line 163 "grammar.y"

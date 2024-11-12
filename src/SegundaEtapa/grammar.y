@@ -134,31 +134,31 @@ declare_fun_header
 
         : var_type FUN ID '(' parametro ')' BEGIN {
 
-                // Control de ID: debe ser único en el scope actual
+                if (!AnalizadorSemantico.validID($1.sval,$3.sval)) yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
+                else {
+                        // Control de ID: debe ser único en el scope actual
                         if (isDeclaredLocal($3.sval))       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
-                        else { }// ¿La compilación debería seguir? ¿Cómo? 
+                        else {
+                                String param_var = $5.sval.split("-")[1]; 
+                                String param_type = $5.sval.split("-")[0];
+                        // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
+                                AnalizadorLexico.t_simbolos.del_entry($3.sval);
+                                AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$1.sval,"fun_name",param_type);
+                                AnalizadorLexico.t_simbolos.set_use($3.sval+":"+actualScope,"VARIABLE_NAME");
 
-                // Control de ID: se verifica la primera letra del nombre (algunas iniciales son reservadas)
-                        if (!AnalizadorSemantico.validID($1.sval,$3.sval))      yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
-                        else {} // ¿La compilación debería seguir? ¿Cómo? 
+                        // Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función
+                                pushScope($3.sval); 
+                                
+                        // Actualización del ID del parámetro: se actualiza el scope al actual
+                                AnalizadorLexico.t_simbolos.del_entry(param_var);
+                                AnalizadorLexico.t_simbolos.add_entry(param_var+":"+actualScope,"ID",$1.sval,"fun_name",param_type);
+                                AnalizadorLexico.t_simbolos.set_use(param_var+":"+actualScope,"VARIABLE_NAME");
 
-                // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
-                        AnalizadorLexico.t_simbolos.del_entry($3.sval);
-                        AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$5.sval,"fun_name",$1.sval);
-                        AnalizadorLexico.t_simbolos.set_use($3.sval+":"+actualScope,"VARIABLE_NAME");
-
-                // Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función
-                        pushScope($3.sval); 
-                        
-                // Actualización del ID del parámetro: se actualiza el scope al actual
-                        AnalizadorLexico.t_simbolos.del_entry($5.sval);
-                        AnalizadorLexico.t_simbolos.add_entry($5.sval+":"+actualScope,"ID",$5.sval,"fun_name",$1.sval);
-                        AnalizadorLexico.t_simbolos.set_use($5.sval+":"+actualScope,"VARIABLE_NAME");
-
-                // Posible generación de terceto de tipo LABEL
-                        $$.sval = Terceto.addTerceto("LABEL",ID+":"+actualScope,null);
-
+                        // Posible generación de terceto de tipo LABEL
+                                $$.sval = Terceto.addTerceto("LABEL",$3.sval+":"+actualScope,null);
+                        }
                 }
+        }
 
         | var_type FUN error '(' parametro ')' BEGIN {
                 yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ;

@@ -1,6 +1,6 @@
 programafacil
 begin
-    uinteger FUN fun1 (uinteger x1) begin
+    uinteger FUN fun1 (single x1) begin
         uinteger u1,u2;
         u1,u2 := 1,2;
         outf(u1+u2);
