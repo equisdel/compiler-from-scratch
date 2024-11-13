@@ -664,7 +664,7 @@ final static String yyrule[] = {
 "goto_statement : GOTO error",
 };
 
-//#line 621 "grammar.y"
+//#line 638 "grammar.y"
         public static ArrayList<String> errores = new ArrayList<>();
         public static String actualScope = "MAIN";
         //static Stack<Integer> UntilStack = new Stack<>();
@@ -734,7 +734,6 @@ final static String yyrule[] = {
 
         public void popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
-                yyerror("salgo de scope: "+scope);
                 int index = scope.lastIndexOf(":");
                 if (index != -1) {
                         scope = scope.substring(0, index);
@@ -800,30 +799,40 @@ final static String yyrule[] = {
                 return AnalizadorSemantico.isCompatible(t_subtype1,t_subtype2);
         }
 
-        public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida
+        public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
                 yyerror("id: "+id);
-               //AnalizadorLexico.t_simbolos.display();
+                //AnalizadorLexico.t_simbolos.display();
                 if (!isDeclared(id))
                 {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+id+" no declarada. "); }
                 else {
                         //  CTE NO VAN CON SCOPE!
-                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC
-                        String lexem;
-                        if (!isCte(expr)){      // si es variable o funcion, o expr_pair
-                                lexem = getDeclared(expr);
-                        } else {
-                                lexem = expr;}
-
-                        String subtypeT = chkAndGetType(lexem);
-                        String subtypeID = chkAndGetType(id);
-                        if (subtypeT.equals(subtypeID)){
-                                Terceto.addTerceto(":=",id,expr);
+                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN PUTO TERCETOOO
+                        String lexemExpr;
+                        String subtypeT;
+                        if (isTerceto(expr)) {
+                                subtypeT = chkAndGetType(expr);
+                                lexemExpr = expr;}   // y lexem es el terceto (expr)
+                        else{
+                                if (!isCte(expr)){      // si es variable o funcion, o expr_pair
+                                        lexemExpr = getDeclared(expr);      // el lexema en la TS ()
+                                } else {
+                                        lexemExpr = expr;}  // si es cte, la misma es comos e busca en la tabla de simbolos
+                                yyerror("expr: "+expr);
+                                yyerror("lexemExpr: "+lexemExpr);
+                                yyerror("id: "+id);
+                                subtypeT = chkAndGetType(lexemExpr);
                         }
-                        else if (subtypeID.equals("SINGLE") && subtypeT.equals("UINTEGER")){
+                        //id es variable siosi
+                        String lexemID = getDeclared(id);
+                        String subtypeID = chkAndGetType(lexemID);
+                        if (subtypeT.equals(subtypeID)){
+                                Terceto.addTerceto(":=",id,expr);       // expr o Lexemexpr?¡???
+                        }
+                        else if (subtypeID.equals("SINGLE") || subtypeT.equals("UINTEGER")){    // otros casos?
                                 Terceto.addTercetoT("utos",expr,null,"SINGLE");
                                 Terceto.addTerceto(":=",id,expr);
                         }
-                        else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
+                        else {yyerror("Eeeeeeeeeeeerror en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
 
                 }
         }
@@ -833,11 +842,10 @@ final static String yyrule[] = {
                 String scopeaux = actualScope;
                 //AnalizadorLexico.t_simbolos.display();
 
-                if (isDeclaredLocal(id)) {return id+":"+scopeaux;}
+                if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                 else {
                         while (scopeaux.lastIndexOf(":") != -1){
 
-                                yyerror("aaaaaaa");
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {
                                         return id+":"+scopeaux;
                                 }
@@ -847,7 +855,7 @@ final static String yyrule[] = {
                 }
 
         }
-//#line 778 "Parser.java"
+//#line 786 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1006,94 +1014,97 @@ case 1:
 {
         /*TODO: FIN DEL PROGRAMA, CHEQUEAR:*/
         /*TODO: - si hubo goto, chequear tag estaba y era alcanzada*/
+        /* llamar a funcion de TablaEtiquetas para actualizar los tercetos de tag*/
+        /* llamar a la función de limpieza de la tabla de símbolos (todo lo que no tenga scope)*/
+        AnalizadorLexico.t_simbolos.clean();
 }
 break;
 case 2:
-//#line 20 "grammar.y"
+//#line 23 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta el nombre del programa en la primer linea. "); }
 break;
 case 3:
-//#line 21 "grammar.y"
+//#line 24 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta del programa." ); }
 break;
 case 4:
-//#line 22 "grammar.y"
+//#line 25 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta delimitador del programa 'BEGIN'. "); }
 break;
 case 5:
-//#line 23 "grammar.y"
+//#line 26 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta delimitador del programa 'END'.") ; }
 break;
 case 6:
-//#line 24 "grammar.y"
+//#line 27 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta delimitadores del programa. "); }
 break;
 case 7:
-//#line 25 "grammar.y"
+//#line 28 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": programa vacio... "); }
 break;
 case 11:
-//#line 37 "grammar.y"
+//#line 40 "grammar.y"
 {yyerror("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number);}
 break;
 case 12:
-//#line 38 "grammar.y"
+//#line 41 "grammar.y"
 {yyerror("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);}
 break;
 case 13:
-//#line 39 "grammar.y"
+//#line 42 "grammar.y"
 {yyerror("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number);}
 break;
 case 14:
-//#line 40 "grammar.y"
+//#line 43 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia ");}
 break;
 case 16:
-//#line 50 "grammar.y"
+//#line 53 "grammar.y"
 {
             yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ';' al final de la sentencia.");
         }
 break;
 case 17:
-//#line 57 "grammar.y"
+//#line 60 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se encontro ';' pero esa sentencia no lleva. Proba quitandoselo.");}
 break;
 case 19:
-//#line 62 "grammar.y"
+//#line 65 "grammar.y"
 {yyerror("Sentencia de control IF en linea "+AnalizadorLexico.line_number);}
 break;
 case 20:
-//#line 64 "grammar.y"
+//#line 67 "grammar.y"
 {yyerror("Sentencia de asignacion en linea "+AnalizadorLexico.line_number);}
 break;
 case 21:
-//#line 65 "grammar.y"
+//#line 68 "grammar.y"
 {yyerror("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number);}
 break;
 case 22:
-//#line 67 "grammar.y"
+//#line 70 "grammar.y"
 {yyerror("Sentencia de repeat until en linea "+AnalizadorLexico.line_number);}
 break;
 case 23:
-//#line 68 "grammar.y"
+//#line 71 "grammar.y"
 {yyerror("Sentencia de salto goto en linea "+AnalizadorLexico.line_number);}
 break;
 case 24:
-//#line 70 "grammar.y"
+//#line 73 "grammar.y"
 {yyerror("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number);}
 break;
 case 25:
-//#line 72 "grammar.y"
+//#line 75 "grammar.y"
 {yyerror("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number);}
 break;
 case 26:
-//#line 73 "grammar.y"
+//#line 76 "grammar.y"
 {yyerror("Sentencia de TAG");
                 /*chequear no exista otro tag igual en todo el programa*/
         }
 break;
 case 29:
-//#line 85 "grammar.y"
+//#line 88 "grammar.y"
 {
                 String[] idList = val_peek(1).sval.split(",");
                 for (int i = 0; i < idList.length; i++) {
@@ -1103,45 +1114,46 @@ case 29:
 }
 break;
 case 30:
-//#line 92 "grammar.y"
+//#line 95 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia ");
                                 /* agregar a cada variable (separar por ',') su tipo,scope,uso*/
                                 }
 break;
 case 31:
-//#line 95 "grammar.y"
+//#line 98 "grammar.y"
 {
                 chkAndDeclareVar(val_peek(2).sval, val_peek(1).sval);
         }
 break;
 case 32:
-//#line 98 "grammar.y"
+//#line 101 "grammar.y"
 {
                 yyerror("Error en linea "+AnalizadorLexico.line_number+": falta ';' al final de la sentencia o estas tratando de declarar varias variables sin ','");
                 chkAndDeclareVar(val_peek(2).sval, val_peek(1).sval);
                 }
 break;
 case 33:
-//#line 105 "grammar.y"
+//#line 108 "grammar.y"
 {
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
         }
 break;
 case 34:
-//#line 108 "grammar.y"
+//#line 111 "grammar.y"
 {
                 yyval.sval = yyval.sval + "," + val_peek(0).sval;
         }
 break;
 case 35:
-//#line 122 "grammar.y"
+//#line 125 "grammar.y"
 { 
                 /* Actualización del scope: fin de la función fuerza retorno al ámbito del padre*/
+                        yyerror("Salgo del ambito: "+actualScope);
                         popScope();
                 }
 break;
 case 36:
-//#line 135 "grammar.y"
+//#line 139 "grammar.y"
 {
 
                 if (!AnalizadorSemantico.validID(val_peek(6).sval,val_peek(4).sval)) yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
@@ -1149,35 +1161,36 @@ case 36:
                         /* Control de ID: debe ser único en el scope actual*/
                         if (isDeclaredLocal(val_peek(4).sval))       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
                         else {
-                                String param_var = val_peek(2).sval.split("-")[1]; 
+                                String param_name = val_peek(2).sval.split("-")[1]; 
                                 String param_type = val_peek(2).sval.split("-")[0];
                         /* Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)*/
                                 AnalizadorLexico.t_simbolos.del_entry(val_peek(4).sval);
-                                AnalizadorLexico.t_simbolos.add_entry(val_peek(4).sval+":"+actualScope,"ID",val_peek(6).sval,"fun_name",param_type);
-                                AnalizadorLexico.t_simbolos.set_use(val_peek(4).sval+":"+actualScope,"VARIABLE_NAME");
+                                AnalizadorLexico.t_simbolos.add_entry(val_peek(4).sval+":"+actualScope,"ID",val_peek(6).sval,"FUN_NAME",param_type);
+
+                                String param_lexem = getDeclared(param_name);
 
                         /* Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función*/
                                 pushScope(val_peek(4).sval); 
-                                
+
                         /* Actualización del ID del parámetro: se actualiza el scope al actual*/
-                                AnalizadorLexico.t_simbolos.del_entry(param_var);
-                                AnalizadorLexico.t_simbolos.add_entry(param_var+":"+actualScope,"ID",val_peek(6).sval,"fun_name",param_type);
-                                AnalizadorLexico.t_simbolos.set_use(param_var+":"+actualScope,"VARIABLE_NAME");
+
+                                AnalizadorLexico.t_simbolos.del_entry(param_lexem);      /* param_name llega con el scope y todo (desde donde fue llamado)*/
+                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",val_peek(6).sval,"VARIABLE_NAME",param_type);
 
                         /* Posible generación de terceto de tipo LABEL*/
-                                yyval.sval = Terceto.addTerceto("LABEL",val_peek(4).sval+":"+actualScope,null);
+                                yyval.sval = Terceto.addTerceto("LABEL",val_peek(4).sval+":"+actualScope,null); /*para saber donde llamarla en assembler*/
                         }
                 }
         }
 break;
 case 37:
-//#line 163 "grammar.y"
+//#line 168 "grammar.y"
 {
                 yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de funcion.") ;
                 }
 break;
 case 38:
-//#line 167 "grammar.y"
+//#line 172 "grammar.y"
 {
                 /* guardar el scope de la funcion*/
                 pushScope(val_peek(4).sval); 
@@ -1187,7 +1200,7 @@ case 38:
                 }
 break;
 case 39:
-//#line 177 "grammar.y"
+//#line 182 "grammar.y"
 {
                 /* se le pone scope 'MAIN' */
                 if (!AnalizadorSemantico.validID(val_peek(2).sval,val_peek(0).sval)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
@@ -1206,51 +1219,53 @@ case 39:
         }
 break;
 case 40:
-//#line 193 "grammar.y"
+//#line 198 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
 break;
 case 41:
-//#line 194 "grammar.y"
+//#line 199 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que el tipo este entre <> .") ; }
 break;
 case 42:
-//#line 195 "grammar.y"
+//#line 200 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba un ID al final de la declaracion"); }
 break;
 case 43:
-//#line 205 "grammar.y"
-{yyval.sval = val_peek(1).sval+"-"+val_peek(0).sval;}
+//#line 210 "grammar.y"
+{
+                yyval.sval = val_peek(1).sval+"-"+val_peek(0).sval;
+        }
 break;
 case 44:
-//#line 206 "grammar.y"
+//#line 213 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba tipo del parametro de la funcion. "); }
 break;
 case 45:
-//#line 207 "grammar.y"
+//#line 214 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de parametro"); }
 break;
 case 47:
-//#line 212 "grammar.y"
+//#line 219 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": faltan parentesis en sentencia de return. ") ;}
 break;
 case 51:
-//#line 228 "grammar.y"
+//#line 235 "grammar.y"
 {   /* se chequeara donde se use.*/
                 }
 break;
 case 52:
-//#line 259 "grammar.y"
+//#line 266 "grammar.y"
 {       /*pdoria poner end_if dentro de then_statement y hacer esto ahi.*/
         /*completo terceto*/
         Terceto.completeTerceto(Terceto.popTerceto(), null,String.valueOf(Integer.parseInt(val_peek(1).sval) + 1)); 
 }
 break;
 case 53:
-//#line 263 "grammar.y"
+//#line 270 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 break;
 case 54:
-//#line 265 "grammar.y"
+//#line 272 "grammar.y"
 {
         /* completo el terceto*/
         Terceto.completeTerceto(Terceto.popTerceto(),String.valueOf(Integer.parseInt(val_peek(0).sval) + 1),null); 
@@ -1258,53 +1273,53 @@ case 54:
 }
 break;
 case 55:
-//#line 273 "grammar.y"
+//#line 280 "grammar.y"
 {
                 yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,null);
                 Terceto.pushTerceto(yyval.sval); /*apilo terceto incompleto.*/
         }
 break;
 case 56:
-//#line 277 "grammar.y"
+//#line 284 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
 break;
 case 57:
-//#line 278 "grammar.y"
+//#line 285 "grammar.y"
 {
                 yyerror("Error en linea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion"); }
 break;
 case 58:
-//#line 280 "grammar.y"
+//#line 287 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 59:
-//#line 308 "grammar.y"
+//#line 315 "grammar.y"
 {
                 yyval.sval = val_peek(0).sval;       /*devuelve ultimo terceto*/
         }
 break;
 case 60:
-//#line 312 "grammar.y"
+//#line 319 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
 break;
 case 61:
-//#line 316 "grammar.y"
+//#line 323 "grammar.y"
 {yyval.sval = val_peek(1).sval;}
 break;
 case 62:
-//#line 317 "grammar.y"
+//#line 324 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": Se esperaba sentencia ejecutable luego del else. "); }
 break;
 case 63:
-//#line 318 "grammar.y"
+//#line 325 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de sentencia ejecutable luego del else, incorrecta "); }
 break;
 case 64:
-//#line 319 "grammar.y"
+//#line 326 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba END_IF ") ; }
 break;
 case 65:
-//#line 323 "grammar.y"
+//#line 330 "grammar.y"
 {
                 yyval.sval = Terceto.addTerceto("BI",null,null); /*incompleto, primer operando se completara despues.*/
                 Terceto.completeTerceto(Terceto.popTerceto(),null,String.valueOf(Integer.parseInt(yyval.sval) + 1));/*creo seria $$.sval + 1 (pasar a int y luego volver a string)*/
@@ -1312,7 +1327,7 @@ case 65:
         }
 break;
 case 67:
-//#line 334 "grammar.y"
+//#line 341 "grammar.y"
 {
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
                 String id1 = val_peek(2).sval;
@@ -1330,35 +1345,37 @@ case 67:
         }
 break;
 case 68:
-//#line 349 "grammar.y"
+//#line 356 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
 break;
 case 75:
-//#line 362 "grammar.y"
+//#line 369 "grammar.y"
 {
                 chkAndAssign(val_peek(2).sval,val_peek(0).sval);
                 }
 break;
 case 76:
-//#line 366 "grammar.y"
+//#line 373 "grammar.y"
 {
                 chkAndAssign(val_peek(2).sval,val_peek(0).sval);
         }
 break;
 case 77:
-//#line 369 "grammar.y"
+//#line 376 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
 break;
 case 78:
-//#line 375 "grammar.y"
+//#line 382 "grammar.y"
 {
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
+                yyerror("tipo1: "+t_subtype1);
                 String id1 = val_peek(2).sval;
                 String t_subtype2 = chkAndGetType(val_peek(0).sval);
+                yyerror("tipo2: "+t_subtype2);
                 String id2 = val_peek(0).sval;
                 if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals ("UINTEGER")) { yyval.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);}
-                        else {yyerror("Tipo no valido..");}
+                        /* si es uinteger o single agregar terceto (pensar si es otro tipo, que pasa?)*/
+                        yyval.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (!t_subtype1.equals("SINGLE")) {yyval.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (!t_subtype2.equals("SINGLE")) {yyval.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
@@ -1367,7 +1384,7 @@ case 78:
 }
 break;
 case 79:
-//#line 391 "grammar.y"
+//#line 400 "grammar.y"
 {
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
                 String id1 = val_peek(2).sval;
@@ -1384,11 +1401,11 @@ case 79:
         }
 break;
 case 81:
-//#line 406 "grammar.y"
+//#line 415 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
 break;
 case 82:
-//#line 410 "grammar.y"
+//#line 419 "grammar.y"
 {
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
                 String id1 = val_peek(2).sval;
@@ -1405,7 +1422,7 @@ case 82:
 }
 break;
 case 83:
-//#line 424 "grammar.y"
+//#line 433 "grammar.y"
 {
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
                 String id1 = val_peek(2).sval;
@@ -1422,7 +1439,7 @@ case 83:
         }
 break;
 case 85:
-//#line 442 "grammar.y"
+//#line 451 "grammar.y"
 {
                 if (isDeclared(val_peek(0).sval)) {
                         yyval.sval = val_peek(0).sval;
@@ -1432,7 +1449,7 @@ case 85:
 }
 break;
 case 87:
-//#line 451 "grammar.y"
+//#line 460 "grammar.y"
 {
                 if (AnalizadorLexico.t_simbolos.get_subtype(val_peek(0).sval).equals("SINGLE")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
                 else {
@@ -1440,7 +1457,7 @@ case 87:
                 }
 break;
 case 88:
-//#line 456 "grammar.y"
+//#line 465 "grammar.y"
 {      /* uso tendria q ser "variable_name" o podria ser otra?*/
                 if (AnalizadorLexico.t_simbolos.get_subtype(val_peek(0).sval).equals("SINGLE")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
                 else {
@@ -1448,7 +1465,7 @@ case 88:
                 }
 break;
 case 92:
-//#line 467 "grammar.y"
+//#line 476 "grammar.y"
 {
                 if (isDeclared(val_peek(3).sval)){
                         if (!AnalizadorLexico.t_simbolos.get_subtype(val_peek(3).sval).equals("PAIR")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
@@ -1462,78 +1479,85 @@ case 92:
         }
 break;
 case 93:
-//#line 481 "grammar.y"
-{ /* agregamos terceto del llamado???  + verifico si existe la funcion? deberia estar declarada antes (Asumimos) */
-                /*chequear si existe la funcion*/
-                /*chequear si la cantidad de parametros es correcta*/
-                /*chequear si los tipos de parametros son correctos*/
-                /*crear terceto*/
+//#line 490 "grammar.y"
+{ 
+                String lexema = getDeclared(val_peek(3).sval);
+                yyerror(lexema);
+                if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
+                        /*chequear tipo de parametros*/
+                        if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType(val_peek(1).sval))) {
+                                yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo de parametro incorrecto. ");
+                        } else {
+                        yyval.sval = Terceto.addTercetoT("CALL", lexema, val_peek(1).sval,AnalizadorLexico.t_simbolos.get_subtype(lexema));}
+                } else {
+                        yyerror("Error en linea "+AnalizadorLexico.line_number+": "+val_peek(3).sval+" no es una funcion o no esta al alcance. ");
+                }
         }
 break;
 case 94:
-//#line 487 "grammar.y"
+//#line 503 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
 break;
 case 95:
-//#line 491 "grammar.y"
+//#line 507 "grammar.y"
 {
                 /* ya se chequea la validez de expr antes*/
                 yyval.sval = Terceto.addTerceto("OUTF",val_peek(1).sval,null);
         }
 break;
 case 96:
-//#line 495 "grammar.y"
+//#line 511 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
 break;
 case 97:
-//#line 496 "grammar.y"
+//#line 512 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
 break;
 case 98:
-//#line 516 "grammar.y"
+//#line 532 "grammar.y"
 {
                 yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,val_peek(6).sval);
                 /* si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());*/
         }
 break;
 case 99:
-//#line 520 "grammar.y"
+//#line 536 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
 break;
 case 100:
-//#line 521 "grammar.y"
+//#line 537 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
 break;
 case 101:
-//#line 522 "grammar.y"
+//#line 538 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 102:
-//#line 524 "grammar.y"
+//#line 540 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
 break;
 case 103:
-//#line 525 "grammar.y"
+//#line 541 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
 break;
 case 104:
-//#line 526 "grammar.y"
+//#line 542 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
 break;
 case 105:
-//#line 527 "grammar.y"
+//#line 543 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
 break;
 case 106:
-//#line 528 "grammar.y"
+//#line 544 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
 break;
 case 107:
-//#line 529 "grammar.y"
+//#line 545 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
 break;
 case 108:
-//#line 534 "grammar.y"
+//#line 550 "grammar.y"
 {
                 /* opcion 1: pila:*/
                 /*UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)*/
@@ -1542,7 +1566,7 @@ case 108:
         }
 break;
 case 109:
-//#line 543 "grammar.y"
+//#line 559 "grammar.y"
 {
                 String[] idList = val_peek(2).sval.split(",");
                 String[] exprList = val_peek(0).sval.split(",");
@@ -1557,11 +1581,11 @@ case 109:
         }
 break;
 case 110:
-//#line 555 "grammar.y"
+//#line 571 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
 break;
 case 111:
-//#line 560 "grammar.y"
+//#line 576 "grammar.y"
 {
                 
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
@@ -1569,53 +1593,54 @@ case 111:
         }
 break;
 case 112:
-//#line 565 "grammar.y"
+//#line 581 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
         }
 break;
 case 115:
-//#line 579 "grammar.y"
+//#line 595 "grammar.y"
 {
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
         }
 break;
 case 116:
-//#line 583 "grammar.y"
+//#line 599 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
                 
         }
 break;
 case 117:
-//#line 591 "grammar.y"
+//#line 607 "grammar.y"
 {
                 /* buscar si no hay otra tag con el mismo nombre al alcance*/
+                System.out.println("wtf");
                 if (!isDeclaredLocal(val_peek(0).sval)) {
                         /* reinserción en la T. de S. con scope actual*/
-                        yyerror("Error: La variable "+val_peek(0).sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
                         AnalizadorLexico.t_simbolos.del_entry(val_peek(0).sval);
-                        AnalizadorLexico.t_simbolos.add_entry(val_peek(0).sval+":"+actualScope,"TAG","tag_name",null);
+                        AnalizadorLexico.t_simbolos.add_entry(val_peek(0).sval+":"+actualScope,"TAG","","tag_name","");
                         /* agregar a la tabla de etiquetas*/
                         TablaEtiquetas.add_tag(val_peek(0).sval); 
-                }
-
+                } else yyerror("Error: La etiqueta "+val_peek(0).sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
+                AnalizadorLexico.t_simbolos.display();
         }
 break;
 case 118:
-//#line 610 "grammar.y"
+//#line 626 "grammar.y"
 {
                 /*if existe en TS {*/
-                        String id = Terceto.addTerceto("JUMP_TAG",null,null);
-                        TablaEtiquetas.add_goto(val_peek(0).sval,Integer.parseInt(id),0);     /* donde puse 0 iría número de línea en lo posible*/
+                        yyerror("equisdel");
+                        yyval.sval= Terceto.addTerceto("JUMP_TAG",null,null);
+                        TablaEtiquetas.add_goto(val_peek(0).sval,Terceto.parseTercetoId(yyval.sval),0);     /* donde puse 0 iría número de línea en lo posible*/
                 /*}*/
         }
 break;
 case 119:
-//#line 616 "grammar.y"
+//#line 633 "grammar.y"
 {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
 break;
-//#line 1541 "Parser.java"
+//#line 1566 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

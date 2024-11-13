@@ -55,7 +55,11 @@ public class Simbolo {
         this.value = valor;
     }
 
-    public void display() {
-        System.out.println("Tipo: "+this.type+"; Subtipo: "+this.subtype+"; Uso: "+this.usage+"; Valor: "+this.value);
+    public String getValue(){
+        return this.value;
+    }
+
+    public String display() {
+       return "Tipo: "+this.type+"; Subtipo: "+this.subtype+"; Uso: "+this.usage+"; Valor: "+this.value;
     }
 }

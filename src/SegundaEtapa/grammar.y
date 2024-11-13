@@ -16,6 +16,9 @@
 prog    : ID BEGIN statement_list END {
         //TODO: FIN DEL PROGRAMA, CHEQUEAR:
         //TODO: - si hubo goto, chequear tag estaba y era alcanzada
+        // llamar a funcion de TablaEtiquetas para actualizar los tercetos de tag
+        // llamar a la función de limpieza de la tabla de símbolos (todo lo que no tenga scope)
+        AnalizadorLexico.t_simbolos.clean();
 }
         | error BEGIN statement_list END {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta el nombre del programa en la primer linea. "); }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta del programa." ); } 
@@ -121,6 +124,7 @@ var_list        /* solo se usa en declaracion multiple. */
 declare_fun     //     FUN uinteger fun1 (uinteger x1) begin DA ' SYNTAX ERROR ' POR PONER PRIMERO FUN Y DEPSUES EL TIPO DE RETORNO
         : declare_fun_header fun_body END { 
                 // Actualización del scope: fin de la función fuerza retorno al ámbito del padre
+                        yyerror("Salgo del ambito: "+actualScope);
                         popScope();
                 }
         ;
@@ -139,23 +143,24 @@ declare_fun_header
                         // Control de ID: debe ser único en el scope actual
                         if (isDeclaredLocal($3.sval))       yyerror("No se permite la redeclaración de variables: el nombre seleccionado no está disponible en el scope actual.");
                         else {
-                                String param_var = $5.sval.split("-")[1]; 
+                                String param_name = $5.sval.split("-")[1]; 
                                 String param_type = $5.sval.split("-")[0];
                         // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
                                 AnalizadorLexico.t_simbolos.del_entry($3.sval);
-                                AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$1.sval,"fun_name",param_type);
-                                AnalizadorLexico.t_simbolos.set_use($3.sval+":"+actualScope,"VARIABLE_NAME");
+                                AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$1.sval,"FUN_NAME",param_type);
+
+                                String param_lexem = getDeclared(param_name);
 
                         // Actualización del scope: las sentencias siguientes están dentro del cuerpo de la función
                                 pushScope($3.sval); 
-                                
+
                         // Actualización del ID del parámetro: se actualiza el scope al actual
-                                AnalizadorLexico.t_simbolos.del_entry(param_var);
-                                AnalizadorLexico.t_simbolos.add_entry(param_var+":"+actualScope,"ID",$1.sval,"fun_name",param_type);
-                                AnalizadorLexico.t_simbolos.set_use(param_var+":"+actualScope,"VARIABLE_NAME");
+
+                                AnalizadorLexico.t_simbolos.del_entry(param_lexem);      // param_name llega con el scope y todo (desde donde fue llamado)
+                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",$1.sval,"VARIABLE_NAME",param_type);
 
                         // Posible generación de terceto de tipo LABEL
-                                $$.sval = Terceto.addTerceto("LABEL",$3.sval+":"+actualScope,null);
+                                $$.sval = Terceto.addTerceto("LABEL",$3.sval+":"+actualScope,null); //para saber donde llamarla en assembler
                         }
                 }
         }
@@ -202,7 +207,9 @@ declare_pair
 
 
 parametro
-        : var_type ID {$$.sval = $1.sval+"-"+$2.sval;}
+        : var_type ID {
+                $$.sval = $1.sval+"-"+$2.sval;
+        }
         | ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba tipo del parametro de la funcion. "); }
         | var_type error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba nombre de parametro"); }
         ;
@@ -374,12 +381,14 @@ assign_statement
         // ya que antes de operar, se hara la conversion en caso de ser necesario.
 expr    : expr '+' term    {
                 String t_subtype1 = chkAndGetType($1.sval);
+                yyerror("tipo1: "+t_subtype1);
                 String id1 = $1.sval;
                 String t_subtype2 = chkAndGetType($3.sval);
+                yyerror("tipo2: "+t_subtype2);
                 String id2 = $3.sval;
                 if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals ("UINTEGER")) { $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);}
-                        else {yyerror("Tipo no valido..");}
+                        // si es uinteger o single agregar terceto (pensar si es otro tipo, que pasa?)
+                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (!t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (!t_subtype2.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
@@ -458,8 +467,8 @@ fact    : ID    {
                 else {
                         $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
-        | fun_invoc     
-        | expr_pair    
+        | fun_invoc
+        | expr_pair
         | CHARCH
         ;
 
@@ -478,12 +487,19 @@ expr_pair
         ;
 
 fun_invoc
-        : ID '(' expr ')' { /* agregamos terceto del llamado???  + verifico si existe la funcion? deberia estar declarada antes (Asumimos) */
-                //chequear si existe la funcion
-                //chequear si la cantidad de parametros es correcta
-                //chequear si los tipos de parametros son correctos
-                //crear terceto
-        }      
+        : ID '(' expr ')' { 
+                String lexema = getDeclared($1.sval);
+                yyerror(lexema);
+                if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
+                        //chequear tipo de parametros
+                        if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType($3.sval))) {
+                                yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo de parametro incorrecto. ");
+                        } else {
+                        $$.sval = Terceto.addTercetoT("CALL", lexema, $3.sval,AnalizadorLexico.t_simbolos.get_subtype(lexema));}
+                } else {
+                        yyerror("Error en linea "+AnalizadorLexico.line_number+": "+$1.sval+" no es una funcion o no esta al alcance. ");
+                }
+        }
         | ID '(' expr error ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
         ;
 
@@ -590,15 +606,15 @@ expr_list       /* solo se usa en asignacion multiple */
 tag_statement
         : TAG {
                 // buscar si no hay otra tag con el mismo nombre al alcance
+                System.out.println("wtf");
                 if (!isDeclaredLocal($1.sval)) {
                         // reinserción en la T. de S. con scope actual
-                        yyerror("Error: La variable "+$1.sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
                         AnalizadorLexico.t_simbolos.del_entry($1.sval);
-                        AnalizadorLexico.t_simbolos.add_entry($1.sval+":"+actualScope,"TAG","tag_name",null);
+                        AnalizadorLexico.t_simbolos.add_entry($1.sval+":"+actualScope,"TAG","","tag_name","");
                         // agregar a la tabla de etiquetas
                         TablaEtiquetas.add_tag($1.sval); 
-                }
-
+                } else yyerror("Error: La etiqueta "+$1.sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
+                AnalizadorLexico.t_simbolos.display();
         }
         ;
 
@@ -609,8 +625,9 @@ tag_statement
 goto_statement
         : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */{
                 //if existe en TS {
-                        String id = Terceto.addTerceto("JUMP_TAG",null,null);
-                        TablaEtiquetas.add_goto($2.sval,Integer.parseInt(id),0);     // donde puse 0 iría número de línea en lo posible
+                        yyerror("equisdel");
+                        $$.sval= Terceto.addTerceto("JUMP_TAG",null,null);
+                        TablaEtiquetas.add_goto($2.sval,Terceto.parseTercetoId($$.sval),0);     // donde puse 0 iría número de línea en lo posible
                 //}
         }
         | GOTO error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
@@ -687,7 +704,6 @@ goto_statement
 
         public void popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
-                yyerror("salgo de scope: "+scope);
                 int index = scope.lastIndexOf(":");
                 if (index != -1) {
                         scope = scope.substring(0, index);
@@ -753,30 +769,40 @@ goto_statement
                 return AnalizadorSemantico.isCompatible(t_subtype1,t_subtype2);
         }
 
-        public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida
+        public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
                 yyerror("id: "+id);
-               //AnalizadorLexico.t_simbolos.display();
+                //AnalizadorLexico.t_simbolos.display();
                 if (!isDeclared(id))
                 {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+id+" no declarada. "); }
                 else {
                         //  CTE NO VAN CON SCOPE!
-                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC
-                        String lexem;
-                        if (!isCte(expr)){      // si es variable o funcion, o expr_pair
-                                lexem = getDeclared(expr);
-                        } else {
-                                lexem = expr;}
-
-                        String subtypeT = chkAndGetType(lexem);
-                        String subtypeID = chkAndGetType(id);
-                        if (subtypeT.equals(subtypeID)){
-                                Terceto.addTerceto(":=",id,expr);
+                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN PUTO TERCETOOO
+                        String lexemExpr;
+                        String subtypeT;
+                        if (isTerceto(expr)) {
+                                subtypeT = chkAndGetType(expr);
+                                lexemExpr = expr;}   // y lexem es el terceto (expr)
+                        else{
+                                if (!isCte(expr)){      // si es variable o funcion, o expr_pair
+                                        lexemExpr = getDeclared(expr);      // el lexema en la TS ()
+                                } else {
+                                        lexemExpr = expr;}  // si es cte, la misma es comos e busca en la tabla de simbolos
+                                yyerror("expr: "+expr);
+                                yyerror("lexemExpr: "+lexemExpr);
+                                yyerror("id: "+id);
+                                subtypeT = chkAndGetType(lexemExpr);
                         }
-                        else if (subtypeID.equals("SINGLE") && subtypeT.equals("UINTEGER")){
+                        //id es variable siosi
+                        String lexemID = getDeclared(id);
+                        String subtypeID = chkAndGetType(lexemID);
+                        if (subtypeT.equals(subtypeID)){
+                                Terceto.addTerceto(":=",id,expr);       // expr o Lexemexpr?¡???
+                        }
+                        else if (subtypeID.equals("SINGLE") || subtypeT.equals("UINTEGER")){    // otros casos?
                                 Terceto.addTercetoT("utos",expr,null,"SINGLE");
                                 Terceto.addTerceto(":=",id,expr);
                         }
-                        else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
+                        else {yyerror("Eeeeeeeeeeeerror en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
 
                 }
         }
@@ -786,11 +812,10 @@ goto_statement
                 String scopeaux = actualScope;
                 //AnalizadorLexico.t_simbolos.display();
 
-                if (isDeclaredLocal(id)) {return id+":"+scopeaux;}
+                if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                 else {
                         while (scopeaux.lastIndexOf(":") != -1){
 
-                                yyerror("aaaaaaa");
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {
                                         return id+":"+scopeaux;
                                 }

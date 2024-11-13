@@ -101,6 +101,7 @@ public class AnalizadorLexico {
 			case "+": id = (int)'+'; break;
 			case "-": id = (int)'-'; break;
 			case "*": id = (int)'*'; break;
+			case "/": id = (int)'/'; break;
 			case "=": id = (int)'='; break;
 			case "(": id = (int)'('; break;		
 			case ")": id = (int)')'; break;

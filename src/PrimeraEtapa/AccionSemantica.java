@@ -84,6 +84,7 @@ public class AccionSemantica {
             // Las palabras reservadas (PR) estan precargadas en la TS
             public Integer apply(Void t) {
                 String key = AnalizadorLexico.lexema.toUpperCase();
+                String key_under_15 = key.substring(0,Math.min(key.length(),max_length));       
                 Simbolo value = AnalizadorLexico.t_simbolos.get_entry(key.substring(0,Math.min(key.length(),max_length)).toUpperCase());
                 all_actions[3].execute();   // Devuelve el último caracter a la entrada
                 if (value != null) {        // Existe una entrada en la TS asociada al lexema
@@ -92,16 +93,20 @@ public class AccionSemantica {
                         AnalizadorLexico.lexema_subtype = "RESERVED";
                         all_actions[21].execute();          //   -> lo identifica como tal
                     }
-                    else {
+                    else {          // Es una referencia a un identificador existente
+                        if (key.length() > max_length)
+                            all_actions[107].execute();
                         AnalizadorLexico.lexema_type = value.getTipo();
                         AnalizadorLexico.lexema_subtype = value.getSubtipo();
-                    }                                 // Es una referencia a un identificador existente
+                    }                                 
                     // ¿Redeclaración? ¿Distinto scope? ¿Distinto subtipo? Cuestiones que pueden surgir más adelante
-                } else {                               // Es un nuevo identificador
-                    all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
-                    if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
-                    all_actions[107].execute(); //   -> Trunca el identificador + Warning
-                    all_actions[7].execute();       // Agrega el identificador a la tabla de simbolos
+                                       // Es un nuevo identificador
+                } else {
+                        all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
+                        if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
+                            all_actions[107].execute(); //   -> Trunca el identificador + Warning
+                        all_actions[7].execute();       // Agrega el identificador a la tabla de simbolos
+                    
                 }
                 return 0;
             }
@@ -153,8 +158,9 @@ public class AccionSemantica {
         String desc_10 = "Corrobora rango de variable single";
         Function<Void,Integer> action_10 = new Function<Void,Integer>() {
             public Integer apply(Void t) {  
+                /*
                     String single = AnalizadorLexico.lexema;
-                    String[] parts = single.split("s");
+                    String[] parts = single.split("S");
                     float base = Float.parseFloat(parts[0]);
                     int exponent = Integer.parseInt(parts[1]);
                     float value = (float) (base * Math.pow(10, exponent));
@@ -165,6 +171,7 @@ public class AccionSemantica {
                         AnalizadorLexico.lexema = "1.17549435s-38";
                         all_actions[112].execute();
                     } 
+                */
                     all_actions[9].execute();   // Devuelve el último char + Inserción en la TdeS
                     return 0;
             }
@@ -176,6 +183,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_20 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_type = "CTE";   // Cada PR se identifica consigo misma: lexema "if" -> lexema_type "IF".
+                AnalizadorLexico.lexema_subtype = "UINTEGER";
                 all_actions[1].execute();
                 return 0;
             }
@@ -332,9 +340,10 @@ public class AccionSemantica {
         Function<Void,Integer> action_107 = new Function<Void,Integer>() {
             int max_length = AnalizadorLexico.id_max_length;
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "El identificador "+AnalizadorLexico.lexema+" supera la longitud máxima permitida ("+max_length+" caracteres).";
+                String lexema_truncado = AnalizadorLexico.lexema.substring(0, max_length);
+                AccionSemantica.error_msg = "El identificador "+AnalizadorLexico.lexema+" supera la longitud máxima permitida ("+max_length+" caracteres). Se tomará como \""+lexema_truncado+"\".";
                 all_actions[100].execute();     // Levanta el warning
-                AnalizadorLexico.lexema = AnalizadorLexico.lexema.substring(0, max_length);
+                AnalizadorLexico.lexema = lexema_truncado;
                 return 0;
             }
         };
@@ -391,9 +400,21 @@ public class AccionSemantica {
         String desc_113 = "Error de cte. SINGLE: parte decimal ausente luego del punto.";
         Function<Void,Integer> action_113 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "La parte decimal de la constante de tipo SINGLE está ausente. Debe incluirse.";
+                AccionSemantica.error_msg = "La parte decimal de la constante de tipo SINGLE está ausente. Se toma como \"0\".";
                 AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";
                 all_actions[1].execute();
+                all_actions[100].execute();     // Levanta el warning
+                return 0;
+            }
+        };
+
+        String desc_114 = "Error de cte. SINGLE: parte entera ausente antes del punto.";
+        Function<Void,Integer> action_114 = new Function<Void,Integer>() {
+            public Integer apply(Void t) {
+                AccionSemantica.error_msg = "La parte entera de la constante de tipo SINGLE está ausente. Se toma como \"0\".";
+                AnalizadorLexico.lexema = "0";
+                AnalizadorLexico.lexema_type = "CTE";
+                all_actions[24].execute();
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
@@ -446,6 +467,7 @@ public class AccionSemantica {
         AccionSemantica as_111 = new AccionSemantica(111, desc_111, action_111);
         AccionSemantica as_112 = new AccionSemantica(112, desc_112, action_112);
         AccionSemantica as_113 = new AccionSemantica(113, desc_113, action_113);
+        AccionSemantica as_114 = new AccionSemantica(114, desc_114, action_114);
 
         AccionSemantica as_199 = new AccionSemantica(199, desc_199, action_199);
 

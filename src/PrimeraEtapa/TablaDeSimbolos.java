@@ -1,5 +1,6 @@
 package PrimeraEtapa;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -67,13 +68,43 @@ public class TablaDeSimbolos {
         retorno.setValue(valor);
     }
 
+    public String get_value(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return null;
+        return retorno.getValue();
+    }
+
+    public void clean() {
+        // solo deja las palabras reservadas y a los identificadores
+
+        Iterator<Map.Entry<String, Simbolo>> iterator = symbols.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Simbolo> entry = iterator.next();
+            String lexema = entry.getKey();
+            Simbolo simbolo_asociado = entry.getValue();
+            if (!simbolo_asociado.getSubtipo().equals("RESERVED") && !(lexema.contains(":"))) {
+                iterator.remove();
+            }
+        }
+    }
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
+        /*
         for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
             System.out.print("Clave: " + entry.getKey()+" ");
             entry.getValue().display();
         }
+        */
+       System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n","LEXEMA","TIPO","SUBTIPO","USO","VALOR");
+       System.out.printf("|%-20s|%-10s|%-12s|%-14s|%-6s|%n","----------------------","------------","---------------","-----------------","--------");
+        for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
+            //System.out.print("Clave: " + entry.getKey()+" ");
+            Simbolo value = entry.getValue();
+            System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n",entry.getKey(),value.getTipo(),value.getSubtipo(),value.getUse(),value.getValue());
+            entry.getValue().display();
+        }
+
         System.out.println();
     }
 
@@ -82,8 +113,6 @@ public class TablaDeSimbolos {
     }
     
     public static void main (String args[]) {
-
-    
 
     //  TESTEO
         // Creación de la tabla de símbolos

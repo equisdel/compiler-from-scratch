@@ -24,12 +24,14 @@ public class TablaEtiquetas {
     // Esto debería actualizarse por cada cambio en el ámbito (llamar desde Parser.pushScope y Parser.popScope respectivamente)
     public static void pushScope() {
         // Apilar en gotos_en_espera
+        gotos_en_espera.push(new HashSet<GoToInfo>());
     }
 
     public static void popScope() {
         // Verificar existencia de gotos_huerfanos (quizás convendría guardar tambien la linea donde fueron declaradas las sentencias)
         // Notificar el error, si es que hay 
         // Desapilar en gotos_en_espera
+        gotos_en_espera.pop();
     }
 
     private static boolean tagIsDeclared(String tag) {
@@ -41,7 +43,7 @@ public class TablaEtiquetas {
     }
 
     private static String tagIsDeclaredNonLocal(String tag, String scope) {
-        while (!scope.equals("main")) {
+        while (!scope.equals("MAIN")) {
             String scope_padre = String.join(":", Arrays.copyOfRange(scope.split(":"), 0, scope.split(":").length - 1));
             if (tagIsDeclaredLocal(tag,scope))
                 return scope;
@@ -51,17 +53,19 @@ public class TablaEtiquetas {
     }
 
     private static void verifyGoToStack(String tag) {
-        for (GoToInfo go_to : gotos_en_espera.peek()) {
-            if (go_to.tag.equals(tag)) {
-                tabla.get(tag).get(scope_actual).add(go_to);
-                gotos_en_espera.peek().remove(go_to);
+        if (!gotos_en_espera.empty()) {
+            for (GoToInfo go_to : gotos_en_espera.peek()) {
+                if (go_to.tag.equals(tag)) {
+                    tabla.get(tag).get(scope_actual).add(go_to);
+                    gotos_en_espera.peek().remove(go_to);
+                }
             }
         }
     }
 
     private static void stealFromParents(String tag, String scope) {
         HashMap<String,Set<GoToInfo>> tag_entry = tabla.get(tag);
-        while (!scope.equals("main")) {
+        while (!scope.equals("MAIN")) {
             String scope_padre = String.join(":", Arrays.copyOfRange(scope.split(":"), 0, scope.split(":").length - 1));
             if (tag_entry.containsKey(scope_padre)) {
                 for (GoToInfo go_to : tag_entry.get(scope_padre)) {
@@ -80,7 +84,7 @@ public class TablaEtiquetas {
         // Key: tag; Value: scope - gotos asociados.
         if (!tagIsDeclared(tag)) { 
             HashMap<String,Set<GoToInfo>> value = new HashMap<>();     // 
-            value.put(scope_actual,null);
+            value.put(scope_actual,new HashSet<GoToInfo>());
             tabla.put(tag,value); 
         } else {
             tabla.get(tag).put(scope_actual,null);
@@ -98,9 +102,11 @@ public class TablaEtiquetas {
         // se verifica si ya se declaró la etiqueta localmente: implica búsqueda simple en tabla
         if (tagIsDeclaredLocal(tag,scope_actual)) {     // para el caso en que primero se pone la etiqueta y luego el goto
             //    si se declaró: termina acá, el goto está asociado a esa etiqueta (actualización de tabla).
+            System.out.println("camino1");
             tabla.get(tag).get(scope_actual).add(nuevo_goto);
+            TablaEtiquetas.display(); 
         } else {
-            
+            System.out.println("camino2");
             //    si no se declaró localmente, se extiende la búsqueda a ámbitos padres
             String scope_of_declaration = tagIsDeclaredNonLocal(tag,scope_actual);
             if (scope_of_declaration != null) 
@@ -109,16 +115,34 @@ public class TablaEtiquetas {
             // Si no hay match, queda en espera (pueden haber etiquetas más cercanas, pueden no haber).
         }
     }
+    //metod0 de immpresion de tabla
+    public static void display() {
+        for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
+            for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
+                for (GoToInfo value : entry2.getValue()) {
+                    System.out.print(entry.getKey()+" - "+entry2.getKey()+" - "+value.terceto+" - "+value.line);
+                }
+            }
+        }
+        System.out.println();
+    }
 
     public static void end() {
+        for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
+            for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
+                for (GoToInfo value : entry2.getValue()) {
+                    System.out.print(entry.getKey()+" - "+entry2.getKey()+" - "+value.terceto+" - "+value.line);
+                }
+            }
+        }
         // rellena todos los tercetos presentes en la tabla:
         /*
             EJEMPLO:
-            TAG1:
+            TAG1@
             [ {ambito A}
-              GOTO TAG1:
+              GOTO TAG1@
               [ {ambito B}
-                TAG1:
+                TAG1@
               ]
             ]
             resulta en el terceto: ["JUMP_TAG","?","?"]
