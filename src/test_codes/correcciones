@@ -2,24 +2,35 @@ p_correcciones
 begin
 
     ## Tratamiento de identificadores que exceden la longitud maxima:
-    single testveryverylarge1;  ## Informa warning: long. > 15, decisión de truncar a "testveryverylar".
-    single testveryverylarge2;  ## Informa warning: long. > 15, decisión de truncar a "testveryverylar".
+    ## single testveryverylarge1;  ## Informa warning: long. > 15, decisión de truncar a "testveryverylar".
+    ## single testveryverylarge2;  ## Informa warning: long. > 15, decisión de truncar a "testveryverylar".
                                 ## Informa warning: intento de redeclaración de variable "testveryverylar".
-               
-    tag@
+    
+    tag3@
+    single FUN fun1 (single x1) begin
+        tag3@
+        single FUN fun2 (single x1) begin
+            single FUN fun3 (single x1) begin
+                goto tag3@;
+            end
+            tag3@
+        end
+    end
+
+    ## tag@
     ## Reconocimiento de variables de tipo SINGLE con y sin errores:
-    single s0,s1,s2,s3,s4,s5,s6,s7,s8;
-    single s8;
-    s0 := 0.0;          ## Constante nula sin exponente.
-    testveryverylar := 0.0;
-    s1 := 1.1s+1;       ## Constante completa con exponente positivo.
-    s2 := 2.2s-2;       ## Constante completa con exponente negativo.
-    s3 := 3.3s3;        ## Constante completa sin signo de exponente (se toma como positivo).
-    s4 := 44.44s+44;    ## Constante completa con componentes de más de un dígito.   
-    s5 := 55.555;       ## Constante con componentes de más de un dígito sin exponente.
-    s6 := 6.6s;         ## Constante con parte exponencial incompleta.
-    s7 := 7.s+1;        ## Constante con parte decimal incompleta.
-    s8 := .8s8;         ## Constante con parte entera incompleta.
-    goto tag@
+    ## single s0,s1,s2,s3,s4,s5,s6,s7,s8;
+    ## testveryverylar := 0.0;
+    ## s0 := 0.0;          ## Constante nula sin exponente.
+    ## s1 := 1.1s+1;       ## Constante completa con exponente positivo.
+    ## s2 := 2.2s-2;       ## Constante completa con exponente negativo.
+    ## s3 := 3.3s3;        ## Constante completa sin signo de exponente (se toma como positivo).
+    ## s4 := 44.44s+44;    ## Constante completa con componentes de más de un dígito.   
+    ## s5 := 55.555;       ## Constante con componentes de más de un dígito sin exponente.
+    ## s6 := 6.6s;         ## Constante con parte exponencial incompleta.
+    ## s7 := 7.s+1;        ## Constante con parte decimal incompleta.
+    ## s8 := .8s8;         ## Constante con parte entera incompleta.
+    goto tag3@;
+
     
 end

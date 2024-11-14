@@ -15,23 +15,37 @@ public class TablaEtiquetas {
             this.terceto = terceto; this.line = line;
         }
     }
-    private static Stack<Set<GoToInfo>> gotos_en_espera = new Stack<>();   // representa noción de ámbito
-    private static String scope_actual = Parser.actualScope;              // apuntan a la misma variable
+    private static final Stack<Set<GoToInfo>> gotos_en_espera = new Stack<>();   // representa noción de ámbito de las tags
+    private static String scope_actual;                     // Apuntan a la misma variable (denota el scope)
 
-    // debe haber una estructura que marque los gotos "solidificados" (no van a cambiar) en contraposición a los que está en espera
-    // idealmente tabla cumple esta función
+    public static void initialize() {
+        if (gotos_en_espera.isEmpty())
+            gotos_en_espera.add(new HashSet<>());   // Conjunto del ámbito main (debe estar en todos los programas)
+    }
+
 
     // Esto debería actualizarse por cada cambio en el ámbito (llamar desde Parser.pushScope y Parser.popScope respectivamente)
     public static void pushScope() {
+        initialize();
+        scope_actual = Parser.actualScope;
+        System.out.println("Entering "+scope_actual);
         // Apilar en gotos_en_espera
-        gotos_en_espera.push(new HashSet<GoToInfo>());
+        gotos_en_espera.push(new HashSet<>());      // Se apila el conjunto del nuevo ámbito
     }
 
     public static void popScope() {
-        // Verificar existencia de gotos_huerfanos (quizás convendría guardar tambien la linea donde fueron declaradas las sentencias)
-        // Notificar el error, si es que hay 
-        // Desapilar en gotos_en_espera
-        gotos_en_espera.pop();
+        System.out.println("Exiting "+scope_actual);
+        scope_actual = Parser.actualScope;
+
+        Set<GoToInfo> gotos_en_espera_scope_actual = gotos_en_espera.peek();
+        gotos_en_espera.pop();                      // Se desapila el conjunto del ámbito actual
+        if (gotos_en_espera.isEmpty())
+            TablaEtiquetas.end();
+        else if (!gotos_en_espera_scope_actual.isEmpty()) // Si un goto declarado en el scope a cerrar no fue asignado aún ...
+            gotos_en_espera.peek().addAll(gotos_en_espera_scope_actual);   // entonces se lo pasa al conjunto de abajo.
+        // Si al final del programa quedan gotos sin asignar en el tope de la pila: se informa del error indicando el número de línea
+        // (ver método end())
+
     }
 
     private static boolean tagIsDeclared(String tag) {
@@ -53,7 +67,7 @@ public class TablaEtiquetas {
     }
 
     private static void verifyGoToStack(String tag) {
-        if (!gotos_en_espera.empty()) {
+        if (!gotos_en_espera.isEmpty()) {
             for (GoToInfo go_to : gotos_en_espera.peek()) {
                 if (go_to.tag.equals(tag)) {
                     tabla.get(tag).get(scope_actual).add(go_to);
@@ -68,10 +82,14 @@ public class TablaEtiquetas {
         while (!scope.equals("MAIN")) {
             String scope_padre = String.join(":", Arrays.copyOfRange(scope.split(":"), 0, scope.split(":").length - 1));
             if (tag_entry.containsKey(scope_padre)) {
-                for (GoToInfo go_to : tag_entry.get(scope_padre)) {
-                    if (go_to.scope.startsWith(scope)) {    // se produce el "robo"
+                Iterator<GoToInfo> iterator = tag_entry.get(scope_padre).iterator();
+                System.out.println("scope_padre: "+scope_padre);
+                while (iterator.hasNext()) {
+                    GoToInfo go_to = iterator.next();
+                    System.out.println("scope padre: " + scope_padre);
+                    if (go_to.scope.startsWith(scope)) {  // se produce el "robo"
                         tag_entry.get(scope_actual).add(go_to);
-                        tag_entry.get(scope_padre).remove(go_to);
+                        iterator.remove();  // Safely remove from scope_padre using the iterator
                     }
                 }
             }
@@ -81,13 +99,15 @@ public class TablaEtiquetas {
 
     // Cuando se declara una etiqueta en alguna parte del código - se supone que ya se chequeó que no existe?
     public static void add_tag(String tag) {
+        initialize();
+        scope_actual = Parser.actualScope;
         // Key: tag; Value: scope - gotos asociados.
         if (!tagIsDeclared(tag)) { 
             HashMap<String,Set<GoToInfo>> value = new HashMap<>();     // 
             value.put(scope_actual,new HashSet<GoToInfo>());
             tabla.put(tag,value); 
         } else {
-            tabla.get(tag).put(scope_actual,null);
+            tabla.get(tag).put(scope_actual,new HashSet<GoToInfo>());
         }
         // verificacion de gotos en espera (pueden ser asignados a un tag en este momento) - para el caso en que primero se pone el goto, luego la etiqueta
         verifyGoToStack(tag);
@@ -98,6 +118,8 @@ public class TablaEtiquetas {
     }
 
     public static void add_goto(String tag, int terceto, int line) {
+        initialize();
+        scope_actual = Parser.actualScope;
         GoToInfo nuevo_goto = new GoToInfo(tag,scope_actual,terceto,line);    // Agregar número de línea donde se declaró
         // se verifica si ya se declaró la etiqueta localmente: implica búsqueda simple en tabla
         if (tagIsDeclaredLocal(tag,scope_actual)) {     // para el caso en que primero se pone la etiqueta y luego el goto
@@ -117,6 +139,7 @@ public class TablaEtiquetas {
     }
     //metod0 de immpresion de tabla
     public static void display() {
+        System.out.println("Tamaño de la pila: "+gotos_en_espera.size());
         for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
             for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
                 for (GoToInfo value : entry2.getValue()) {
@@ -128,10 +151,24 @@ public class TablaEtiquetas {
     }
 
     public static void end() {
+
+        // Verificar que no existan gotos en espera, si los hay entonces debería dar error y enlistar las líneas de las tags huerfanas
+        if (gotos_en_espera.size() != 1)
+            System.out.println("[TablaEtiquetas:end()] Error en la actualización de ámbitos (el número de elementos en la pila es "+gotos_en_espera.size());
+        else if (!gotos_en_espera.peek().isEmpty()) {
+            for (GoToInfo goTo : gotos_en_espera.peek()) {
+                System.out.println("ERROR en linea ["+goTo.line+"]: sentencia GOTO "+goTo.tag+" referencia a una etiqueta inexistente/inalcanzable.");
+            }
+        }
+
+        TablaEtiquetas.display();
+
         for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
             for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
                 for (GoToInfo value : entry2.getValue()) {
-                    System.out.print(entry.getKey()+" - "+entry2.getKey()+" - "+value.terceto+" - "+value.line);
+                    //Terceto.print();
+                    System.out.print(value.terceto+" - "+value.line+" - "+entry.getKey()+":"+entry2.getKey()+"\n");
+                    Terceto.completeTerceto(value.terceto, entry.getKey()+":"+entry2.getKey(), null);
                 }
             }
         }

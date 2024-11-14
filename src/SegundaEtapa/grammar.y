@@ -19,6 +19,7 @@ prog    : ID BEGIN statement_list END {
         // llamar a funcion de TablaEtiquetas para actualizar los tercetos de tag
         // llamar a la función de limpieza de la tabla de símbolos (todo lo que no tenga scope)
         AnalizadorLexico.t_simbolos.clean();
+        TablaEtiquetas.end();
 }
         | error BEGIN statement_list END {yyerror("Error en linea "+AnalizadorLexico.line_number+": Falta el nombre del programa en la primer linea. "); }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": sintaxis incorrecta del programa." ); } 
@@ -613,7 +614,7 @@ tag_statement
                         AnalizadorLexico.t_simbolos.add_entry($1.sval+":"+actualScope,"TAG","","tag_name","");
                         // agregar a la tabla de etiquetas
                         TablaEtiquetas.add_tag($1.sval); 
-                } else yyerror("Error: La etiqueta "+$1.sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
+                } else yyerror("ERROR: La etiqueta "+$1.sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
                 AnalizadorLexico.t_simbolos.display();
         }
         ;
@@ -627,7 +628,7 @@ goto_statement
                 //if existe en TS {
                         yyerror("equisdel");
                         $$.sval= Terceto.addTerceto("JUMP_TAG",null,null);
-                        TablaEtiquetas.add_goto($2.sval,Terceto.parseTercetoId($$.sval),0);     // donde puse 0 iría número de línea en lo posible
+                        TablaEtiquetas.add_goto($2.sval,Terceto.parseTercetoId($$.sval),AnalizadorLexico.line_number);     // donde puse 0 iría número de línea en lo posible
                 //}
         }
         | GOTO error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
@@ -694,22 +695,26 @@ goto_statement
         }
 
         public void pushScope(String scope){
-                scope = scope + ":" + scope;
+                actualScope = actualScope + ":" + scope;
                 TablaEtiquetas.pushScope();
         }
 
         public void popScope(){
-                popScope(actualScope);
+                actualScope = popScope(actualScope);
+                System.out.println("Scope tras salir: "+actualScope);
         }
 
-        public void popScope(String scope){
+        public String popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
                 int index = scope.lastIndexOf(":");
+                yyerror("scope: "+scope);
                 if (index != -1) {
                         scope = scope.substring(0, index);
                 } // else scope queda igual
                 TablaEtiquetas.popScope();
+                return scope;
         }
+
 
         public boolean isDeclared(String id){
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
@@ -819,7 +824,7 @@ goto_statement
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {
                                         return id+":"+scopeaux;
                                 }
-                                popScope(scopeaux);     // lo hace con actualScope
+                                scopeaux = popScope(scopeaux);     // lo hace con actualScope
                         }
                         return null;    //si no esta declarada..
                 }

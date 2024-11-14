@@ -61,12 +61,12 @@ public class Terceto {
         // llega un int o un string? que pasa con los <> con los q se maneja el id del terceto en la gramatica?
         Terceto t = TerList.get(id);
         if (op1 != null) {
-            if (t.op1 != null){    
+            if (t.op1 == null){    
             t.op1 = op1;
             } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
         }
         if (op2!= null) {
-            if (t.op2 != null){
+            if (t.op2 == null){
             t.op2 = op2;
         } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
         }

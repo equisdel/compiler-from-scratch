@@ -1,5 +1,6 @@
 package PrimeraEtapa;
 import SegundaEtapa.*;
+import TercerEtapa.AnalizadorSemantico;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -152,6 +153,9 @@ public class AnalizadorLexico {
 			// Inicialización de las acciones semánticas
 			AccionSemantica.main(new String[0]);
 			acciones = AccionSemantica.all_actions;
+
+			// Llamado al Main del Analizador Semántico
+			AnalizadorSemantico.main(args);
 
 	}
 }

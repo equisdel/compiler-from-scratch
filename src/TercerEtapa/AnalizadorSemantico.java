@@ -49,7 +49,7 @@ public class AnalizadorSemantico {
     }
 
     public static void main(String[] args) {
-        
+        TablaEtiquetas.initialize();
     }
 
 }
