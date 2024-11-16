@@ -321,7 +321,7 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 AccionSemantica.error_msg = "Ausencia de la parte exponencial de la constante SINGLE luego de la 's'.";
                 all_actions[100].execute();     // Levanta el warning
-                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "1";
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";
                 all_actions[10].execute();      // Control de rangos
                 return 0;
             }

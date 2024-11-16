@@ -684,7 +684,7 @@ final static String yyrule[] = {
                 return ("<"+id+">");
         }
 
-        public Boolean isTerceto(String id){
+        static public Boolean isTerceto(String id){
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
         }
 

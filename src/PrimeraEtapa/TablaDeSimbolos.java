@@ -2,6 +2,7 @@ package PrimeraEtapa;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TablaDeSimbolos {
@@ -96,8 +97,28 @@ public class TablaDeSimbolos {
             entry.getValue().display();
         }
         */
-       System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n","LEXEMA","TIPO","SUBTIPO","USO","VALOR");
-       System.out.printf("|%-20s|%-10s|%-12s|%-14s|%-6s|%n","----------------------","------------","---------------","-----------------","--------");
+        /* Esto es para mostrar más linda la lista:::
+        // Calculate max length for each column
+        int lexemaWidth = lexema.stream().mapToInt(String::length).max().orElse(0);
+        int tipoWidth = tipo.stream().mapToInt(String::length).max().orElse(0);
+        int subtipoWidth = subtipo.stream().mapToInt(String::length).max().orElse(0);
+        int usoWidth = uso.stream().mapToInt(String::length).max().orElse(0);
+        int valorWidth = valor.stream().mapToInt(String::length).max().orElse(0);
+
+        // Build the dynamic format string
+        String format = "| %-"+lexemaWidth+"s | %-"+tipoWidth+"s | %-"+subtipoWidth+"s | %-"+usoWidth+"s | %-"+valorWidth+"s |%n";
+
+        // Print header
+        System.out.printf(format, "LEXEMA", "TIPO", "SUBTIPO", "USO", "VALOR");
+
+        // Print rows
+        for (int i = 1; i < lexema.size(); i++) {
+            System.out.printf(format, lexema.get(i), tipo.get(i), subtipo.get(i), uso.get(i), valor.get(i));
+        }
+
+        */
+        System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n","LEXEMA","TIPO","SUBTIPO","USO","VALOR");
+        System.out.printf("|%-20s|%-10s|%-12s|%-14s|%-6s|%n","----------------------","------------","---------------","-----------------","--------");
         for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
             //System.out.print("Clave: " + entry.getKey()+" ");
             Simbolo value = entry.getValue();

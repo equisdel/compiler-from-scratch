@@ -30,9 +30,9 @@ includelib \masm32\lib\masm32.lib
 
 ; uinteger:
 .data
-u1 DWORD ? ; no tiene valor aun
-u2 DWORD ?
-auxsum DWORD ? 
+u1 DW ? ; ya tiene valor de antes 
+u2 DW ?
+auxsum DW ? 
 .code
 MOV EAX, u1
 ADD EAX, u2 

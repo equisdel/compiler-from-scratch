@@ -1,14 +1,17 @@
 package TercerEtapa;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class AnalizadorSemantico {
 
-    static Map<String, Integer> tipos = Map.of(
-            "uinteger", 0,
-            "single", 1,
-            "hexa", 2
-    );
+    static Map<String, Integer> tipos = new HashMap<>();
+
+    static {
+        tipos.put("uinteger", 0);
+        tipos.put("single", 1);
+        tipos.put("hexa", 2);
+    }
 
     private static TablaPair tabla = new TablaPair();
 
