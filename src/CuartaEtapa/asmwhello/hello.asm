@@ -10,6 +10,9 @@ includelib \masm32\lib\masm32.lib
 ; volcar TS (clean, quitar cte o cosas sin scope)
 ; las single podemos dejarlas
 ; la .data hacerla despues de generar el .code, asi sabemos bien todas las variables que van (con las aux)
+; CREO se limpia la TS, quitando cosas sin scope como cte y  quitando el scope a todo, pero diferenciando todo lexema
+; con variables dif en el assembler (ej: main:f1:x es _f1x y main:x es _x  la logica del scope no se usa mas, se accede directo)
+; en assembler no se chequea scope, y se asume se chequeó bien en semantica, asiq podemos ponerle cualq nombre a las variables, mientras sean distinto
 
 ;Las cadenas de texto son simplemente una secuencia de bytes en memoria. 
 ;Sin una marca de finalización, el programa no sabría dónde termina la cadena, ya que no hay un "tamaño" explícito asociado.

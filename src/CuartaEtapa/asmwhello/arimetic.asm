@@ -61,5 +61,8 @@ FSTP auxsum ; guardo el resultado en auxsum ( en memoria)
 ; y ahi solo queda llamarla y usar el resultado. sencillo.
 ; genero previamente una asignacion entre la aux y la invocacion?
 ; ver tema parametro, copia valor?
+; .data y .code esta hecho, es uinteger o single dependiendo lo q devulva la funcion
+
+
 
 ; otro terceto (variable aux)
