@@ -1,0 +1,1 @@
+ml /c /coff CodigoAssembler.asm && link /SUBSYSTEM:CONSOLE CodigoAssembler.obj /OUT:CodigoAssembler.exe

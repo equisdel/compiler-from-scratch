@@ -11,6 +11,12 @@ includelib \masm32\lib\masm32.lib
 ; las single podemos dejarlas
 ; la .data hacerla despues de generar el .code, asi sabemos bien todas las variables que van (con las aux)
 
+;Las cadenas de texto son simplemente una secuencia de bytes en memoria. 
+;Sin una marca de finalización, el programa no sabría dónde termina la cadena, ya que no hay un "tamaño" explícito asociado.
+;El carácter 0 (nulo o NULL) sirve como una señal que indica que la cadena ha llegado a su fin.
+
+
+
  HelloWorld db "Hola mundo!", 0
 .code
 start:
