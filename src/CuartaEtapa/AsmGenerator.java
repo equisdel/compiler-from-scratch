@@ -7,6 +7,8 @@ import PrimeraEtapa.*;
 import TercerEtapa.*;
 import SegundaEtapa.*;
 
+// GENERANDO EL .CODE TODAVIA PUEDO TENER TODA LA TS. LUEGO DE GENERAR .DATA AHI NOSE USA MAS
+// tonces las aux las voy agregando a las TS y ahi hay logica q ya esta contemplada! :D
 public class AsmGenerator {
 
     // En este punto ya no deberían haber errores sintácticos/semánticos.

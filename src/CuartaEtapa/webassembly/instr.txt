@@ -1,3 +1,0 @@
-en wabt/bin
-wat2wasm DIR (se puede arrastrar el archivo a la terminal)
-en wabt/bin queda el archivo .wasm con mismo nombre (con -o se puede cambiar)

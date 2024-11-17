@@ -179,23 +179,30 @@ declare_fun_header
                 }
         ;
 
+/* PROBAR: ASIGNAR UN PAR A OTRO PAR */
+
 declare_pair
+/* a := b{1} + b{2}
+ * en assembler: si es acceso pair, tiene {}
+ * guardar en TS b{1} o b{2} con tipo pairsito
+ * buscar ese tipo en la TS y fijarse de que tipo primitio es (tipo base)
+ *  en assembler: b$1 o b$2 
+ *  en TS no hace falta tener 2, con tener variable 'p1' de tipo parsito
+ * y el tipo pairsito con su tipo primitivo, ya está. no necesito los dos campos. pero al pasarlo a assembler los creos.
+ */
         : TYPEDEF PAIR '<' var_type '>' ID  {
                 // se le pone scope 'MAIN' 
                 if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                
-                if ($4.sval == "UINTEGER" || $4.sval == "SINGLE" || $4.sval == "HEXA") {
+                else {
+                        if ($4.sval == "UINTEGER" || $4.sval == "SINGLE" || $4.sval == "HEXA") {
 
-                        if (AnalizadorLexico.t_simbolos.get_entry($6.sval+":MAIN") != null){
-                                yyerror("Error: Se esta redeclarando "+$6.sval +" en linea "+AnalizadorLexico.line_number);
-                        } else {
-                                AnalizadorLexico.t_simbolos.add_entry($6.sval+":MAIN","ID","pair","TYPE_NAME");
-                                TablaPair.addPair($6.sval,$4.sval); // necesario? para mi agregar value1 y value2 en TS y listo. facil. no importa la eficiencia.
-                                // pero mejor seria que sea una variable mas. en el assembler pasarla como una variable mas y listo.
-                                // para esto, ????
-                        }
-                } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo invalido. Solo se permite primitivos: uinteger, single, hexadecimal."); }
-
+                                if (AnalizadorLexico.t_simbolos.get_entry($6.sval+":MAIN") != null){
+                                        yyerror("Error: Se esta redeclarando "+$6.sval +" en linea "+AnalizadorLexico.line_number);
+                                } else {
+                                        AnalizadorLexico.t_simbolos.add_entry($6.sval+":MAIN","ID",$4.sval,"TYPE_NAME");
+                                }
+                        } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo invalido para pair. Solo se permite primitivos: uinteger, single, hexadecimal."); }
+                }
 
         }
         | TYPEDEF '<' var_type '>' ID {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba 'pair'.") ; }
@@ -234,7 +241,7 @@ var_type
         : UINTEGER
         | SINGLE
         | HEXA
-        | ID
+        | ID 
         ;
 
 
@@ -472,9 +479,13 @@ fact    : ID    {
         ;
 
 expr_pair
-        : ID '{' CTE '}' {      // ID ES UN TIPO PERSONALIAZDO POR EL USUARIO, 
+        : ID '{' CTE '}' {       
                 if (isDeclared($1.sval)){
-                        if (!AnalizadorLexico.t_simbolos.get_subtype($1.sval).equals("PAIR")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
+                        // si ID es de un tipo definido (el tipo de ID esta en la tabla de simbolos)
+                        String lexem = getDeclared($1.sval);
+                        String baseType = AnalizadorLexico.t_simbolos.get_subtype(lexem);
+                        if (!AnalizadorLexico.t_simbolos.get_use(baseType).equals("TYPE_NAME")) {
+                                yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
                         else {
                                 if (!($3.sval.equals("1") || $3.sval.equals("2"))) {
                                 yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante 1 o 2. "); 
@@ -624,8 +635,7 @@ tag_statement
 goto_statement
         : GOTO TAG /* debe existir tag (pero puede estar despues, entonces se chequea al final) supongo tambien se agrega terceto */{
                 //if existe en TS {
-                        yyerror("equisdel");
-                        $$.sval= Terceto.addTerceto("JUMP_TAG",null,null);
+                        $$.sval= Terceto.addTerceto("JUMP_TAG",null,null);      //se pone terceto incompleto, se completara al final del programa
                         TablaEtiquetas.add_goto($2.sval,Terceto.parseTercetoId($$.sval),AnalizadorLexico.line_number);     // donde puse 0 iría número de línea en lo posible
                 //}
         }
@@ -657,41 +667,41 @@ goto_statement
                 return (id.charAt(0) == '<' && id.charAt(id.length()-1) == '>');
         }
 
-/* ENCARGARSE DE PASAR DE HEXA A UN INTEGER, NI BIEN LLEGA UN HEXA (ESTE DODNE ESTE) ASI DESP ES LA MISMA LOGICA*/
-        public String chkAndGetType(String valStr){  
-                //no contempla si la variable es de un tipo personalizado(USO: TYPENAME)
+
+        public String chkAndGetType(String valStr){  //DEVUELVE TIPO PRIMITIVO (HEXA, UINTEGER, O SINGLE)
                 if (isTerceto(valStr)) {
                         return Terceto.getSubtipo(valStr);
                         }
                 else {
                         // puede ser variable, o cte, o expr_pair, o invoc. a funcion
-                        //cte: lo unico que no tiene scope
                         if (isCte(valStr)) {return AnalizadorLexico.t_simbolos.get_subtype(valStr);}
                         else {  // variable, invoc. a funcion o expr_pair
                                 // entre variable e invoc a funcion distingo por el uso, pero ambas tienen el tipo (o tipo de retorno q es lo q me interesa) en el mismo campo.
-                                
                                 // si es variable o funcion:
                                 String lexem = getDeclared(valStr);
+                                String type = AnalizadorLexico.t_simbolos.get_subtype(lexem);
                                 if (lexem != null){
-                                        if (!(AnalizadorLexico.t_simbolos.get_subtype(valStr).equals("SINGLE") || AnalizadorLexico.t_simbolos.get_subtype(valStr).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(valStr).equals("HEXA"))) { // es porq es uno definido x el usuario (podria ser hexa?)
-                                                //pair no seria, xq si es pair, valStr es un TIPO definido por usuario, y no una variable, y eso se chequea antes de llegar a esta linea.
-                                
-                                                return TablaPair.getTipo(valStr);               
+                                        if (!(type.equals("SINGLE") || type.equals("UINTEGER") || type.equals("HEXA"))) {
+                                                //es tipo definido por usuario
+                                                if (AnalizadorLexico.t_simbolos.get_use(type).equals("TYPE_NAME")) {
+                                                        return (AnalizadorLexico.t_simbolos.get_subtype(type)); //devuelve el primitivo
+                                                }
                                         }
                                         // si es tipo primitivo
-                                        return AnalizadorLexico.t_simbolos.get_subtype(valStr);
+                                        return AnalizadorLexico.t_simbolos.get_subtype(lexem);
                                 } else yyerror("Error en linea "+AnalizadorLexico.line_number+": identificador "+valStr+" no declarado. ");
-                                return "";      //o null?
+                                return null;
                         }
                 }
         }
-        
+
        /*  public void set_var_scope() {
 
         }*/
 
         public Boolean isCte(String valStr){
                 return (AnalizadorLexico.t_simbolos.get_entry(valStr) != null); //se pasa sin scope. Si está, es cte (el resto deberia tener como minimo scope :main)
+                // si no esta, no es cte o no está
         }
 
         public void pushScope(String scope){
@@ -756,8 +766,9 @@ goto_statement
                         yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 
                 //chequear tipo sea valido
-                if (tipo.equals("UINTEGER") || tipo.equals("HEXA") ||tipo.equals("SINGLE") ||(AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME"))) {
-                         
+                if (tipo.equals("UINTEGER") || tipo.equals("HEXA") ||tipo.equals("SINGLE") || (AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME"))) {
+                // pair ejemplo en TS: pairsito:main subtipo:uinteger use:typename  no hace falta aclarar es un pair xq es el unico tipo q puede definir  
+                // y otra entrada: p1:main:f1 subtipo: pairsito use: variable_name
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {
                                         yyerror("Error: La variable "+id+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");}
                                 else {
@@ -770,7 +781,7 @@ goto_statement
                 } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo de variable no valido. "); }
         }
 
-        public Boolean isCompatible(String t_subtype1,String t_subtype2){  //medio al dope creo, al menos duvuelva el tipo resultante en caso de ser ocmpatible, y null si no.
+        public Boolean isCompatible(String t_subtype1,String t_subtype2){  //medio al dope creo, al menos devuelva el tipo resultante en caso de ser ocmpatible, y null si no.
                 return AnalizadorSemantico.isCompatible(t_subtype1,t_subtype2);
         }
 
@@ -807,7 +818,7 @@ goto_statement
                         else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    // otros casos?
                                 Terceto.addTercetoT("utos",expr,null,"SINGLE");
                                 Terceto.addTercetoT(":=",id,expr,"SINGLE");
-                        } else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){
+                        } else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER"))){
                                 
                         }  
                         else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
