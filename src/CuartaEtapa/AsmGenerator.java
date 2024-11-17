@@ -190,7 +190,7 @@ public class AsmGenerator {
                                 //agregar a .data  varfloat dd mapSingleToFloat(operador);
                                 // _cte1 dd 1.2     -1.2s-8 [0-9][a-z]'.''+/-' -> ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
                                 return "varfloat";}
-                            else if (subtipo=="UINTEGER")
+                            else if (subtipo=="UINTEGER")       // TAMBIEN CONTEMPLAR HEXA (si pasamos el hexa a uinteger, no se donde hacerlo y que sea 'correcto')
                                 return operador;
                             else System.out.println("PROBLEMA: El subtipo no es ni SINGLE ni UINTEGER.");
                         }
@@ -252,7 +252,9 @@ public class AsmGenerator {
                 case ":=":          // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, CHARCH, terceto
                                     appendCode("MOV "+op1+","+getOperador(op2, terceto.subtipo));
                                     // CHEQUEAR LO QUE FALTE ANTES DE MOV ( EN CASO DE FLOAT )
-                    break;
+                                break;
+                case "utos":    // PUEDE SER UINTEGER O HEXA, OPCION 1 CONTEMPLAR LAS POSIBILIDADES ACA, OPCION 2 HACER OTRO TERCETO 'htos'
+                break;
                 
                 
                 default:    System.out.println("PROBLEMA: El terceto no fue implementado.");

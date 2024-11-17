@@ -37,12 +37,16 @@ public class AnalizadorSemantico {
             {"-",            "single",       "-"     },
             {"uinteger",     "-",            "uinteger" },
             {"uinteger",     "uinteger",     "-"        },
-            // Hexa + Single = se pasan ambas a uinteger
+            
     };
 
     public static String getCompatibilidad(String tipo1, String tipo2) {
         int i = getTipo(tipo1);
         int j = getTipo(tipo2);
+        // HARDCODED: hexa y uinteger
+        if (tipo1.equals("HEXA") && tipo2.equals("UINTEGER") || tipo1.equals("UINTEGER") && tipo2.equals("HEXA")) {
+            return "UINTEGER";
+        }
         if (i == -1 || j == -1) return null;
         return tablaCompatibilidadTipos[i][j];
     }

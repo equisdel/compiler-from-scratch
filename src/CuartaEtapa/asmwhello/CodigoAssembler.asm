@@ -9,7 +9,7 @@ includelib \masm32\lib\kernel32.lib
 includelib \masm32\lib\masm32.lib
 
 .data
-HelloWorld db "hola puta!!!", 0
+HelloWorld db "hola fruta!!!", 0
 printf PROTO C : VARARG
 format db "Valor modificado: %f", 0
 .code

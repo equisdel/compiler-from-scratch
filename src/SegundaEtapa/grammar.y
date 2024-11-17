@@ -233,8 +233,8 @@ fun_body
 var_type
         : UINTEGER
         | SINGLE
-        | ID{   // se chequeara donde se use.
-                }
+        | HEXA
+        | ID
         ;
 
 
@@ -348,9 +348,9 @@ cond
                 // chequear y convertir si es necesario (se hace en varios lugares, pensar en modularizar)
                 if (t_subtype1.equals(t_subtype2)){
                         $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
-                } else if( t_subtype1.equals("UINTEGER")) { $$.sval = Terceto.addTercetoT("utos",id1,null, "SINGLE");
+                } else if( t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) { $$.sval = Terceto.addTercetoT("utos",id1,null, "SINGLE");
                         $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
-                } else if( t_subtype2.equals("UINTEGER")) { $$.sval = Terceto.addTercetoT("utos",id2,null, "SINGLE");
+                } else if( t_subtype2.equals("UINTEGER") || t_subtype2.equals("HEXA")) { $$.sval = Terceto.addTercetoT("utos",id2,null, "SINGLE");
                         $$.sval=Terceto.addTercetoT($2.sval,id1,id2, null);
                 } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en comparacion. "); }
         }
@@ -388,8 +388,7 @@ expr    : expr '+' term    {
                 yyerror("tipo2: "+t_subtype2);
                 String id2 = $3.sval;
                 if (t_subtype1.equals(t_subtype2)){
-                        // si es uinteger o single agregar terceto (pensar si es otro tipo, que pasa?)
-                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);
+                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) { $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (!t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         else if (!t_subtype2.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
@@ -404,11 +403,10 @@ expr    : expr '+' term    {
                 String t_subtype2 = chkAndGetType($3.sval);
                 String id2 = $3.sval;
                 if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER")) { $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
-                        else {yyerror("Tipo no valido..");}
+                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) { $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
-                        if (t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
-                        else if (t_subtype2.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                        if (t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id2,null, "SINGLE");}
+                        else if (t_subtype2.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
                         $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");}
                 else{yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en resta. "); }
         }
@@ -423,7 +421,7 @@ term    : term '*' fact {
                 String t_subtype2 = chkAndGetType($3.sval);
                 String id2 = $3.sval;
                 if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER")) { $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype1);}
+                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) { $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype1);}
                         else {yyerror("Tipo no valido..");}
                 } else if (isCompatible(t_subtype1,t_subtype2)){
                         if (!t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
@@ -437,7 +435,7 @@ term    : term '*' fact {
                 String t_subtype2 = chkAndGetType($3.sval);
                 String id2 = $3.sval;
                         if (t_subtype1.equals(t_subtype2)){
-                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER")) { $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype1);}
+                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) { $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype1);}
                                 else {yyerror("Tipo no valido..");}
                         } else if (isCompatible(t_subtype1,t_subtype2)){        //son dif pero compatibles, <=> uno es SINGLE y el otro UINTEGER
                                 if (!t_subtype1.equals("SINGLE")) {$$.sval= Terceto.addTercetoT("utos",id1,null, "SINGLE");}
