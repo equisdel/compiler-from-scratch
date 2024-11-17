@@ -800,13 +800,16 @@ goto_statement
                         //id es variable siosi
                         String lexemID = getDeclared(id);
                         String subtypeID = chkAndGetType(lexemID);
-                        if (subtypeT.equals(subtypeID)){        // MAL: CHEQUEAR TAMBIEN QUE PUEDEN SER UINTEGER Y HEXA, Q SON DISTINTOS PERO NO HAY Q CONVERTIR 
-                                Terceto.addTercetoT(":=",id,lexemExpr,subtypeID);       
+                        if (subtypeT.equals(subtypeID)){       
+                                Terceto.addTercetoT(":=",id,lexemExpr,subtypeID);
                         }
+                        // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
                         else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    // otros casos?
                                 Terceto.addTercetoT("utos",expr,null,"SINGLE");
                                 Terceto.addTercetoT(":=",id,expr,"SINGLE");
-                        }       // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
+                        } else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){
+                                
+                        }  
                         else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
 
                 }
