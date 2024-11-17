@@ -1,0 +1,6 @@
+MOV Y@MAIN,3
+MOV auxt_1,1
+ADD auxt_1,2
+MOV auxt_2,auxt_1
+SUB auxt_2,Y@MAIN
+MOV X@MAIN,auxt_2

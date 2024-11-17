@@ -20,9 +20,9 @@ BEGIN
     
     ## Conditional IF 
     IF (x > y) THEN
-        OUTF [X is greater than Y];
+        OUTF([X is greater than Y]);
     ELSE
-        OUTF [Y is greater or equal to X];
+        OUTF([Y is greater or equal to X]);
     END_IF;
 
     ## Function invocation 

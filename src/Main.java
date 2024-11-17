@@ -11,6 +11,7 @@ import CuartaEtapa.AsmGenerator;
 
 public class Main {
 
+   // ESTO ES TESTING
    private static String mapSingleToFloat(String single) {    // Convención IEEE 754
 
       String signo, exponenteBin, mantisaBin;       // 1, 8 y 23 bits, respectivamente.
@@ -81,6 +82,8 @@ public class Main {
    }
 
 	public static void main(String[] args) {
+      File test = new File("./src/CuartaEtapa/test.txt");
+      System.out.println(test.getAbsolutePath());
 		/* 
 		String single = "+2.5s+20";
       System.out.println(mapSingleToFloat(single));
@@ -141,9 +144,10 @@ public class Main {
             Terceto.print_all();
 
             // Solo si no hay errores se procede a generar código assembler
-            String executablePath = "";   // ¿Dónde se almacena el ejecutable?
-            if (Parser.errores.isEmpty())
+            String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
+            if (Parser.errores.isEmpty()) {
                AsmGenerator.generate(executablePath);
+            } else System.out.println("Hay errores.");
 
          } else {
             System.out.println("Selecci\u00f3n inv\u00e1lida.");

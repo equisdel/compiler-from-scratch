@@ -1,0 +1,11 @@
+simple
+begin
+
+    uinteger x, y;
+    
+    y := 3;
+    x := 1 + 2 - y;
+
+    outf(x);
+
+end
