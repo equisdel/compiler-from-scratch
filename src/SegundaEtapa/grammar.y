@@ -568,7 +568,7 @@ outf_statement
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         lexem = getDeclared(lexem);
                 }
-                $$.sval = Terceto.addTerceto("OUTF",lexem,null);
+                $$.sval = Terceto.addTercetoT("OUTF",lexem,null,chkAndGetType($3.sval));
         }
         | OUTF '(' ')' {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
         | OUTF error {yyerror("Error en linea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
