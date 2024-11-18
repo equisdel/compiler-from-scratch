@@ -1,14 +1,11 @@
 package CuartaEtapa;
 
+import PrimeraEtapa.*;
+import SegundaEtapa.*;
+import TercerEtapa.*;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import PrimeraEtapa.*;
-import TercerEtapa.*;
-import SegundaEtapa.*;
 
 // GENERANDO EL .CODE TODAVIA PUEDO TENER TODA LA TS. LUEGO DE GENERAR .DATA AHI NOSE USA MAS
 // tonces las aux las voy agregando a las TS y ahi hay logica q ya esta contemplada! :D
@@ -228,7 +225,7 @@ public class AsmGenerator {
             return hexValue;
         }
     
-        private static String getOperador(String operador, String subtipo) {
+        private static String getOperador(String operador, String subtipo) { //operador puede ser ID,terceto, cte
             // devuelve el operador en el formato correcto para el assembler
             Simbolo ref_op = AnalizadorLexico.t_simbolos.get_entry(operador);
             if (ref_op != null) {                       // Es un ID
@@ -245,8 +242,7 @@ public class AsmGenerator {
                     //agregar a .data  varfloat dd mapSingleToFloat(operador);
                     // _cte1 dd 1.2     -1.2s-8 [0-9][a-z]'.''+/-' -> ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
                     return "varfloat";}
-                else if (subtipo.equals("UINTEGER"))   {    // TAMBIEN CONTEMPLAR HEXA {}
-                    
+                else if (subtipo.equals("UINTEGER") || subtipo.equals("HEXA"))   {    // TAMBIEN CONTEMPLAR HEXA -> intentarlos tratar igual a ver si funciona
                     return operador;
                 }
                 else System.out.println("PROBLEMA: El subtipo no es ni SINGLE ni UINTEGER.");
@@ -276,6 +272,10 @@ public class AsmGenerator {
                     case "SUMA":        System.out.println("SWITCH CASE MATCH: SUMA");
                                         // El resultado de la suma se guarda en una variable auxiliar con prefijo "auxt_" y sufijo igual al id del terceto actual.
                                         
+                                        // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
+                                        // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
+                                        // EL _ ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
+
                                         // Declarar la variable "auxt_[id_terceto]".
                                         assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
                                         
@@ -314,14 +314,15 @@ public class AsmGenerator {
                             break;
                     
                     case "utos":        System.out.println("SWITCH CASE MATCH: UTOS");
-                    // USAR ifHexaTrans, si es hexa lo traduce al hexa del assembler, si es uinteger lo deja igual.
-                    // contemplar uinteger a single o hexa a single
+                    // utos crea una auxiliar con el valor origen pero de tipo single
+                    // puede ser CTE, ID , otro terceto (pero de tipo uinteger o hexa, sino a utos no se crea)
+                    // contemplar uinteger a single o hexa a single -> PROBAR SI SE PUEDEN TRATAR EXACTAMENTE IGUAL
                                     op1 = ifHexaTrans(op1);
-                                    op2 = ifHexaTrans(op2);
-                                        // SI ES UINTEGER:
-                                        getOperador(op1,"UINTEGER");
+                                    getOperador(op1,"UINTEGER");    // sea uinteger o hexa no cambia nada lo q devuelve
                                     appendCode("xd");
-                                        // S
+                                    fild uintegerValue
+                                    fstp singleResult
+                                    // PROBAR SI CON SOLO ESO ANDA. SINO, MIRAR FILMINAS.
                             break;      
 
     
