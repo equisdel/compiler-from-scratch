@@ -44,14 +44,12 @@ public class AsmGenerator {
 
     
     public static void init() {
+        // Se crea cada "componente" del archivo final por separado
         punto_code = new FileManager(destPath+"punto_code");
         punto_data = new FileManager(destPath+"punto_data");
-
-        // Inicializa el archivo en Null
-        // Le agrega el header y todo lo que corresponde al formato del archivo
-        // Considero mejor: archivos por separado y se ensamblan las partes al final
-        // por ahora header ocupa 8 lineas asique empezar en linea 9
-
+        punto_code.appendLine(".code");
+        punto_data.appendLine(".data");
+        // Falta alguna sección?
     }
 
     public static void finish() {
@@ -75,9 +73,7 @@ public class AsmGenerator {
         }
     
         private static String mapIDSubtypeToVarType(String subtype) {
-                // cte uinteger: 16 bits.   
-                // cte single: 32 bits.
-                // tipo personalizado?
+            // subtipos: uinteger/hexa -> DW, single -> DD, "64B" -> DQ
                 return "";
                 }
                 
@@ -89,13 +85,15 @@ public class AsmGenerator {
             // Determinar el signo
     
             switch (single.substring(0,0)) {    // signo del single
-                case "+":   signo = "0"; single = single.substring(1,single.length());
-                            break;
-                case "-":   signo = "1"; single = single.substring(1,single.length());
-                            break;
-                default:    signo = "0";        // positivo por defecto
-                            break;
+                case "+" -> {
+                    signo = "0"; single = single.substring(1,single.length());
             }
+                case "-" -> {
+                    signo = "1"; single = single.substring(1,single.length());
+            }
+                default -> signo = "0";        // positivo por defecto
+            }
+        // signo del single
     
             // Separar la base (mantisa) y el exponente
     
@@ -192,8 +190,9 @@ public class AsmGenerator {
         
         // Queda implementar esto al archivo de datos, junto con otras cosas (auxiliares de tercetos, por ej)
         private void volcarTablaDeSimbolos() {
+
             // Todas las entradas de la tabla de símbolos, excepto palabras reservadas, van a parar a la sección data como variables del assembly
-            // Solo se vuelcan IDs -> declaración con su subtipo e ¿inicialización?
+            // Solo se vuelcan IDs -> declaración con su subtipo, sin valores.
             /*  
                 for (ID en tabla de símbolos) {
                     appendData(Id.nombre, mapIDSubtypeToVarType(ID.subtype));
@@ -208,8 +207,8 @@ public class AsmGenerator {
                 // Assuming you have a StringBuilder to hold the assembler code
         }
         
-        private void appendData() {
-            
+        private void appendData(AsmData data) {
+            punto_data.appendLine(data.getInstruction());   // Como distinguimos entre ".data" y ".data?" ? 
                 // las aux pueden ir agregandose a la TS
                 // Distinguir entre .data y .data?
                 // Se hace al final, porque ya se sabe cuantas variables auxiliares se van a necesitar.
@@ -217,15 +216,14 @@ public class AsmGenerator {
         }
         
         private static String ifHexaTrans(String hexValue) { // pasa de hexa 0x123 a hexa para assembler
-            // 0x12 -> 012h
+            // EJEMPLO: 0x12 -> 012h
             if (hexValue.startsWith("0x")) {
                 hexValue = hexValue.substring(2);
                 return 0 + hexValue + "h";
-            }
-            return hexValue;
+            } return hexValue;
         }
     
-        private static String getOperador(String operador, String subtipo) { //operador puede ser ID,terceto, cte
+        private static String getOperador(String operador, String subtipo) { //operador puede ser ID,terceto, cte pairsito{1}
             // devuelve el operador en el formato correcto para el assembler
             Simbolo ref_op = AnalizadorLexico.t_simbolos.get_entry(operador);   // funciona porque a esta etapa llega el lexema con scope incluido
             if (ref_op != null) {                       // Es un ID  (cte no esta en TS porque hubo limpieza)
@@ -238,7 +236,12 @@ public class AsmGenerator {
                 // hacer el pasaje o traduccion en caso de single 
                 // los tipo float no se pueden usar como inmediatos
                 System.out.println("cte: "+operador+": El subtipo es "+subtipo);
-                if (subtipo.equals("SINGLE")){
+                if (Parser.isPair(operador)) {  //pairsito{1}
+                    // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
+                        // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
+                        // EL _ al principio ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
+                    return operador.replace("{","___").replace("}","___");
+                } else if (subtipo.equals("SINGLE")){
                     //agregar a .data  varfloat dd mapSingleToFloat(operador);
                     // _cte1 dd 1.2     -1.2s-8 [0-9][a-z]'.''+/-' -> ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
                     return "varfloat";}
@@ -257,84 +260,93 @@ public class AsmGenerator {
                 String op2 = terceto.op2 != null ? terceto.op2.replace(":",scopeDelimitatorReplacement) : null;
         
                 switch (terceto.operacion) {
-                    case "LABEL":       appendCode(op1+":");    
-                                        break;
+                    case "LABEL" -> appendCode(op1+":");
         
-                    case "JUMP_TAG":    appendCode("JMP "+op1+":");   // JMP es salto incondicional
-                                        break;
+                    case "JUMP_TAG" -> appendCode("JMP "+op1+":");   // JMP es salto incondicional
                     
-                    case "JUMP_FUN":    appendCode("JMP "+op1+":");   // JMP es salto incondicional
-                                        break;
+                    case "JUMP_FUN" -> appendCode("JMP "+op1+":");   // JMP es salto incondicional.
+                    // podriamos incluir la aux donde quedara el resultado, del tipo del terceto (que es del tipo de retorno de la funcion)
+                    // entonces despues es mas facil usar el resutlado de lo que deuvelve en el resto de tercetos
         
-                    case "OUTF":        System.out.println("SWITCH CASE MATCH: OUTF");
-                                        //op2 null, op1: ID, cte, terceto (resultado de arimeticas, de funcion)
-                                        if (terceto.subtipo.equals("SINGLE")) {
-                                            // CONVERTIR A 64 BITS Y LLAMAR A PRINTF
-                                            appendCode("invoke StdOut, addr "+getOperador(op1, terceto.subtipo));
-                                        } else {
-                                        }
-                                        break;
+                    case "OUTF" -> {
+                        System.out.println("SWITCH CASE MATCH: OUTF");
+                        //op2 null, op1: ID, cte, terceto (resultado de arimeticas, de funcion) O CHARCH!
+                        appendCode("INVOKE printf, addr __new_line__");
+                        if (terceto.subtipo.equals("SINGLE")) { // sea id,cte,terceto
+                            // CONVERTIR A 64 BITS Y LLAMAR A PRINTF
+                            // la variable de 64 bits q nombre le ponemos? para asegurar no se repita nunca
+                            // opcion: auxt_contador_t_64
+                            assembly_variables.add(new AsmData("auxt_"+contador_t+"_64","64B","?"));
+                            //pasar el valor de aux_t_contador_t a auxt_contador_t_64
+                            appendCode("fld "+"auxt_"+contador_t);
+                            appendCode("fst "+"auxt_"+contador_t+"_64");
+                            appendCode("invoke printf, cfm$(\"%.20Lf\n\") auxt_"+contador_t+"_64");
+                        } else if (terceto.subtipo.equals("UINTEGER")|| terceto.subtipo.equals("HEXA")) {
+                            appendCode("invoke printf, cfm$(\"%u\n\"), "+getOperador(op1, terceto.subtipo));
+                        }   // FALTA CASO PAIR y funcion
+            }
         
-                    case "SUMA":        System.out.println("SWITCH CASE MATCH: SUMA");
-                                        // El resultado de la suma se guarda en una variable auxiliar con prefijo "auxt_" y sufijo igual al id del terceto actual.
-                                        
-                                        // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
-                                        // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
-                                        // EL _ ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
+                    case "SUMA" -> {
+                        System.out.println("SWITCH CASE MATCH: SUMA");
+                        // El resultado de la suma se guarda en una variable auxiliar con prefijo "auxt_" y sufijo igual al id del terceto actual.
+                        
+                        
+                        // Declarar la variable "auxt_[id_terceto]".
+                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
+                        // Si operador es terceto:  aux_[op_id_terceto]
+                        // Si operador es ID:       referencia a la variable (el operador mismo)
+                        // Si operador es CTE:      literal (inmediato, el operador mismo)
+                        String final_op1 = getOperador(op1, terceto.subtipo);
+                        String final_op2 = getOperador(op2, terceto.subtipo);
+                        appendCode("MOV auxt_"+contador_t+","+final_op1);   // MOV auxt_[id_terceto], final_op1
+                        appendCode("ADD auxt_"+contador_t+","+final_op2); // ADD auxt_[id_terceto], final_op2
+                // SI ES SINGLE (FLOAT) SE OPERA CON PILA, AGREGAR ESA OPCION (MIRANDO TERCETO.SUBTIPO)
+            }
+        
+                    case "RESTA" -> {
+                        // Análogo a la SUMA
+                        System.out.println("SWITCH CASE MATCH: RESTA");
+                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
+                        appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
+                        appendCode("SUB auxt_"+contador_t+","+getOperador(op2, terceto.subtipo));   // SUB auxt_[id_terceto], final_op2
+            }
 
-                                        // Declarar la variable "auxt_[id_terceto]".
-                                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
-                                        
-                                        // Si operador es terceto:  aux_[op_id_terceto]
-                                        // Si operador es ID:       referencia a la variable (el operador mismo)
-                                        // Si operador es CTE:      literal (inmediato, el operador mismo)
-                                        String final_op1 = getOperador(op1, terceto.subtipo);
-                                        String final_op2 = getOperador(op2, terceto.subtipo);
-        
-                                        appendCode("MOV auxt_"+contador_t+","+final_op1);   // MOV auxt_[id_terceto], final_op1
-                                        appendCode("ADD auxt_"+contador_t+","+final_op2);   // ADD auxt_[id_terceto], final_op2
-                                        // SI ES SINGLE (FLOAT) SE OPERA CON PILA, AGREGAR ESA OPCION (MIRANDO TERCETO.SUBTIPO)
-                                        break;
-        
-                    case "RESTA":       // Análogo a la SUMA
-                                        System.out.println("SWITCH CASE MATCH: RESTA");
-                                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
-                                        appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
-                                        appendCode("SUB auxt_"+contador_t+","+getOperador(op2, terceto.subtipo));   // SUB auxt_[id_terceto], final_op2
-                            break;
+                    case "MULT" -> {
+                        System.out.println("SWITCH CASE MATCH: MULT");// Análogo a la SUMA
+                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
+                        appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
+                        appendCode("MUL auxt_"+contador_t+","+getOperador(op2, terceto.subtipo));   // SUB auxt_[id_terceto], final_op2
+            }
     
-                    case "MULT":        System.out.println("SWITCH CASE MATCH: MULT");// Análogo a la SUMA
-                            assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
-                            appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
-                            appendCode("MUL auxt_"+contador_t+","+getOperador(op2, terceto.subtipo));   // SUB auxt_[id_terceto], final_op2
-                            break;
-    
-                    case "DIV":         System.out.println("SWITCH CASE MATCH: DIV");// Análogo a la SUMA
-                            assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?")); // o agregar a TS
+                    case "DIV" -> {
+                        System.out.println("SWITCH CASE MATCH: DIV");// Análogo a la SUMA
+                        assembly_variables.add(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(terceto.subtipo),"?"));
                         appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                         appendCode("DIV auxt_"+contador_t+","+getOperador(op2, terceto.subtipo));   // SUB auxt_[id_terceto], final_op2
-                        break;
+            }
         
-                    case ":=":          System.out.println("SWITCH CASE MATCH: :=");// a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, CHARCH, terceto
-                                        appendCode("MOV "+op1+","+getOperador(op2, terceto.subtipo));
-                        // CHEQUEAR LO QUE FALTE ANTES DE MOV ( EN CASO DE FLOAT )
-                            break;
+                    case ":=" -> {
+                        System.out.println("SWITCH CASE MATCH: :=");
+                        // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, terceto
+                        appendCode("MOV "+op1+","+getOperador(op2, terceto.subtipo));
+                // CHEQUEAR LO QUE FALTE ANTES DE MOV ( EN CASO DE FLOAT ) ? creo no se chequea nada
+            }
                     
-                    case "utos":        System.out.println("SWITCH CASE MATCH: UTOS");
-                    // utos crea una auxiliar con el valor origen pero de tipo single
-                    // puede ser CTE, ID , otro terceto (pero de tipo uinteger o hexa, sino a utos no se crea)
-                    // contemplar uinteger a single o hexa a single -> PROBAR SI SE PUEDEN TRATAR EXACTAMENTE IGUAL
-                                    op1 = ifHexaTrans(op1);
-                                    assembly_variables.add(new AsmData("auxt_"+contador_t,"SINGLE","?"));
-                                        // sea uinteger o hexa no cambia nada lo q devuelve
-                                    appendCode("fild "+getOperador(op1,"UINTEGER"));
-                                    appendCode("fstp "+"aux_t"+contador_t);
-                                    // PROBAR SI CON SOLO ESO ANDA. SINO, MIRAR FILMINAS.
-                            break;      
+                    case "utos" -> {    // minuscula?
+                        System.out.println("SWITCH CASE MATCH: UTOS");
+                        // utos crea una auxiliar con el valor origen pero de tipo single
+                        // puede ser CTE, ID , otro terceto (pero de tipo uinteger o hexa, sino a utos no se crea)
+                        // contemplar uinteger a single o hexa a single -> PROBAR SI SE PUEDEN TRATAR EXACTAMENTE IGUAL
+                        op1 = ifHexaTrans(op1);
+                        assembly_variables.add(new AsmData("auxt_"+contador_t,"SINGLE","?"));
+                        // sea uinteger o hexa no cambia nada lo q devuelve
+                        appendCode("fild "+getOperador(op1,"UINTEGER"));
+                        appendCode("fstp "+"aux_t"+contador_t);
+                // PROBAR SI CON SOLO ESO ANDA. SINO, MIRAR FILMINAS.
+            }
 
     
-                    default:    System.out.println("PROBLEMA: El terceto no fue implementado.");
-                        break;
+                    default -> System.out.println("PROBLEMA: El terceto no fue implementado.");
                             }
         }
         

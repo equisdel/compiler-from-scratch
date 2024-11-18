@@ -198,7 +198,7 @@ declare_pair
                 // se le pone scope 'MAIN' 
                 if (!AnalizadorSemantico.validID($4.sval,$6.sval)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 else {
-                        if ($4.sval == "UINTEGER" || $4.sval == "SINGLE" || $4.sval == "HEXA") {
+                        if ($4.sval.equals("UINTEGER") || $4.sval.equals("SINGLE") || $4.sval.equals("HEXA")) {
 
                                 if (AnalizadorLexico.t_simbolos.get_entry($6.sval+":MAIN") != null){
                                         yyerror("Error: Se esta redeclarando "+$6.sval +" en linea "+AnalizadorLexico.line_number);
@@ -356,22 +356,23 @@ cond
                 String t_subtype2 = chkAndGetType($3.sval);
                 String id2 = $3.sval;
                 // compatibilidades y conversiones:
-                
-                if (t_subtype1.equals(t_subtype2)){
-                        $$.sval=Terceto.addTercetoT($2.sval,id1,id2, t_subtype1);       // NO SE SI HACE FALTA TIPO PERO PORLASDUDAS POR AHORA LO PONGO
-                } else if (t_subtype1.equals("SINGLE")) {
-                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);              // se pasa el tipo de id2 para saber si es uinteger o hexa
-                        $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "SINGLE");
-                }else if (t_subtype2.equals("SINGLE")) {
-                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                        $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "SINGLE");
-                 }else if(t_subtype1.equals("HEXA") && t_subtype2.equals("UINTEGER")){
-                                $$.sval= Terceto.addTercetoT("utos",id1,null, "HEXA");
-                                $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "UINTEGER");
-                }else if (t_subtype1.equals("UINTEGER") && t_subtype2.equals("HEXA")){
-                                $$.sval= Terceto.addTercetoT("utos",id2,null, "HEXA");
-                                $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "UINTEGER");
-                }
+                if (t_subtype1 != null && t_subtype2 != null) {
+                        if (t_subtype1.equals(t_subtype2)){
+                                $$.sval=Terceto.addTercetoT($2.sval,id1,id2, t_subtype1);       // NO SE SI HACE FALTA TIPO PERO PORLASDUDAS POR AHORA LO PONGO
+                        } else if (t_subtype1.equals("SINGLE")) {
+                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);              // se pasa el tipo de id2 para saber si es uinteger o hexa
+                                $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "SINGLE");
+                        }else if (t_subtype2.equals("SINGLE")) {
+                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
+                                $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "SINGLE");
+                        }else if(t_subtype1.equals("HEXA") && t_subtype2.equals("UINTEGER")){
+                                        $$.sval= Terceto.addTercetoT("utos",id1,null, "HEXA");
+                                        $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "UINTEGER");
+                        }else if (t_subtype1.equals("UINTEGER") && t_subtype2.equals("HEXA")){
+                                        $$.sval= Terceto.addTercetoT("utos",id2,null, "HEXA");
+                                        $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "UINTEGER");
+                        }
+                } else {System.out.println("Un tipo dio null en condicion");}
                 
         }
         | error {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba comparador ") ; }
@@ -411,16 +412,18 @@ expr    : expr '+' term    {
                 System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
                 System.out.println("tipo2: "+t_subtype2);
-                if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
-                                 $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);}
-                } else if (t_subtype1.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
-                }else if (t_subtype2.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
-                } else {$$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");}
+                if (t_subtype1 != null && t_subtype2 != null) {
+                        if (t_subtype1.equals(t_subtype2)){
+                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
+                                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);}
+                        } else if (t_subtype1.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
+                                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
+                        }else if (t_subtype2.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
+                                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
+                        } else {$$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");}
+                } else {System.out.println("Un tipo dio null en suma");}
 }
 
 //VER TEMA DE REDECLARACIONES DE STRINGS EN JAVA, SI DA O NO PROBLEMA Y  COMO HACER
@@ -435,16 +438,18 @@ expr    : expr '+' term    {
                 System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
                 System.out.println("tipo2: "+t_subtype2);
-                if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
-                                 $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
-                } else if (t_subtype1.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
-                }else if (t_subtype2.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
-                } else {$$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");}
+                if (t_subtype1 != null && t_subtype2 != null) {
+                        if (t_subtype1.equals(t_subtype2)){
+                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
+                                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
+                        } else if (t_subtype1.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
+                                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
+                        }else if (t_subtype2.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
+                                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
+                        } else {$$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");}
+                } else {System.out.println("Un tipo dio null en resta");}
 
         }
         | term 
@@ -463,16 +468,18 @@ term    : term '*' fact {
                 System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
                 System.out.println("tipo2: "+t_subtype2);
-                if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
-                                 $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype1);}
-                } else if (t_subtype1.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
-                }else if (t_subtype2.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
-                } else {$$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");}
+                if (t_subtype1 != null && t_subtype2 != null) {
+                        if (t_subtype1.equals(t_subtype2)){
+                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
+                                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype1);}
+                        } else if (t_subtype1.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
+                                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
+                        }else if (t_subtype2.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
+                                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
+                        } else {$$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");}
+                } else {System.out.println("Un tipo dio null en multiplicacion");}
         }
         | term '/' fact {            
                 String id1 = $1.sval;
@@ -485,17 +492,18 @@ term    : term '*' fact {
                 System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
                 System.out.println("tipo2: "+t_subtype2);
-                if (t_subtype1.equals(t_subtype2)){
-                        if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
-                                 $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype1);}
-                } else if (t_subtype1.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
-                }else if (t_subtype2.equals("SINGLE")){
-                                $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
-                } else {$$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");}
-
+                if (t_subtype1 != null && t_subtype2 != null) {
+                        if (t_subtype1.equals(t_subtype2)){
+                                if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
+                                        $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype1);}
+                        } else if (t_subtype1.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
+                                        $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
+                        }else if (t_subtype2.equals("SINGLE")){
+                                        $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
+                                        $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
+                        } else {$$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");}
+                } else {System.out.println("Un tipo dio null en division");}
         }
         | fact 
         ;
@@ -511,13 +519,13 @@ fact    : ID    /*{
 }*/
 
         | CTE 
-        | '-' CTE  {
+        | '-' CTE  {    // SOLUCIONAR ESTOO, ¿CONTADOR DE REFENRCIAS? PROBAR CASOS DIF Y VER QUÉ Y COMO DETECTA LA CTE NEGATIVA
                 if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
                 else {
                         $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
         | '-' ID {      // uso tendria q ser "variable_name" o podria ser otra?
-                if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
+                if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo single. "); }
                 else {
                         $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
@@ -531,13 +539,15 @@ expr_pair
                 if (isDeclared($1.sval)){
                         // si ID es de un tipo definido (el tipo de ID esta en la tabla de simbolos)
                         String lexem = getDeclared($1.sval);
-                        String baseType = AnalizadorLexico.t_simbolos.get_subtype(lexem);
+                        String baseType = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
+                        System.out.println("lexem: "+lexem+" baseType: "+baseType);
                         if (!AnalizadorLexico.t_simbolos.get_use(baseType).equals("TYPE_NAME")) {
                                 yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
                         else {
                                 if (!($3.sval.equals("1") || $3.sval.equals("2"))) {
                                 yyerror("Error en linea "+AnalizadorLexico.line_number+": se esperaba constante 1 o 2. "); 
                                 }
+                                else {$$.sval = $1.sval+"{"+$3.sval+"}";}
                         }
                 } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable no declarada. "); }
                 //TODO: EN $$.sval DEVOLVER EL LEXEMA QUE REPRESENTARIA A ESE PAIR EN ESA POSICION (POR EJEMPLO pairsito{1})
@@ -562,10 +572,17 @@ fun_invoc
         ;
 
 outf_statement
-        : OUTF '(' expr ')' {   //expr puede  ID, CTE, funcion, terceto(varaux), expr_pair
+        : OUTF '(' expr ')' {   //expr puede  VARIBLE, CTE, funcion, terceto(varaux),
                 // si es ID o funcion o exprpair se pasa con scope
+                // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIO, QUE ESTE DECLARADO
                 String lexem = $3.sval;
+                String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
+                        // es variable o funcion
+                        if (isPair(lexem)) {
+                                pos = 
+                                lexem = getPairName(lexem);
+                        }
                         lexem = getDeclared(lexem);
                 }
                 $$.sval = Terceto.addTercetoT("OUTF",lexem,null,chkAndGetType($3.sval));
@@ -722,8 +739,8 @@ goto_statement
 
 
         public String chkAndGetType(String valStr){  //DEVUELVE TIPO PRIMITIVO (HEXA, UINTEGER, O SINGLE)
-        // recibe lexema SIN SCOPE
-                AnalizadorLexico.t_simbolos.display();
+        // recibe lexema SIN SCOPE 
+                //AnalizadorLexico.t_simbolos.display();
                 if (isTerceto(valStr)) {
                         System.out.println(valStr+"ES terceto");
                         return Terceto.getSubtipo(valStr);
@@ -734,20 +751,23 @@ goto_statement
                                 System.out.println(valStr+"ES cte");
                                 return AnalizadorLexico.t_simbolos.get_subtype(valStr);}
                         else {  // variable, invoc. a funcion o expr_pair
-                                // entre variable e invoc a funcion distingo por el uso, pero ambas tienen el tipo (o tipo de retorno q es lo q me interesa) en el mismo campo.
-                                // si es variable o funcion:
+                                if (isPair(valStr)) {
+                                        valStr = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
+                                }
                                 String lexem = getDeclared(valStr);
-                                System.out.println("NO ES CTE -> "+valStr);
-                                String type = AnalizadorLexico.t_simbolos.get_subtype(lexem);
-                                if (lexem != null){
+                                System.out.println("NO ES CTE -> "+lexem);
+                                String type = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
+                                if (lexem != null){     // si está declarada
                                         if (!(type.equals("SINGLE") || type.equals("UINTEGER") || type.equals("HEXA"))) {
                                                 //es tipo definido por usuario
-                                                if (AnalizadorLexico.t_simbolos.get_use(type).equals("TYPE_NAME")) {
+                                                System.out.println("El tipo es "+type+" y su uso es "+AnalizadorLexico.t_simbolos.get_use(type));
+                                                if ((AnalizadorLexico.t_simbolos.get_use(type)).equals("TYPE_NAME")) {
                                                         return (AnalizadorLexico.t_simbolos.get_subtype(type)); //devuelve el primitivo
                                                 }
                                         } else {return AnalizadorLexico.t_simbolos.get_subtype(lexem);}
                                         // si es tipo primitivo
                                 } else yyerror("Error en linea "+AnalizadorLexico.line_number+": identificador "+valStr+" no declarado. ");
+                                
                                 return null;
                         }
                 }
@@ -785,8 +805,9 @@ goto_statement
         }
 
 
-        public boolean isDeclared(String id){
+        public boolean isDeclared(String id){   // recibe id sin scoope
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
+                if (isCte(id)){System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
                 String scopeaux = actualScope;
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
@@ -802,19 +823,6 @@ goto_statement
                 return false;
         }
 
-        /*
-        public Boolean chkVar(String tipo, String id){  // se usa??????????????????????
-                if (!AnalizadorSemantico.validID(tipo,id)) {yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
-                else if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) == null) {
-                        yyerror("ERROR: La variable "+id+" esta siendo redeclarada. Ya fue declarada en el scope actual ");}
-                        // WARNING O ERROR? PODRIA SER WARNING AL NO TENER ENCUENTA ESTA REDECLARACION. ACLARAR SI SE DESCARTA LA REDECLARACION.
-                else { AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
-                        AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"VARIABLE_NAME");
-                        return true;
-                        
-                }
-        } */
-
         public static Boolean isDeclaredLocal(String id){       //devuelve si fue declarada en el ambito actual.
                 return (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null);
         }
@@ -824,7 +832,11 @@ goto_statement
                 if (!AnalizadorSemantico.validID(tipo,id)) {
                         yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 
-                //chequear tipo sea valido
+                //chequear tipo sea valido (uinteger,hexa,single o definido por usuario)
+                AnalizadorLexico.t_simbolos.display();
+                if (AnalizadorLexico.t_simbolos.get_entry(tipo) == null) {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo de variable no valido. "); }
+                else {System.out.println("tipo de var declarada:" +AnalizadorLexico.t_simbolos.get_entry(tipo).getUse());}
+                
                 if (tipo.equals("UINTEGER") || tipo.equals("HEXA") ||tipo.equals("SINGLE") || (AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME"))) {
                 // pair ejemplo en TS: pairsito:main subtipo:uinteger use:typename  no hace falta aclarar es un pair xq es el unico tipo q puede definir  
                 // y otra entrada: p1:main:f1 subtipo: pairsito use: variable_name
@@ -834,7 +846,11 @@ goto_statement
                                 // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo:
                                 AnalizadorLexico.t_simbolos.del_entry(id);
                                 //AnalizadorLexico.t_simbolos.display();
-                                AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);
+                                if (AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME")){
+                                        // SI EL TIPO ES DEFINIDO X USER, VA CON :MAIN
+                                        AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo+":MAIN");
+                                }else {AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);}
+                                
                                 AnalizadorLexico.t_simbolos.set_use(id+":"+actualScope,"VARIABLE_NAME");
                                 }   
                 } else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipo de variable no valido. "); }
@@ -844,47 +860,83 @@ goto_statement
                 return AnalizadorSemantico.isCompatible(t_subtype1,t_subtype2);
         }
 
+        public String getPairName(String id){
+                // devuelve el nombre del pair, sin la posicion de acceso
+                return id.substring(0,id.lastIndexOf("{"));             // FIJARSE Q ANDE
+        }
+
         public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
-                System.out.print("id: "+id);
+                AnalizadorLexico.t_simbolos.display();
+
+                System.out.print("chkAndAssign: id: "+id);
+                String posid = "";
+                String posexpr = "";
+                Boolean idPair = isPair(id);
+                Boolean exprPair = isPair(expr);
                 //AnalizadorLexico.t_simbolos.display();
+                if (idPair){
+                        // posid es {1} o {2}
+                        posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
+                        System.out.println("assign: posid: "+posid);
+                        id = getPairName(id);
+                        System.out.println("assign: id: "+id);
+                }
+                if (exprPair){
+                        expr = getPairName(expr);
+                        posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}"));
+                }
                 if (!isDeclared(id))
                 {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+id+" no declarada. "); }
                 else {
-                        //  CTE NO VAN CON SCOPE!
                         // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN PUTO TERCETOOO
-                        String lexemExpr;
-                        String subtypeT;
+                        String lexemExpr = "";
+                        String subtypeT = "";
                         if (isTerceto(expr)) {
                                 subtypeT = chkAndGetType(expr);
                                 lexemExpr = expr;}   // y lexem es el terceto (expr)
                         else{
-                                if (!isCte(expr)){      // si es variable o funcion, o expr_pair
-                                        lexemExpr = getDeclared(expr);      // el lexema en la TS () ¿anda con pair esto?
-                                } else {
-                                        lexemExpr = expr;}  // si es cte, la misma es como se busca en la tabla de simbolos
+                                if (isCte(expr)){      // si es cte, la misma es como se busca en la tabla de simbolos
+                                        System.out.println(expr+" es cte");
+                                        lexemExpr = expr;
+                                        subtypeT = chkAndGetType(expr);
+                                } else if (isDeclared(expr)){ 
+                                                lexemExpr = getDeclared(expr);
+                                                subtypeT = chkAndGetType(expr);
+                                        }
+                                        else {yyerror("Error en linea "+AnalizadorLexico.line_number+": "+expr+" no declarada. ");}
 
-                                subtypeT = chkAndGetType(lexemExpr);
-                        }
-                        //id es variable siosi
+                                }
+                        
                         String lexemID = getDeclared(id);
                         String subtypeID = chkAndGetType(id);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
                         System.out.println("subtypeID: "+subtypeID);
                         System.out.println("subtypeT: "+subtypeT);
+                        if (idPair){lexemID = lexemID+posid;}
+                        if (exprPair){lexemExpr = lexemExpr+posexpr;}
+
                         if (subtypeT.equals(subtypeID)){       
                                 Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                         }
                         // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
                         else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
-                                Terceto.addTercetoT("utos",expr,null,"SINGLE");
-                                Terceto.addTercetoT(":=",lexemID,expr,"SINGLE");
-                        }
+                                Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
+                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"SINGLE");
+                        }// agregar otro else por si uno es uinteger y el otro hexa
                         else {yyerror("Error en linea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
 
                 }
         }
 
+        /*public String getType(String lexema){   // se le pasa sin scope
+                // puede ser: variable, funcion, cte, expr_pair, terceto
+                if (isTerceto(lexema)){return "terceto"}
+                if (isCte(lexema)){return AnalizadorLexico.t_simbolos.get_subtype(lexema);}
+
+        }*/
+
+
         public String getDeclared(String id){ //devuelve lexema completo con el cual buscar en TS.
-                //LLAMAR ES ID O FUNCION (o expr_pair)
+                //LLAMAR ES ID O FUNCION.  SI ES EXPR_PAIR, SE ASUME LLEGA SIN LA POSICION (SIN {})
                 String scopeaux = actualScope;
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclared(id)){
@@ -907,4 +959,9 @@ goto_statement
 
         public Boolean isCharch(String id){     //charhc comienza  y termina con []
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
+        }
+
+        public static Boolean isPair (String id){
+                // un pair tiene la posicion de acceso entre {}; ej: pairsito{1}
+                return (id.charAt(id.length()-1) == '}');
         }

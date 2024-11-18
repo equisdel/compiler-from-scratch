@@ -109,6 +109,8 @@ public class AnalizadorLexico {
 			case ",": id = (int)','; break;
 			case ".": id = (int)'.'; break;
 			case ";": id = (int)';'; break;
+			case "{": id = (int)'{'; break;
+			case "}": id = (int)'}'; break;
 			default:  switch (AnalizadorLexico.lexema_type)  {
 				case "IF": id = Parser.IF; break; 
 				case "THEN": id = Parser.THEN; break;
@@ -139,6 +141,7 @@ public class AnalizadorLexico {
 
 
 	public static void main(String[] args) {
+
 			// Inicialización del autómata
 			String matrizE_filePath = "src/PrimeraEtapa/Matrices/matrizEstados.csv";			// Quizás se pasa desde Main (parámetro)
 			String matrizA_filePath = "src/PrimeraEtapa/Matrices/matrizAcciones.csv";		// Quizás se pasa desde Main (parámetro)

@@ -1,0 +1,41 @@
+p_tag_test_errors
+begin
+    
+    single aux;
+    aux := 0.0;
+
+
+    ## 1. Error de redeclaración de tags
+    tag1@       ## Declaracion válida de un tag de nombre "TAG1"
+    tag3@       ## Declaracion válida de un tag de nombre "TAG3"
+
+    
+    ## 2. Prueba de tags con el mismo nombre en distintos ámbitos
+    tag2@           ## MAIN
+    single FUN fun1 (single x1) begin               ## Entrada al ámbito MAIN:F1
+        goto tag2@;             ## [1]
+        tag2@       ## MAIN:F1
+        single FUN fun2 (single x1) begin           ## Entrada al ámbito MAIN:F1:F2
+            unreachable_from_main@
+            aux = f3(x1);
+            single FUN fun3 (single x1) begin       ## Entrada el ámbito MAIN:F1:F2:F3
+                goto tag2@;     ## [2]
+            end                                     ## Salida del ámbito MAIN:F1:F2:F3
+            tag2@   ## MAIN:F1:F2
+        end                                         ## Salida del ámbito MAIN:F1:F2
+        outf(aux);
+    end                                             ## Salida del ámbito MAIN:F1
+    goto tag2@;                 ## [3]
+    ##    Comportamiento esperado: las sentencias GOTO deberían matchear con la tag del scope más cercano, sin importar si esta se declara antes o despúes.
+    ##    GOTO [1]: match con TAG2@:MAIN:F1     (declarada posteriormente, "robada" de TAG2@:MAIN)
+    ##    GOTO [2]: match con TAG2@:MAIN:F1:F2  (declarada posteriormente, "robada" de TAG2@:MAIN:F1)
+    ##    GOTO [3]: match con TAG2@:MAIN        (declarada anteriormente, única tag posible)
+    
+
+    ## 3. Error de sentencia GOTO a tags inexistentes o inalcanzables
+    goto tag1@;
+    goto tag3@;
+    ## Comportamiento esperado: mensaje de error notificando el problema y el número de línea
+
+
+end

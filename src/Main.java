@@ -1,13 +1,10 @@
+import CuartaEtapa.AsmGenerator;
+import CuartaEtapa.FileManager;
 import PrimeraEtapa.AnalizadorLexico;
 import SegundaEtapa.*;
 import TercerEtapa.Terceto;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Scanner;
-
-import CuartaEtapa.AsmGenerator;
 
 public class Main {
 
@@ -19,13 +16,15 @@ public class Main {
       // Determinar el signo
 
       switch (single.substring(0,0)) {    // signo del single
-          case "+":   signo = "0"; single = single.substring(1,single.length());
-                      break;
-          case "-":   signo = "1"; single = single.substring(1,single.length());
-                      break;
-          default:    signo = "0";        // positivo por defecto
-                      break;
+          case "+" -> {
+              signo = "0"; single = single.substring(1,single.length());
+           }
+          case "-" -> {
+              signo = "1"; single = single.substring(1,single.length());
+           }
+          default -> signo = "0";        // positivo por defecto
       }
+       // signo del single
       System.out.println("El signo es: "+signo);
       // Separar la base (mantisa) y el exponente
 
@@ -81,82 +80,79 @@ public class Main {
       return null;
    }
 
-	public static void main(String[] args) {
-      File test = new File("./src/CuartaEtapa/test.txt");
-      System.out.println(test.getAbsolutePath());
-		/* 
-		String single = "+2.5s+20";
-      System.out.println(mapSingleToFloat(single));
-      * 
-      3*/
-      // Pide al usuario el camino al programa a compilar
-      String var1 = "src/test_codes";
-      File var2 = new File(var1);
-      File[] var3 = var2.listFiles();
-
-      if (var3 != null && var3.length != 0) {
-         System.out.println("Seleccione un archivo para leer:");
-
-         for(int var4 = 0; var4 < var3.length; ++var4) {
-            if (var3[var4].isFile()) {
-               System.out.println(var4 + 1 + ". " + var3[var4].getName());
-            }
-         }
-
-         Scanner var19 = new Scanner(System.in);
-         int var5 = var19.nextInt();
-         if (var5 >= 1 && var5 <= var3.length) {
-            File var6 = var3[var5 - 1];
-
-            try {
-               BufferedReader var7 = new BufferedReader(new FileReader(var6));
-
-               try {
-                  System.out.println("\nContenido del archivo " + var6.getName() + ":");
-                  
-                  String var8;
-                  while((var8 = var7.readLine()) != null) {
-                     System.out.println(var8);
-                  }
-               } catch (Throwable var16) {
-                  try {
-                     var7.close();
-                  } catch (Throwable var15) {
-                     var16.addSuppressed(var15);
-                  }
-
-                  throw var16;
-               }
-
-               var7.close();
-            } catch (IOException var17) {
-               System.out.println("Error al leer el archivo: " + var17.getMessage());
-            } finally {
-               var19.close();
-            }
-
-            String var20 = "src/test_codes/" + var6.getName();
-            System.out.println("archivo elegido: " + var20);
-            AnalizadorLexico.compile(var20);
-            Parser var21 = new Parser();
-            var21.run();
-            AnalizadorLexico.display();
-            Terceto.print_all();
-
-            // Solo si no hay errores se procede a generar código assembler
-            String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
-            if (Parser.errores.isEmpty()) {
-               AsmGenerator.generate(executablePath);
-            } else System.out.println("Hay errores.");
-
-         } else {
-            System.out.println("Selecci\u00f3n inv\u00e1lida.");
-            var19.close();
-         }
-      } else {
-		 System.out.println("No se encontraron archivos en el directorio!!!!.");
-      }
+   public static String displayTestMenu() {
       
-	}
-   
+      String rel_path = "src/test_codes";
+      //File var2 = new File(rel_path);
+      File[] list_of_tests = new File(rel_path).listFiles();
+
+      if (list_of_tests != null && list_of_tests.length != 0) {
+         System.out.println("\nMENU DE PRUEBAS.");
+         System.out.println("\nSeleccione un archivo para leer:");
+
+         for(int i = 0; i < list_of_tests.length; ++i) {
+            if (list_of_tests[i].isFile()) {
+               System.out.println(i + 1 + ". " + list_of_tests[i].getName());
+            }
+         }
+
+         Scanner input = new Scanner(System.in);
+         int test = input.nextInt();
+         if (test >= 1 && test <= list_of_tests.length) {
+            File selected_test = list_of_tests[test - 1];
+
+
+            FileManager fm_selected_test = new FileManager(selected_test);
+
+            System.out.println("\nContenido del archivo " + selected_test.getName() + ":");
+            fm_selected_test.display();
+
+            input.close();
+            return selected_test.getAbsolutePath();
+         }
+         input.close();
+      }
+      return null;
+   }
+
+
+	public static void main(String[] args) {
+      
+      // Pide al usuario el camino al programa a compilar
+      System.out.print("\nIngrese el path absoluto del programa a compilar. Si solo presiona ENTER, se lo redirigirá a nuestro menú de programas de prueba.\n >> ");
+      Scanner input = new Scanner(System.in);
+      String p_path = input.nextLine().replace("\\","/").replace("\"", "");
+      if (p_path.equals("")) p_path = displayTestMenu();      // retorna null cuando la opción es incorrecta
+      
+      // Verifica la validez del input del usuario
+      if (p_path != null) {
+
+         File program = new File(p_path);
+
+         if (program.isAbsolute()) {  // Se asegura de que sea un path absoluto
+            
+            if (program.exists() && program.isFile()) {  // El archivo es válido
+
+               // Procede a compilar
+               System.out.println("Archivo encontrado: " + program.getAbsolutePath());
+               Parser parser = new Parser();
+               AnalizadorLexico.compile(program.getAbsolutePath());
+               parser.run();
+               AnalizadorLexico.display();
+               Terceto.print_all();
+
+               // Solo si no hay errores se procede a generar código assembler
+               String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
+               if (Parser.errores.isEmpty()) {
+                  AsmGenerator.generate(executablePath);
+               } else System.out.println("Hay errores.");
+
+            } else System.out.println("El archivo no existe o no es un archivo válido.");
+         } else System.out.println("Debe ingresar un path absoluto.");
+
+	   }
+
+   }
+
+
 }

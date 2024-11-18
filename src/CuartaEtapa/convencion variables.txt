@@ -1,0 +1,8 @@
+las variables del programa fuente todas llevan @
+por que todas tienen al menos el alcance a main
+
+las aux comienzan con aux
+
+las aux de tercetos son: aux_t_idterceto
+
+las de acceso a pair comienzan con _ entonces: _nombrevariable_1 y _nombrevariable_2

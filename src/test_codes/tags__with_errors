@@ -1,4 +1,4 @@
-p_tag_test
+p_tag_test_errors
 begin
     
     single aux;
@@ -37,5 +37,8 @@ begin
     goto unreachable_from_main@;
     ## Comportamiento esperado: mensaje de error notificando el problema y el número de línea
 
+
+    ## 4. Otro problema del programa es que, debido al goto [3], no finalizaría nunca la ejecución.
+    ##    Nuestro compilador no es respondable de detectar este tipo de errores.  
 
 end

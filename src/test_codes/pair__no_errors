@@ -1,0 +1,19 @@
+p_pair_test
+begin
+
+    ## Declaración de tipo personalizado de pair
+    typedef pair <uinteger> pair_u;     ## para almacenar UINTEGER
+    typedef pair <single> pair_s;       ## para almacenar SINGLE
+
+    pair_u par_de_uinteger;
+    uinteger x,y;
+    x,y:=3,4;
+    par_de_uinteger{1} := x;
+    par_de_uinteger{2} := 2;
+    par_de_uinteger{2} := par_de_uinteger{1};
+
+    pair_s par_de_single;
+    par_de_uinteger{1}, par_de_uinteger{2} := 1, 2;
+
+
+end

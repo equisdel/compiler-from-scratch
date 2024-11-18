@@ -1,0 +1,34 @@
+p_rangos_test
+begin
+
+    ## Pureba de constantes sin signo (UINTEGER)
+    ## NOTA: HEXA se considera UINTEGER también
+
+    uinteger u1, u2, u3, u4, u5;    // Rango [0, 65535]
+
+    u1,u2 = 0,65535;            // Ambos dentro del rango. Asignación múltiple.
+    u3 := 65536;                // WARNING: fuera de rango (detectado en léxico). Se cambia al tope: 65535.
+    u4 := u2 + 1;               // ¿ERROR DE EJECUCION? -> Overflow. 
+
+    u1,u2 := 0x0,0xFFFF;        // Ambos dentro del rango. Asignación múltiple.
+    u3 := 0x0000;
+    u4 := 
+
+    u5 := 
+
+
+
+    ## prueba de single
+
+    SINGLE sing1, sing2, sing3, sing4;
+    sing1 := 1.17549435s-38;
+    sing2 := 3.40282347s+38;
+    sing3 := -3.40282347s+38;
+    sing4 := -1.17549435s-38;
+
+    sing1:= 1.17549435s-39;
+    sing2:= 3.40282347s+39;
+    sing3:= -3.40282347s+39;
+    sing4:= -1.17549435s-39;
+
+end

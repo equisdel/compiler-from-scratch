@@ -3,7 +3,6 @@ package CuartaEtapa;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,12 +26,27 @@ public class FileManager {
         }
         try {
             reader = new BufferedReader(new FileReader(file_path));
+            this.reader.mark(1024); 
             //reader.mark(1024);
             writer = new BufferedWriter(new FileWriter(file_path, true));
         } catch (IOException e) { e.printStackTrace(); System.out.println("PROBLEMA (FileManager): el archivo no fue creado correctamente."); }
     }
 
+    public FileManager(File file) {
+        this.file = file;
+        this.file_path = file.getPath();
+        try {
+            reader = new BufferedReader(new FileReader(file_path));
+            reader.mark(1024);
+            writer = new BufferedWriter(new FileWriter(file_path, true));
+        } catch (IOException e) { e.printStackTrace(); System.out.println("PROBLEMA (FileManager): el archivo no fue tomado correctamente."); }
+    }
+
     public void display() {
+        try {
+            reader.mark(1024);
+        } catch (IOException e) {
+        }
         System.out.println("Displaying file located at: "+this.file_path);
         String line = this.readLine();
         while (line != null) {
@@ -57,6 +71,7 @@ public class FileManager {
         System.out.println(this.file.delete());
     }
 
+    /*  No funciona
     public void rename(String new_name) {
 
         // Update file path
@@ -88,7 +103,8 @@ public class FileManager {
         }
         
     }
-    
+    */
+
     public String readLine() {
         try {
             return reader.readLine();
