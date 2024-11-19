@@ -18,6 +18,7 @@ public class Terceto {
         this.operacion = operacion;
         this.op1 = op1;
         this.op2 = op2;
+        this.subtipo = "";
         // si algun operador tiene <>, sabemos se trata de un ID de un terceto, y no un objeto PARSERVAL (o ref a TS)
     }
 

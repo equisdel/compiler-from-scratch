@@ -1,10 +1,12 @@
 package PrimeraEtapa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TablaDeSimbolos {
 
@@ -76,10 +78,10 @@ public class TablaDeSimbolos {
         return retorno.getValue();
     }
 
-    public List<Simbolo> getAllEntries() {
+    public Set<String> getAllEntries() {
 
         // Implementation to return all entries in the symbol table
-        return new ArrayList<>(symbols.values());
+        return new HashSet<>(symbols.keySet());
     }
     
     public void clean() {

@@ -1,0 +1,11 @@
+    ## outf(u1+u2);
+    ##single s1;
+    ##uinteger u3;
+    ## s1 := 1.0s+1; da error, chequear
+    ## EN ESTE MOMENTO DA ERROREEES
+    ##outf(fun1(s1));
+    ##outf([hola mundillo]);
+    ## fun1(s1); ##DEBERIA DAR ERROR
+    ##u3 :=  1/0;    ## SI ES 0, DA ERROR!!! EL LEXICO NO AGREGA EL 0 A TS
+    ##u3 := 1 / 1;
+    ##s1 := 1.0+1;

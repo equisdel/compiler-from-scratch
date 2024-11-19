@@ -71,40 +71,6 @@ public class FileManager {
         System.out.println(this.file.delete());
     }
 
-    /*  No funciona
-    public void rename(String new_name) {
-
-        // Update file path
-        String[] split_file_path = file_path.split("\\");
-        split_file_path[split_file_path.length-1] = new_name;
-        file_path = split_file_path.toString();
-
-        // Delete old file and create new one?
-        FileManager new_file = new FileManager(file_path);
-        try {
-            new_file.appendFile(this);
-        } catch (IOException e) {
-            System.out.println("Problema en el append file");
-            e.printStackTrace();
-        }
-        file.delete();
-        file = new_file.file;
-        try {
-            reader = new BufferedReader(new FileReader(file_path));
-        } catch (FileNotFoundException e) {
-            System.out.println("Problema en la asignacion del reader");
-            e.printStackTrace();
-        }
-        try {
-            writer = new BufferedWriter(new FileWriter(file_path));
-        } catch (IOException e) {
-            System.out.println("Problema en la asignacion del writer");
-            e.printStackTrace();
-        }
-        
-    }
-    */
-
     public String readLine() {
         try {
             return reader.readLine();

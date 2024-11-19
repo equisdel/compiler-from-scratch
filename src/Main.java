@@ -16,13 +16,13 @@ public class Main {
       // Determinar el signo
 
       switch (single.substring(0,0)) {    // signo del single
-          case "+" -> {
+          case "+" : {
               signo = "0"; single = single.substring(1,single.length());
            }
-          case "-" -> {
+          case "-" : {
               signo = "1"; single = single.substring(1,single.length());
            }
-          default -> signo = "0";        // positivo por defecto
+          default : signo = "0";        // positivo por defecto
       }
        // signo del single
       System.out.println("El signo es: "+signo);
