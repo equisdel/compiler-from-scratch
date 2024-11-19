@@ -193,11 +193,17 @@ public class AsmGenerator {
 
             // Todas las entradas de la tabla de símbolos, excepto palabras reservadas, van a parar a la sección data como variables del assembly
             // Solo se vuelcan IDs -> declaración con su subtipo, sin valores.
-            /*  
-                for (ID en tabla de símbolos) {
-                    appendData(Id.nombre, mapIDSubtypeToVarType(ID.subtype));
+              
+                for (Simbolo simbolo : AnalizadorLexico.t_simbolos.getAllEntries()) {
+                    if (simbolo.getTipo().equals("ID")) {
+                        // por cada tipo poner el tipo del assembler (dw,real4,dd...)
+                        // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
+                        // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
+                        // EL _ al principio ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
+                        appendData(new AsmData(simbolo.nombre, mapIDSubtypeToVarType(simbolo.getSubtipo()), "?"));
+                    }
                 }
-            */
+            
         }
     
         private static void appendCode(String instruction) {
@@ -237,10 +243,8 @@ public class AsmGenerator {
                 // los tipo float no se pueden usar como inmediatos
                 System.out.println("cte: "+operador+": El subtipo es "+subtipo);
                 if (Parser.isPair(operador)) {  //pairsito{1}
-                    // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
-                        // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
-                        // EL _ al principio ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
-                    return operador.replace("{","___").replace("}","___");
+                    
+                    return ("_"+operador.replace("{","_").replace("}","_"));
                 } else if (subtipo.equals("SINGLE")){
                     //agregar a .data  varfloat dd mapSingleToFloat(operador);
                     // _cte1 dd 1.2     -1.2s-8 [0-9][a-z]'.''+/-' -> ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
@@ -328,7 +332,7 @@ public class AsmGenerator {
                     case ":=" -> {
                         System.out.println("SWITCH CASE MATCH: :=");
                         // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, terceto
-                        appendCode("MOV "+op1+","+getOperador(op2, terceto.subtipo));
+                        appendCode("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo));
                 // CHEQUEAR LO QUE FALTE ANTES DE MOV ( EN CASO DE FLOAT ) ? creo no se chequea nada
             }
                     

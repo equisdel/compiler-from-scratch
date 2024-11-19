@@ -1,5 +1,6 @@
 package PrimeraEtapa;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,6 +76,12 @@ public class TablaDeSimbolos {
         return retorno.getValue();
     }
 
+    public List<Simbolo> getAllEntries() {
+
+        // Implementation to return all entries in the symbol table
+        return new ArrayList<>(symbols.values());
+    }
+    
     public void clean() {
         // solo deja las palabras reservadas y a los identificadores
 
