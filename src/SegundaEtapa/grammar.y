@@ -882,8 +882,8 @@ goto_statement
                         System.out.println("assign: id: "+id);
                 }
                 if (exprPair){
+                        posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}") + 1);
                         expr = getPairName(expr);
-                        posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}"));
                 }
                 if (!isDeclared(id))
                 {yyerror("Error en linea "+AnalizadorLexico.line_number+": variable "+id+" no declarada. "); }
