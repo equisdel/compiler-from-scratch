@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.jws.soap.SOAPBinding.Use;
+
 // GENERANDO EL .CODE TODAVIA PUEDO TENER TODA LA TS. LUEGO DE GENERAR .DATA AHI NOSE USA MAS
 // tonces las aux las voy agregando a las TS y ahi hay logica q ya esta contemplada! :D
 public class AsmGenerator {
@@ -17,12 +19,10 @@ public class AsmGenerator {
     // Acá ya no existen errores
     private static String destPath;  // Guarda con el path, hay que ver si funciona según donde estemos parados
     
+    private static FileManager header;
     private static FileManager punto_code;    // Guardamos las instrucciones
     private static FileManager punto_data;    // Guardamos todos los datos generados
     private static FileManager assembler;     // Ensamble de todo (incluye header, codigo y data)
-                
-            
-    private static BufferedReader reader;
 
 
     private static final ArrayList<AsmData> assembly_variables = new ArrayList<>();     // otra opcion: usar la TS
@@ -45,9 +45,15 @@ public class AsmGenerator {
     
     public static void init() {
         // Se crea cada "componente" del archivo final por separado
+        header = new FileManager(destPath+"header");
+        header.appendLine(".386                  ; Enable 32-bit instructions");
+        header.appendLine(".MODEL FLAT           ; Use FLAT memory model for 32-bit systems");
+        header.appendLine(".STACK 100h           ; Define stack size;");
+        
         punto_code = new FileManager(destPath+"punto_code");
-        punto_data = new FileManager(destPath+"punto_data");
         punto_code.appendLine(".code");
+        
+        punto_data = new FileManager(destPath+"punto_data");
         punto_data.appendLine(".data");
         // Falta alguna sección?
     }
@@ -58,27 +64,30 @@ public class AsmGenerator {
             
             //assembler.appendLine(header);                               // Header
             try {
+                assembler.appendFile(header);
+                assembler.appendLine("");
                 assembler.appendFile(punto_data);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }   punto_data.delete();    // Archivo temporal con .DATA
-            try {
+                assembler.appendLine("");
                 assembler.appendFile(punto_code);
+
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }   punto_code.delete();    // Archivo temporal con .CODE
+            }
+            
+            header.delete();
+            punto_data.delete();    // Archivo temporal con .DATA
+            punto_code.delete();    // Archivo temporal con .CODE
                                                                         // Footer?
         }
     
         private static String mapIDSubtypeToVarType(String subtype) {
             // subtipos: uinteger/hexa : DW, single : DD, "64B" : DQ
-            return switch (subtype) {
-                case "64B" -> "DQ";    // 64 bits
-                case "SINGLE" -> "DD";    // 32 bits
-                default -> "DW";    // 16 bits
-            };
+            switch (subtype) {
+                case "64B" : return "DQ";       // 64 bits
+                case "SINGLE" : return "DD";    // 32 bits
+                default : return "DW";          // 16 bits
+            }
         }
                 
                 // Hay que arreglar este método
@@ -227,7 +236,7 @@ public class AsmGenerator {
         private void appendData(AsmData data) {
             punto_data.appendLine(data.getInstruction());   // Como distinguimos entre ".data" y ".data?" ? 
                 // las aux pueden ir agregandose a la TS
-                // Distinguir entre .data y .data? -> podemos usar solo .data
+                // Distinguir entre .data y .data? -> podemos usar solo .data -> no es necesario
                 // Se hace al final, porque ya se sabe cuantas variables auxiliares se van a necesitar.
                 // Tener una lista de auxs con su tipo e inicializacion (o no).
         }
@@ -415,6 +424,7 @@ public class AsmGenerator {
         System.out.println(Terceto.TerList.size());
         destPath = executablePath;
         init();
+        header.delete();
         punto_code.delete();
         punto_data.delete();
         init();
@@ -423,6 +433,6 @@ public class AsmGenerator {
             mapTercetoToAssembler(terceto);
             contador_t++;   // siempre coincidira con el numero del terceto
         }
-        //finish();
+        finish();
     }
 }
