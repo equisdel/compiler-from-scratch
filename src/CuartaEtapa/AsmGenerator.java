@@ -74,11 +74,11 @@ public class AsmGenerator {
     
         private static String mapIDSubtypeToVarType(String subtype) {
             // subtipos: uinteger/hexa : DW, single : DD, "64B" : DQ
-            switch (subtype) {
-                case "64B" :        return "DQ";    // 64 bits
-                case "SINGLE" :     return "DD";    // 32 bits
-                default :           return "DW";    // 16 bits
-            }
+            return switch (subtype) {
+                case "64B" -> "DQ";    // 64 bits
+                case "SINGLE" -> "DD";    // 32 bits
+                default -> "DW";    // 16 bits
+            };
         }
                 
                 // Hay que arreglar este método
@@ -200,12 +200,18 @@ public class AsmGenerator {
             Simbolo simbolo;
             for (String lexema : AnalizadorLexico.t_simbolos.getAllEntries()) {
                 simbolo = AnalizadorLexico.t_simbolos.get_entry(lexema);
+                //System.out.println(lexema);
                 if (simbolo.getTipo().equals("ID")) {
-                    // por cada tipo poner el tipo del assembler (dw,real4,dd...)
                     // PARA PAIR EN ASSEMBLER: SI TENGO UNA VARIABLE VAR1 DE TIPO PAIRSITO (q ES UN PAIR DE UINTEGER)
                     // EN ASSEMBLER PONER _VAR1_1 Y _VAR1_2 PARA ACCEDER A LOS ELEMENTOS DEL PAR
                     // EL _ al principio ES PARA DIFERENCAIR Y Q SEAN PAR PORQ SINO NADA ASEGURA HAYA OTRA VARIABLE CON MISMO NOMBRE
-                    appendData(new AsmData(lexema,mapIDSubtypeToVarType(simbolo.getSubtipo()),"?"));
+                    // si es pair:
+                    if (!(simbolo.getSubtipo().equals("UINTEGER") || simbolo.getSubtipo().equals("HEXA") || simbolo.getSubtipo().equals("SINGLE"))){
+                        assembly_variables.add(new AsmData("_"+lexema.replace("{","_").replace("}","_")+"_1",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
+                        assembly_variables.add(new AsmData("_"+lexema.replace("{","_").replace("}","_")+"_2",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
+                    }
+                     else {appendData(new AsmData(lexema,mapIDSubtypeToVarType(simbolo.getSubtipo()),"?"));}
+                    
                 }
             }
             
@@ -221,7 +227,7 @@ public class AsmGenerator {
         private void appendData(AsmData data) {
             punto_data.appendLine(data.getInstruction());   // Como distinguimos entre ".data" y ".data?" ? 
                 // las aux pueden ir agregandose a la TS
-                // Distinguir entre .data y .data?
+                // Distinguir entre .data y .data? -> podemos usar solo .data
                 // Se hace al final, porque ya se sabe cuantas variables auxiliares se van a necesitar.
                 // Tener una lista de auxs con su tipo e inicializacion (o no).
         }
@@ -248,12 +254,11 @@ public class AsmGenerator {
                 // los tipo float no se pueden usar como inmediatos
                 System.out.println("cte: "+operador+": El subtipo es "+subtipo);
                 if (Parser.isPair(operador)) {  //pairsito{1}
-                    
                     return ("_"+operador.replace("{","_").replace("}","_"));
                 } else if (subtipo.equals("SINGLE")){
                     //agregar a .data  varfloat dd mapSingleToFloat(operador);
                     // _cte1 dd 1.2     -1.2s-8 [0-9][a-z]'.''+/-' : ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
-                    return "varfloat";}
+                    return "varfloat";} //a todo single devuelve varfloat ?
                 else if (subtipo.equals("UINTEGER") || subtipo.equals("HEXA"))   {    // TAMBIEN CONTEMPLAR HEXA : intentarlos tratar igual a ver si funciona
                     return operador;
                 }
@@ -323,9 +328,9 @@ public class AsmGenerator {
                             //pasar el valor de aux_t_contador_t a auxt_contador_t_64
                             appendCode("fld "+"auxt_"+contador_t);
                             appendCode("fst "+"auxt_"+contador_t+"_64");
-                            appendCode("invoke printf, cfm$(\"%.20Lf\n\") auxt_"+contador_t+"_64");
+                            appendCode("invoke printf, cfm$(\"%.20Lf\\n\") auxt_"+contador_t+"_64");
                         } else if (terceto.subtipo.equals("UINTEGER")|| terceto.subtipo.equals("HEXA")) {
-                            appendCode("invoke printf, cfm$(\"%u\n\"), "+getOperador(op1, terceto.subtipo));
+                            appendCode("invoke printf, cfm$(\"%u\\n\"), "+getOperador(op1, terceto.subtipo));
                         }   // FALTA CASO PAIR y funcion
                     }   break;
         
@@ -375,7 +380,7 @@ public class AsmGenerator {
                         System.out.println("SWITCH CASE MATCH: :=");
                         // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, terceto
                         appendCode("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo));
-                // CHEQUEAR LO QUE FALTE ANTES DE MOV ( EN CASO DE FLOAT ) ? creo no se chequea nada
+                
                     }
                     break;  
 
@@ -420,5 +425,4 @@ public class AsmGenerator {
         }
         //finish();
     }
-
 }

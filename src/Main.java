@@ -1,4 +1,4 @@
-import CuartaEtapa.AsmGenerator;
+import CuartaEtapa.*;
 import CuartaEtapa.FileManager;
 import PrimeraEtapa.AnalizadorLexico;
 import SegundaEtapa.*;

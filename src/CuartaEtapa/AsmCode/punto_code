@@ -1,10 +1,14 @@
 .code
-MOV Y@MAIN,3
-MOV auxt_1,1
-ADD auxt_1,2
-MOV auxt_2,auxt_1
-SUB auxt_2,Y@MAIN
-MOV X@MAIN,auxt_2
+FUN1@MAIN PROC
+XOR EAX, EAX
+MOV EAX, [ESP+4]
+MOV U1@MAIN@FUN1,1
+MOV U2@MAIN@FUN1,2
+MOV auxt_3,U1@MAIN@FUN1
+ADD auxt_3,U2@MAIN@FUN1
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u
-"), X@MAIN
+invoke printf, cfm$("%u\n"), auxt_3
+MOV auxt_5,U1@MAIN@FUN1
+ADD auxt_5,U2@MAIN@FUN1
+MOV P@MAIN@FUN1,auxt_5
+MOV varfloat,varfloat

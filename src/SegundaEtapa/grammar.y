@@ -522,7 +522,6 @@ fact    : ID    /*{
                 }
         | fun_invoc
         | expr_pair /* pairsito{1}  */ 
-        | CHARCH
         ;
 
 expr_pair
@@ -566,6 +565,7 @@ outf_statement
         : OUTF '(' expr ')' {   //expr puede  VARIBLE, CTE, funcion, terceto(varaux),
                 // si es ID o funcion o exprpair se pasa con scope
                 // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIO, QUE ESTE DECLARADO
+                // y si es pair pasarlo bien
                 String lexem = $3.sval;
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
@@ -577,6 +577,9 @@ outf_statement
                         lexem = getDeclared(lexem);
                 }
                 $$.sval = Terceto.addTercetoT("OUTF",lexem,null,chkAndGetType($3.sval));
+        }
+        | OUTF '(' CHARCH ')'{
+                $$.sval = Terceto.addTercetoT("OUTF",$3.sval,null,"CHARCH");
         }
         | OUTF '(' ')' {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
         | OUTF error {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
