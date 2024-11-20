@@ -61,10 +61,15 @@ public class AsmGenerator {
         punto_data.appendLine(".data");
         volcarTablaDeSimbolos();
         punto_data.appendLine("__new_line__ DB 13, 10, 0 ; CRLF");
+        punto_data.appendLine("errorOverflowMsg db \"ERROR: Overflow detectado!\", 0");
 
 
         punto_code_fun = new FileManager(destPath+"punto_code_fun");
         punto_code_fun.appendLine(".code");
+        punto_code_fun.appendLine("OverflowHandler:");
+        punto_code_fun.appendLine("invoke StdOut, addr errorOverflowMsg");
+        punto_code_fun.appendLine("invoke ExitProcess, 1   ; tiene que terminar con la ejecucion");
+    
         
         punto_code_body = new FileManager(destPath+"punto_code_body");
         punto_code_body.appendLine(main+":");

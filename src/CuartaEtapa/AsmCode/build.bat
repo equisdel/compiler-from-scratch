@@ -26,5 +26,5 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Compilación y enlace exitosos: %filename%.exe
+echo Compilacion y enlace exitosos: %filename%.exe
 pause
