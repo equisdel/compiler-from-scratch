@@ -9,18 +9,31 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-msgdebug db "entro a funcion1", 0
+msgdebug db "entro a funcion1", 10, 0
 parametro DW 10
+aux_funcion1@MAIN WORD ?
 
 .code
 funcion1@MAIN proc _x_funcion1@MAIN:WORD
 	invoke printf, cfm$("%u\n"), _x_funcion1@MAIN
 	invoke StdOut, addr msgdebug
+	mov ax, _x_funcion1@MAIN	; el resultado
 ret 0
 funcion1@MAIN endp
 
 start:
+xor eax,eax
 invoke funcion1@MAIN, parametro
-
+mov aux_funcion1@MAIN, ax
+invoke printf, cfm$("%u\n"), eax
 invoke ExitProcess, 0
 end start
+
+
+;invoke SendMessage, [hWnd], WM_CLOSE, 0, 0
+;Becomes:
+; push 0
+; push 0
+; push WM_CLOSE
+; push [hWnd]
+; call [SendMessage]

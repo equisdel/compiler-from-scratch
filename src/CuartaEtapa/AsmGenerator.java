@@ -61,14 +61,22 @@ public class AsmGenerator {
         punto_data.appendLine(".data");
         volcarTablaDeSimbolos();
         punto_data.appendLine("__new_line__ DB 13, 10, 0 ; CRLF");
-        punto_data.appendLine("errorOverflowMsg db \"ERROR: Overflow detectado!\", 0");
+        punto_data.appendLine("errorOverflowMul db \"ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits\", 0");
+        punto_data.appendLine("errorOverflowSub db \"ERROR: Overflow detectado! Una resta de enteros da negativo\", 0");
+
 
 
         punto_code_fun = new FileManager(destPath+"punto_code_fun");
         punto_code_fun.appendLine(".code");
-        punto_code_fun.appendLine("OverflowHandler:");
-        punto_code_fun.appendLine("invoke StdOut, addr errorOverflowMsg");
+        punto_code_fun.appendLine("OverflowMul:");
+        punto_code_fun.appendLine("invoke StdOut, addr errorOverflowMul");
         punto_code_fun.appendLine("invoke ExitProcess, 1   ; tiene que terminar con la ejecucion");
+        punto_code_fun.appendLine("OverflowSub:");
+        punto_code_fun.appendLine("invoke StdOut, addr errorOverflowSub");
+        punto_code_fun.appendLine("invoke ExitProcess, 1   ; tiene que terminar con la ejecucion");
+
+
+
     
         
         punto_code_body = new FileManager(destPath+"punto_code_body");
@@ -376,6 +384,7 @@ public class AsmGenerator {
                     }   break;
         
                     case "SUMA" : { // TODO QUE ONDA LAS CTES NEGATIVAS!?
+                        // FALTA: EN SUMA, RESTA, Y DIVISION, SI ES CTE Y SINGLE CREAR LA AUX, NO SE PUEDE USAR INM.
                         System.out.println("SWITCH CASE MATCH: SUMA");
                         // Declarar la variable "auxt_[id_terceto]".
                         appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
@@ -391,6 +400,10 @@ public class AsmGenerator {
                     break;
 
                     case "RESTA" : {
+                        /* Resultados negativos en restas de enteros sin signo:
+El código Assembler deberá controlar el resultado de la operación indicada. Este control se aplicará a
+operaciones entre enteros sin signo. En caso que una resta entre datos de este tipo arroje un resultado
+negativo, deberá emitir un mensaje de error y terminar */
                         // Análogo a la SUMA
                         System.out.println("SWITCH CASE MATCH: RESTA");
                         appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
@@ -398,9 +411,15 @@ public class AsmGenerator {
                             appendCodeBody("fld "+getOperador(op1, terceto.subtipo));
                             appendCodeBody("fsub "+getOperador(op2, terceto.subtipo));
                             appendCodeBody("fstp "+"aux_t"+contador_t);
-                        } else {
-                        appendCodeBody("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
-                        appendCodeBody("SUB auxt_"+contador_t+","+getOperador(op2, terceto.subtipo)); // ADD auxt_[id_terceto], final_op2
+                        } else {    // es entero
+                        appendCodeBody("MOV AX, "+getOperador(op1, terceto.subtipo));
+                        appendCodeBody("MOV BX, "+getOperador(op2, terceto.subtipo)); 
+                        appendCodeBody("CMP AX, BX"); 
+                        appendCodeBody("jb OverflowSub"); 
+                        // si no salto, la resta es segura.
+                        appendCodeBody("SUB AX, BX");
+                        appendCodeBody("MOV auxt_"+contador_t+", AX");   
+ 
                         }
                     }
                     break;  
@@ -416,12 +435,12 @@ mensaje de error y terminar */
                             appendCodeBody("fld "+getOperador(op1, terceto.subtipo));
                             appendCodeBody("fmul "+getOperador(op2, terceto.subtipo));
                             appendCodeBody("fstp "+"aux_t"+contador_t);
-                        } else {    // es uinteger o hexa CONTEMPLAR OVERLFLOW MUL
+                        } else {    // es uinteger o hexa CONTEMPLAR OVERLFLOW MUL -> corregir: los enteros son de 16 bits
                             
                         appendCodeBody("MOV AX "+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                         appendCodeBody("MUL "+getOperador(op2, terceto.subtipo)); // MUL auxt_[id_terceto], final_op2
                         appendCodeBody("CMP DX, 0");   // SI DA 0 ES PORQ NO HUBO OVERFLOW
-                        appendCodeBody("JNE OverflowHandler");
+                        appendCodeBody("JNE OverflowMul");
                         appendCodeBody("MOV "+"aux_t"+contador_t+" EAX");      
                         }
                     }
@@ -446,12 +465,14 @@ mensaje de error y terminar */
                         System.out.println("SWITCH CASE MATCH: :=");
                         // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, terceto
                         if ( AnalizadorLexico.t_simbolos.get_entry(op2) != null && !Parser.isTerceto(op2)) {    // si es cte
-                            // si no es float
-                            appendCodeBody("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo)); //op2 es inmediato
-                            // si es float, creo la variable (no puedo usar inmediatos float)
-                            appendData(new AsmData("aux_float_"+contador_t, "REAL4",getOperador(op2, terceto.subtipo)));
-                            appendCodeBody("fld "+"aux_float_"+contador_t);
-                            appendCodeBody("fstp "+getOperador(op1, terceto.subtipo));
+                            if (!terceto.subtipo.equals("SINGLE")){
+                                appendCodeBody("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo)); //op2 es inmediato
+                            } else {
+                                // si es float, creo la variable (no puedo usar inmediatos float)
+                                appendData(new AsmData("aux_float_"+contador_t, "REAL4",getOperador(op2, terceto.subtipo)));
+                                appendCodeBody("fld "+"aux_float_"+contador_t);
+                                appendCodeBody("fstp "+getOperador(op1, terceto.subtipo));
+                            }
                         } else {// tengo q pasar primero a un reg
                             if (terceto.subtipo.equals("SINGLE")) {
                                 appendCodeBody("fld "+getOperador(op2, terceto.subtipo));
