@@ -5,6 +5,7 @@
 .data
 
 .code
+main:
 FUN1@MAIN PROC
 XOR EAX, EAX
 MOV EAX, [ESP+4]
@@ -18,3 +19,4 @@ MOV auxt_5,U1@MAIN@FUN1
 ADD auxt_5,U2@MAIN@FUN1
 MOV P@MAIN@FUN1,auxt_5
 MOV varfloat,varfloat
+end main

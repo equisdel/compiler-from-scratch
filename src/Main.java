@@ -1,5 +1,4 @@
 import CuartaEtapa.*;
-import CuartaEtapa.FileManager;
 import PrimeraEtapa.AnalizadorLexico;
 import SegundaEtapa.*;
 import TercerEtapa.Terceto;
@@ -144,8 +143,13 @@ public class Main {
                // Solo si no hay errores se procede a generar código assembler
                String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
                if (Parser.errores.isEmpty()) {
-                  AsmGenerator.generate(executablePath);
-               } else System.out.println("Hay errores.");
+                  AsmGenerator.generate(executablePath,program.getName());
+               } else {
+                  System.out.println("Hay errores.");
+                  for (String s : Parser.errores) {
+                     System.out.println(s);
+                  }
+               }
 
             } else System.out.println("El archivo no existe o no es un archivo válido.");
          } else System.out.println("Debe ingresar un path absoluto.");

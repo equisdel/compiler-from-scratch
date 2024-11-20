@@ -678,7 +678,7 @@ final static String yyrule[] = {
 "goto_statement : GOTO error",
 };
 
-//#line 711 "grammar.y"
+//#line 713 "grammar.y"
         public static ArrayList<String> errores = new ArrayList<>();
         public static String actualScope = "MAIN";
         //static Stack<Integer> UntilStack = new Stack<>();
@@ -703,9 +703,26 @@ final static String yyrule[] = {
         }
 
 
+        public static Boolean isFunction(String id){
+                // es terceto y se llama CALL_FUN
+                return (isTerceto(id) && Terceto.getOperacion(id).equals("CALL_FUN"));
+
+        }
+
+        public static String getFunctionID(String id){ // recibe terceto porq invoc_funcion arrastra el id del terceto
+                // devuelve lexema (ID con scope)
+                if (isFunction(id)) {
+                        return (Terceto.getOp1(id));
+                } else {System.out.println("CUIDADO SE ESTA PASANDO UN ID QUE NO ES DE FUNCION A getFunctionID");
+                        return null;
+                }
+        }
+
         public String chkAndGetType(String valStr){  //DEVUELVE TIPO PRIMITIVO (HEXA, UINTEGER, O SINGLE)
+                // SI valStr es invoc_funcion, devuelve el tipo de retorno de la funcion
         // recibe lexema SIN SCOPE 
                 //AnalizadorLexico.t_simbolos.display();
+                String lexem = "";
                 if (isTerceto(valStr)) {
                         System.out.println(valStr+"ES terceto");
                         return Terceto.getSubtipo(valStr);
@@ -717,11 +734,15 @@ final static String yyrule[] = {
                                 return AnalizadorLexico.t_simbolos.get_subtype(valStr);}
                         else {  // variable, invoc. a funcion o expr_pair
                                 if (isPair(valStr)) {
-                                        valStr = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
-                                }
-                                String lexem = getDeclared(valStr);
+                                        lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
+                                        lexem = getDeclared(lexem);
+                                } else if (isFunction(valStr)){
+                                        lexem = getFunctionID(valStr);  //vuelve con ambito
+                                } else {lexem = getDeclared(valStr);}
                                 System.out.println("NO ES CTE -> "+lexem);
                                 String type = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
+                                AnalizadorLexico.t_simbolos.display();
+                                System.out.println("se busco: "+lexem);
                                 if (lexem != null){     // si está declarada
                                         if (!(type.equals("SINGLE") || type.equals("UINTEGER") || type.equals("HEXA"))) {
                                                 //es tipo definido por usuario
@@ -743,8 +764,10 @@ final static String yyrule[] = {
         }*/
 
         public Boolean isCte(String valStr){
-
-                return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
+                System.out.println("aaaa"+valStr);
+                if (AnalizadorLexico.t_simbolos.get_entry(valStr) != null){
+                        return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
+                } else return false;
                 // si no esta, no es cte o no está
         }
 
@@ -922,7 +945,7 @@ final static String yyrule[] = {
 
         }
 
-        public Boolean isCharch(String id){     //charhc comienza  y termina con []
+        public static Boolean isCharch(String id){     //charhc comienza  y termina con []
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
         }
 
@@ -930,7 +953,7 @@ final static String yyrule[] = {
                 // un pair tiene la posicion de acceso entre {}; ej: pairsito{1}
                 return (id.charAt(id.length()-1) == '}');
         }
-//#line 861 "Parser.java"
+//#line 884 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1594,12 +1617,12 @@ case 93:
 //#line 548 "grammar.y"
 { 
                 String lexema = getDeclared(val_peek(3).sval);
-                yyerror(lexema);
+                System.out.println(lexema);
                 if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
                         /*chequear tipo de parametros*/
                         if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType(val_peek(1).sval))) {
                                 yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipo de parametro incorrecto. ");
-                        } else {
+                        } else {        /* se va pasando el terceto del llamado a la funcion.*/
                         yyval.sval = Terceto.addTercetoT("CALL_FUN", lexema, val_peek(1).sval, AnalizadorLexico.t_simbolos.get_subtype(lexema));}
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": "+val_peek(3).sval+" no es una funcion o no esta al alcance. ");
@@ -1614,80 +1637,82 @@ case 95:
 //#line 565 "grammar.y"
 {   /*expr puede  VARIBLE, CTE, funcion, terceto(varaux),*/
                 /* si es ID o funcion o exprpair se pasa con scope*/
-                /* CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIO, QUE ESTE DECLARADO*/
+                /* CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIOn, QUE ESTE DECLARADO*/
                 /* y si es pair pasarlo bien*/
                 String lexem = val_peek(1).sval;
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         /* es variable o funcion*/
                         if (isPair(lexem)) {
-                                pos = 
-                                lexem = getPairName(lexem);
+                                pos = lexem.substring(lexem.lastIndexOf("{"),lexem.lastIndexOf("}") + 1);
+                                System.out.println("pos: "+pos);
+                                lexem = getDeclared(getPairName(lexem)) + pos;
+                        } else {
+                                lexem = getDeclared(lexem);
                         }
-                        lexem = getDeclared(lexem);
                 }
                 yyval.sval = Terceto.addTercetoT("OUTF",lexem,null,chkAndGetType(val_peek(1).sval));
         }
 break;
 case 96:
-//#line 581 "grammar.y"
+//#line 583 "grammar.y"
 {
                 yyval.sval = Terceto.addTercetoT("OUTF",val_peek(1).sval,null,"CHARCH");
         }
 break;
 case 97:
-//#line 584 "grammar.y"
+//#line 586 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba parametro en OUTF "); }
 break;
 case 98:
-//#line 585 "grammar.y"
+//#line 587 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": parametro incorrecto en OUTF "); }
 break;
 case 99:
-//#line 605 "grammar.y"
+//#line 607 "grammar.y"
 {
                 yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,val_peek(6).sval);
                 /* si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());*/
         }
 break;
 case 100:
-//#line 609 "grammar.y"
+//#line 611 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis "); }
 break;
 case 101:
-//#line 610 "grammar.y"
+//#line 612 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba ')' luego de la condicion. "); }
 break;
 case 102:
-//#line 611 "grammar.y"
+//#line 613 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
 break;
 case 103:
-//#line 613 "grammar.y"
+//#line 615 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until "); }
 break;
 case 104:
-//#line 614 "grammar.y"
+//#line 616 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
 break;
 case 105:
-//#line 615 "grammar.y"
+//#line 617 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
 break;
 case 106:
-//#line 616 "grammar.y"
+//#line 618 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
 break;
 case 107:
-//#line 617 "grammar.y"
+//#line 619 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba UNTIL luego de 'END' "); }
 break;
 case 108:
-//#line 618 "grammar.y"
+//#line 620 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba condicion luego de UNTIL "); }
 break;
 case 109:
-//#line 623 "grammar.y"
+//#line 625 "grammar.y"
 {
                 /* opcion 1: pila:*/
                 /*UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)*/
@@ -1696,7 +1721,7 @@ case 109:
         }
 break;
 case 110:
-//#line 632 "grammar.y"
+//#line 634 "grammar.y"
 {
                 String[] idList = val_peek(2).sval.split(",");
                 String[] exprList = val_peek(0).sval.split(",");
@@ -1711,11 +1736,11 @@ case 110:
         }
 break;
 case 111:
-//#line 644 "grammar.y"
+//#line 646 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
 break;
 case 112:
-//#line 649 "grammar.y"
+//#line 651 "grammar.y"
 {
                 
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
@@ -1723,26 +1748,26 @@ case 112:
         }
 break;
 case 113:
-//#line 654 "grammar.y"
+//#line 656 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
         }
 break;
 case 116:
-//#line 668 "grammar.y"
+//#line 670 "grammar.y"
 {
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
         }
 break;
 case 117:
-//#line 672 "grammar.y"
+//#line 674 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
                 
         }
 break;
 case 118:
-//#line 680 "grammar.y"
+//#line 682 "grammar.y"
 {
                 /* buscar si no hay otra tag con el mismo nombre al alcance*/
                 System.out.println("wtf");
@@ -1758,7 +1783,7 @@ case 118:
         }
 break;
 case 119:
-//#line 700 "grammar.y"
+//#line 702 "grammar.y"
 {
                 /*if existe en TS {*/
                         yyval.sval= Terceto.addTerceto("JUMP_TAG",null,null);      /*se pone terceto incompleto, se completara al final del programa*/
@@ -1767,10 +1792,10 @@ case 119:
         }
 break;
 case 120:
-//#line 706 "grammar.y"
+//#line 708 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
 break;
-//#line 1696 "Parser.java"
+//#line 1721 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####

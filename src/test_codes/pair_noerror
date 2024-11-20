@@ -14,6 +14,8 @@ begin
 
     pair_s par_de_single;
     par_de_uinteger{1}, par_de_uinteger{2} := 1, 2;
+    OUTF(par_de_uinteger{1});
+    OUTF([cadenitaaaa]);
 
 
 end

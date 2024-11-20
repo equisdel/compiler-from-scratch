@@ -67,8 +67,9 @@ public class FileManager {
             reader.close();
             writer.close();
         } catch (IOException e) {}
-        System.out.println(this.file.getAbsolutePath());
-        System.out.println(this.file.delete());
+        this.file.delete();
+        //System.out.println(this.file.getAbsolutePath());
+        //System.out.println(this.file.delete());
     }
 
     public String readLine() {

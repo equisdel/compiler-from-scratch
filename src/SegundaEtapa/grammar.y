@@ -245,7 +245,7 @@ var_type
         : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
         | IF cond THEN ctrl_block_statement END_IF {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
-                yyerror("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
+                System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
                 yyerror("ERROR. Línea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
         | IF cond ')' THEN ctrl_block_statement END_IF {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
@@ -520,7 +520,7 @@ fact    : ID    /*{
                 else {
                         $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 }
-        | fun_invoc
+        | fun_invoc     // ej: funcion1(x)
         | expr_pair /* pairsito{1}  */ 
         ;
 
@@ -547,12 +547,12 @@ expr_pair
 fun_invoc
         : ID '(' expr ')' { 
                 String lexema = getDeclared($1.sval);
-                yyerror(lexema);
+                System.out.println(lexema);
                 if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
                         //chequear tipo de parametros
                         if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType($3.sval))) {
                                 yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipo de parametro incorrecto. ");
-                        } else {
+                        } else {        // se va pasando el terceto del llamado a la funcion.
                         $$.sval = Terceto.addTercetoT("CALL_FUN", lexema, $3.sval, AnalizadorLexico.t_simbolos.get_subtype(lexema));}
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": "+$1.sval+" no es una funcion o no esta al alcance. ");
@@ -564,17 +564,19 @@ fun_invoc
 outf_statement
         : OUTF '(' expr ')' {   //expr puede  VARIBLE, CTE, funcion, terceto(varaux),
                 // si es ID o funcion o exprpair se pasa con scope
-                // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIO, QUE ESTE DECLARADO
+                // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIOn, QUE ESTE DECLARADO
                 // y si es pair pasarlo bien
                 String lexem = $3.sval;
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         // es variable o funcion
                         if (isPair(lexem)) {
-                                pos = 
-                                lexem = getPairName(lexem);
+                                pos = lexem.substring(lexem.lastIndexOf("{"),lexem.lastIndexOf("}") + 1);
+                                System.out.println("pos: "+pos);
+                                lexem = getDeclared(getPairName(lexem)) + pos;
+                        } else {
+                                lexem = getDeclared(lexem);
                         }
-                        lexem = getDeclared(lexem);
                 }
                 $$.sval = Terceto.addTercetoT("OUTF",lexem,null,chkAndGetType($3.sval));
         }
@@ -732,9 +734,26 @@ goto_statement
         }
 
 
+        public static Boolean isFunction(String id){
+                // es terceto y se llama CALL_FUN
+                return (isTerceto(id) && Terceto.getOperacion(id).equals("CALL_FUN"));
+
+        }
+
+        public static String getFunctionID(String id){ // recibe terceto porq invoc_funcion arrastra el id del terceto
+                // devuelve lexema (ID con scope)
+                if (isFunction(id)) {
+                        return (Terceto.getOp1(id));
+                } else {System.out.println("CUIDADO SE ESTA PASANDO UN ID QUE NO ES DE FUNCION A getFunctionID");
+                        return null;
+                }
+        }
+
         public String chkAndGetType(String valStr){  //DEVUELVE TIPO PRIMITIVO (HEXA, UINTEGER, O SINGLE)
+                // SI valStr es invoc_funcion, devuelve el tipo de retorno de la funcion
         // recibe lexema SIN SCOPE 
                 //AnalizadorLexico.t_simbolos.display();
+                String lexem = "";
                 if (isTerceto(valStr)) {
                         System.out.println(valStr+"ES terceto");
                         return Terceto.getSubtipo(valStr);
@@ -746,11 +765,15 @@ goto_statement
                                 return AnalizadorLexico.t_simbolos.get_subtype(valStr);}
                         else {  // variable, invoc. a funcion o expr_pair
                                 if (isPair(valStr)) {
-                                        valStr = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
-                                }
-                                String lexem = getDeclared(valStr);
+                                        lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
+                                        lexem = getDeclared(lexem);
+                                } else if (isFunction(valStr)){
+                                        lexem = getFunctionID(valStr);  //vuelve con ambito
+                                } else {lexem = getDeclared(valStr);}
                                 System.out.println("NO ES CTE -> "+lexem);
                                 String type = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
+                                AnalizadorLexico.t_simbolos.display();
+                                System.out.println("se busco: "+lexem);
                                 if (lexem != null){     // si está declarada
                                         if (!(type.equals("SINGLE") || type.equals("UINTEGER") || type.equals("HEXA"))) {
                                                 //es tipo definido por usuario
@@ -772,8 +795,10 @@ goto_statement
         }*/
 
         public Boolean isCte(String valStr){
-
-                return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
+                System.out.println("aaaa"+valStr);
+                if (AnalizadorLexico.t_simbolos.get_entry(valStr) != null){
+                        return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
+                } else return false;
                 // si no esta, no es cte o no está
         }
 
@@ -951,7 +976,7 @@ goto_statement
 
         }
 
-        public Boolean isCharch(String id){     //charhc comienza  y termina con []
+        public static Boolean isCharch(String id){     //charhc comienza  y termina con []
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
         }
 

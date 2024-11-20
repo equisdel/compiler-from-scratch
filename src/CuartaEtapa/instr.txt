@@ -1,3 +1,6 @@
 ml /c /coff CodigoAssembler.asm && link /SUBSYSTEM:CONSOLE CodigoAssembler.obj /OUT:CodigoAssembler.exe
     /*private static final String header = "  .386\n.model flat, stdcall\noption casemap:none\nincludelib \masm32\lib\kernel32.lib\nincludelib \masm32\lib\user32.lib\ninclude \masm32\include\masm32rt.inc\nincludelib \masm32\lib\kernel32.lib\nincludelib \masm32\lib\masm32.lib"; 
     */
+
+ml /c /coff ./programs/example.asm.asm && link /SUBSYSTEM:CONSOLE ./programs/example.asm.obj /OUT:./programs/example.asm.exe
+ml /c /coff pair.asm && link /SUBSYSTEM:CONSOLE pair.obj /OUT:pair.exe
