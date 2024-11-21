@@ -8,7 +8,7 @@ begin
         ret (p);
     end
 
-    uinteger p,p_plus_1;
+    uinteger p, p_plus_1;
     
     p := 0;
     outf([valor antes de la funcion:]); 

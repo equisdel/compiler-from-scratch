@@ -34,7 +34,7 @@ public class TablaEtiquetas {
     }
 
     public static void popScope() {
-        System.out.println("Exiting "+scope_actual);
+        System.out.println("\nExiting "+scope_actual);
         scope_actual = Parser.actualScope;
 
         Set<GoToInfo> gotos_en_espera_scope_actual = gotos_en_espera.peek();
@@ -83,10 +83,10 @@ public class TablaEtiquetas {
             String scope_padre = String.join(":", Arrays.copyOfRange(scope.split(":"), 0, scope.split(":").length - 1));
             if (tag_entry.containsKey(scope_padre)) {
                 Iterator<GoToInfo> iterator = tag_entry.get(scope_padre).iterator();
-                System.out.println("scope_padre: "+scope_padre);
+                //System.out.println("scope_padre: "+scope_padre);
                 while (iterator.hasNext()) {
                     GoToInfo go_to = iterator.next();
-                    System.out.println("scope padre: " + scope_padre);
+                    //System.out.println("scope padre: " + scope_padre);
                     if (go_to.scope.startsWith(scope)) {  // se produce el "robo"
                         tag_entry.get(scope_actual).add(go_to);
                         iterator.remove();  // Safely remove from scope_padre using the iterator
@@ -124,11 +124,11 @@ public class TablaEtiquetas {
         // se verifica si ya se declaró la etiqueta localmente: implica búsqueda simple en tabla
         if (tagIsDeclaredLocal(tag,scope_actual)) {     // para el caso en que primero se pone la etiqueta y luego el goto
             //    si se declaró: termina acá, el goto está asociado a esa etiqueta (actualización de tabla).
-            System.out.println("camino1");
+            //System.out.println("camino1");
             tabla.get(tag).get(scope_actual).add(nuevo_goto);
             TablaEtiquetas.display(); 
         } else {
-            System.out.println("camino2");
+            //System.out.println("camino2");
             //    si no se declaró localmente, se extiende la búsqueda a ámbitos padres
             String scope_of_declaration = tagIsDeclaredNonLocal(tag,scope_actual);
             if (scope_of_declaration != null) 
@@ -139,7 +139,7 @@ public class TablaEtiquetas {
     }
     //metod0 de immpresion de tabla
     public static void display() {
-        System.out.println("Tamaño de la pila: "+gotos_en_espera.size());
+        //System.out.println("Tamaño de la pila: "+gotos_en_espera.size());
         for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
             for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
                 for (GoToInfo value : entry2.getValue()) {
@@ -153,7 +153,7 @@ public class TablaEtiquetas {
     public static void end() {
 
         // Verificar que no existan gotos en espera, si los hay entonces debería dar error y enlistar las líneas de las tags huerfanas
-        if (gotos_en_espera.size() != 1)
+        if (gotos_en_espera.size() != 1)    // MAIN sería el único
             System.out.println("[TablaEtiquetas:end()] Error en la actualización de ámbitos (el número de elementos en la pila es "+gotos_en_espera.size());
         else if (!gotos_en_espera.peek().isEmpty()) {
             for (GoToInfo goTo : gotos_en_espera.peek()) {

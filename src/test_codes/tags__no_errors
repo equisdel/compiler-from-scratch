@@ -1,4 +1,4 @@
-p_tag_test_errors
+p_tags_no_error
 begin
     
     single aux;
@@ -17,10 +17,10 @@ begin
         tag2@       ## MAIN:F1
         single FUN fun2 (single x1) begin           ## Entrada al ámbito MAIN:F1:F2
             unreachable_from_main@
-            aux = f3(x1);
             single FUN fun3 (single x1) begin       ## Entrada el ámbito MAIN:F1:F2:F3
                 goto tag2@;     ## [2]
             end                                     ## Salida del ámbito MAIN:F1:F2:F3
+            aux := fun3(x1);
             tag2@   ## MAIN:F1:F2
         end                                         ## Salida del ámbito MAIN:F1:F2
         outf(aux);

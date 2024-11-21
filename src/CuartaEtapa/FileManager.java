@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import CuartaEtapa.AsmGenerator.FunFile;
 
 public class FileManager {
     
@@ -14,22 +17,28 @@ public class FileManager {
     BufferedReader reader;
     BufferedWriter writer;
 
+    static ArrayList<FileManager> delete_later = new ArrayList<>();
+
     public FileManager(String path) {
+        this(path,true);
+    }
+
+    // Lo crea desde cero
+    public FileManager(String path, boolean delete) {
         file_path = path;
         file = new File(path);
+        if (delete) delete_later.add(this);
         try {
-            if (file.createNewFile()) {
-            }
+            if (file.createNewFile()) {}
         } catch (IOException e) {
             System.out.println("Problema ¿?");
             e.printStackTrace();
         }
         try {
             reader = new BufferedReader(new FileReader(file_path));
-            this.reader.mark(1024); 
-            //reader.mark(1024);
+            reader.mark(1024);
             writer = new BufferedWriter(new FileWriter(file_path, true));
-        } catch (IOException e) { e.printStackTrace(); System.out.println("PROBLEMA (FileManager): el archivo no fue creado correctamente."); }
+        } catch (IOException e) { e.printStackTrace(); System.out.println("PROBLEMA (FileManager): el archivo no fue tomado correctamente."); }
     }
 
     public FileManager(File file) {
@@ -72,6 +81,11 @@ public class FileManager {
         //System.out.println(this.file.delete());
     }
 
+    public static void delete_all() {
+        for (FileManager fm : delete_later)
+            fm.delete();
+    }
+
     public String readLine() {
         try {
             return reader.readLine();
@@ -105,15 +119,20 @@ public class FileManager {
         while ((nextLine = fileManager.readLine()) != null) {
             this.appendLine(nextLine); // Assuming appendLine(String line) is implemented
         }
+        this.appendLine("");
 
     }
 
     public File getFile() {
         return file;
     }
-    // appendLine
-    // appendFile
-    // rename file
-    // delete file
-    // print
+
+    public void appendFiles(ArrayList<FunFile> func_files) {
+        this.appendLine("");
+        for (FunFile ff : func_files) {
+            try { this.appendFile(ff.ff_manager); } 
+            catch (IOException e) { }
+        }
+    }
+
 }

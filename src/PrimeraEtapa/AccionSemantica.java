@@ -263,11 +263,15 @@ public class AccionSemantica {
 
         // A.S. ASOCIADAS A ERRORES
 
+        String ANSI_RED = "\u001B[31m";  
+        String ANSI_YELLOW = "\u001B[33m";
+        String ANSI_RESET = "\u001B[0m"; 
+
         String desc_100 = "En caso de errores levanta un Warning con el mensaje de error actual.";
         Function<Void,Integer> action_100 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 // Implementar cola de Warnings
-                System.out.println("WARNING - [LINE "+AnalizadorLexico.line_number+"]: "+error_msg);
+                System.out.println(ANSI_YELLOW+"WARNING - [LINE "+AnalizadorLexico.line_number+"]: "+ANSI_RESET+error_msg);
                 error_msg = null;
                 return 0;
             }
@@ -418,7 +422,7 @@ public class AccionSemantica {
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
-        };
+        }; 
 
         String desc_199 = "Error de simbolo no reconocido por la gramática del lenguaje.";
         Function<Void,Integer> action_199 = new Function<Void,Integer>() {

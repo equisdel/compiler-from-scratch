@@ -1,0 +1,14 @@
+p_recursivo
+begin
+
+    uinteger fun A(uinteger x)
+    begin
+        x := A(x);
+    end
+
+ ##   uinteger fun B(uinteger y)
+ ##   begin
+ ##       y := A(y);
+ ##   end
+
+end

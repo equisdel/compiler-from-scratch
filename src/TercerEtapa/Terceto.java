@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Terceto {
 
-    static Boolean debug = true;
+    static Boolean debug = false;
     public String operacion;
     public String op1;
     public String op2;

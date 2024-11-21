@@ -35,10 +35,10 @@ statement_list
 
 statement
         : executable_statement 
-        | declare_pair optional_semicolon       {System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number);}
+        | declare_pair optional_semicolon       {System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");}
         | declare_var                           {System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);}
-        | declare_fun                           {System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number);}
-        | error ';'                             {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia ");}
+        | declare_fun                           {System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");}
+        | error ';'                             {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia\n");}
         ;       
         // Terminan con ';'
         // Las sentencias declarativas pueden aparecer en cualquier lugar del código fuente, exceptuando los bloques de las sentencias de control.*/
@@ -54,14 +54,14 @@ optional_not_semicolon
         ;
 
 executable_statement
-        : if_statement optional_semicolon               {System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number);}
-        | assign_statement optional_semicolon           {System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number);}
-        | outf_statement optional_semicolon             {System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number);}
-        | repeat_statement optional_semicolon           {System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number);}
-        | goto_statement optional_semicolon             {System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number);}
-        | mult_assign_statement optional_semicolon      {System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number);}
-        | return_statement optional_semicolon           {System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number);}
-        | tag_statement optional_not_semicolon          {System.out.println("Sentencia de TAG");}        // Asumimos que no lleva ';'
+        : if_statement optional_semicolon               {System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number+"\n");}
+        | assign_statement optional_semicolon           {System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number+"\n");}
+        | outf_statement optional_semicolon             {System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number+"\n");}
+        | repeat_statement optional_semicolon           {System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number+"\n");}
+        | goto_statement optional_semicolon             {System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number+"\n");}
+        | mult_assign_statement optional_semicolon      {System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number+"\n");}
+        | return_statement optional_semicolon           {System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number+"\n");}
+        | tag_statement optional_not_semicolon          {System.out.println("Sentencia de TAG\n");}        // Asumimos que no lleva ';'
         ;
 
 executable_statement_list
@@ -115,6 +115,7 @@ declare_fun     //     FUN uinteger fun1 (uinteger x1) begin DA ' SYNTAX ERROR '
                 // Actualización del scope: fin de la función fuerza retorno al ámbito del padre
                         $$.sval = Terceto.addTercetoT("END_FUN",scopeToFunction(actualScope),null,null);
                         //System.out.println("Salgo del ambito: "+actualScope);
+                        TablaEtiquetas.popScope();
                         popScope();
                 }
         ;
@@ -138,12 +139,12 @@ declare_fun_header
                         else {
                                 String param_name = $5.sval.split("-")[1]; 
                                 String param_type = $5.sval.split("-")[0];
-                                System.out.println("param_name, param_type == "+param_name+", "+param_type);
+                               //System.out.println("param_name, param_type == "+param_name+", "+param_type);
                                 
                                 // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
                                 AnalizadorLexico.t_simbolos.del_entry($3.sval);
                                 AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$1.sval,"FUN_NAME",param_type);
-
+                                AnalizadorLexico.t_simbolos.display();
                                 //String param_lexem = getDeclared(param_name);
                                 //System.out.println("param_lexem == "+param_lexem);
                                 
@@ -152,7 +153,7 @@ declare_fun_header
                                 pushScope($3.sval); 
 
                                 // Actualización del ID del parámetro: se actualiza el scope al actual
-                                AnalizadorLexico.t_simbolos.display();
+                                // AnalizadorLexico.t_simbolos.display();
                                 AnalizadorLexico.t_simbolos.del_entry(param_name);      // param_name llega con el scope y todo (desde donde fue llamado)
                                 AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
 
@@ -230,15 +231,15 @@ return_statement
         // CHEQUEO EL RET DEVUELVA ALGO DEL MISMO TIPO QUE DEVUELVE LA FUNCION
         if (AnalizadorLexico.t_simbolos.get_entry(scopeToFunction(actualScope)) != null){
                 if (AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)).equals(chkAndGetType($3.sval))){
-                        System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");
-                        System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
+                       //System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");
+                       //System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
                         $$.sval = Terceto.addTercetoT("RET",$3.sval,null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": el tipo de retorno no coincide con el tipo de la funcion. ");
                 }
         } else {System.out.println("algo anda mal en return_statement, no encuentra la funcion actual ");
-                System.out.println(" actual scope: "+actualScope);
-                System.out.println("no se encontro en la TS: "+scopeToFunction(actualScope));        
+               //System.out.println(" actual scope: "+actualScope);
+               //System.out.println("no se encontro en la TS: "+scopeToFunction(actualScope));        
         }
         }
         | RET expr {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": faltan parentesis en sentencia de return. ") ;}
@@ -267,7 +268,7 @@ var_type
         : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
         | IF cond THEN ctrl_block_statement END_IF {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
-                System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
+               //System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
                 yyerror("ERROR. Línea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
         | IF cond ')' THEN ctrl_block_statement END_IF {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
@@ -422,9 +423,9 @@ expr    : expr '+' term    {
                 if (!isTerceto(id2) && (!isCte(id2)) ){
                         id2 = getDeclared(id2);}
                 String t_subtype1 = chkAndGetType($1.sval);             
-                System.out.println("tipo1: "+t_subtype1);
+               //System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
-                System.out.println("tipo2: "+t_subtype2);
+               //System.out.println("tipo2: "+t_subtype2);
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
                                 if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
@@ -448,9 +449,9 @@ expr    : expr '+' term    {
                 if (!isTerceto(id2) && (!isCte(id2)) ){
                         id2 = getDeclared(id2);}
                 String t_subtype1 = chkAndGetType($1.sval);             
-                System.out.println("tipo1: "+t_subtype1);
+               //System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
-                System.out.println("tipo2: "+t_subtype2);
+               //System.out.println("tipo2: "+t_subtype2);
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
                                 if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
@@ -478,9 +479,9 @@ term    : term '*' fact {
                 if (!isTerceto(id2) && (!isCte(id2)) ){
                         id2 = getDeclared(id2);}
                 String t_subtype1 = chkAndGetType($1.sval);             
-                System.out.println("tipo1: "+t_subtype1);
+               //System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
-                System.out.println("tipo2: "+t_subtype2);
+               //System.out.println("tipo2: "+t_subtype2);
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
                                 if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
@@ -502,9 +503,9 @@ term    : term '*' fact {
                 if (!isTerceto(id2) && (!isCte(id2)) ){
                         id2 = getDeclared(id2);}
                 String t_subtype1 = chkAndGetType($1.sval);             
-                System.out.println("tipo1: "+t_subtype1);
+               //System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
-                System.out.println("tipo2: "+t_subtype2);
+               //System.out.println("tipo2: "+t_subtype2);
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
                                 if (t_subtype1.equals("SINGLE") || t_subtype1.equals("UINTEGER") || t_subtype1.equals("HEXA")) {
@@ -525,7 +526,7 @@ term    : term '*' fact {
 fact    : ID    /*{
                 if (isDeclared($1.sval)) {
                         $$.sval = $1.sval;
-                        System.out.println("ID es "+$1.sval);
+                       //System.out.println("ID es "+$1.sval);
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": variable "+$1.sval+" no declarada o no esta al alcance.");
                 }
@@ -552,7 +553,7 @@ expr_pair
                         // si ID es de un tipo definido (el tipo de ID esta en la tabla de simbolos)
                         String lexem = getDeclared($1.sval);
                         String baseType = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
-                        System.out.println("lexem: "+lexem+" baseType: "+baseType);
+                       //System.out.println("lexem: "+lexem+" baseType: "+baseType);
                         if (!AnalizadorLexico.t_simbolos.get_use(baseType).equals("TYPE_NAME")) {
                                 yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba variable de tipo pair. "); }
                         else {
@@ -568,8 +569,8 @@ expr_pair
 
 fun_invoc
         : ID '(' expr ')' { 
+                System.out.println("\n\nEl lexema a buscar: "+$1.sval);
                 String lexema = getDeclared($1.sval);
-                System.out.println(lexema);
                 if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
                         //chequear tipo de parametros
                         if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType($3.sval))) {
@@ -588,14 +589,14 @@ outf_statement
                 // si es ID o funcion o exprpair se pasa con scope
                 // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIOn, QUE ESTE DECLARADO
                 // y si es pair pasarlo bien
-                System.out.println("scope actual: "+actualScope);
+               //System.out.println("scope actual: "+actualScope);
                 String lexem = $3.sval;
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         // es variable o funcion
                         if (isPair(lexem)) {
                                 pos = lexem.substring(lexem.lastIndexOf("{"),lexem.lastIndexOf("}") + 1);
-                                System.out.println("pos: "+pos);
+                               //System.out.println("pos: "+pos);
                                 lexem = getDeclared(getPairName(lexem)) + pos;
                         } else {
                                 lexem = getDeclared(lexem);
@@ -704,7 +705,7 @@ expr_list       /* solo se usa en asignacion multiple */
 tag_statement               //chequear no exista otro tag igual en todo el programa
         : TAG {
                 // buscar si no hay otra tag con el mismo nombre al alcance
-                System.out.println("wtf");
+               //System.out.println("wtf");
                 if (!isDeclaredLocal($1.sval)) {
                         // reinserción en la T. de S. con scope actual
                         AnalizadorLexico.t_simbolos.del_entry($1.sval);
@@ -713,7 +714,7 @@ tag_statement               //chequear no exista otro tag igual en todo el progr
                         TablaEtiquetas.add_tag($1.sval); 
                         Terceto.addTerceto("LABEL_TAG",$1.sval+":"+actualScope,null);
                 } else yyerror("ERROR: La etiqueta "+$1.sval+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");
-                AnalizadorLexico.t_simbolos.display();
+                // AnalizadorLexico.t_simbolos.display();
         }
         ;
 
@@ -740,7 +741,7 @@ goto_statement
 
 	public static void yyerror(String msg){
                 errores.add(msg);
-	        System.out.println(msg);
+	       //System.out.println(msg);
 	}
 
         public int yylex(){ // tambien devuelve el yylval ...
@@ -778,13 +779,13 @@ goto_statement
                 //AnalizadorLexico.t_simbolos.display();
                 String lexem = "";
                 if (isTerceto(valStr)) {
-                        System.out.println(valStr+"ES terceto");
+                       //System.out.println(valStr+"ES terceto");
                         return Terceto.getSubtipo(valStr);
                         }
                 else {
                         // puede ser variable, o cte, o expr_pair, o invoc. a funcion
                         if (isCte(valStr)) {
-                                System.out.println(valStr+"ES cte");
+                               //System.out.println(valStr+"ES cte");
                                 return AnalizadorLexico.t_simbolos.get_subtype(valStr);}
                         else {  // variable, invoc. a funcion o expr_pair
                                 if (isPair(valStr)) {
@@ -793,14 +794,14 @@ goto_statement
                                 } else if (isFunction(valStr)){
                                         lexem = getFunctionID(valStr);  //vuelve con ambito
                                 } else {lexem = getDeclared(valStr);}
-                                System.out.println("NO ES CTE -> "+lexem);
+                               //System.out.println("NO ES CTE -> "+lexem);
                                 String type = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
-                                AnalizadorLexico.t_simbolos.display();
-                                System.out.println("se busco: "+lexem);
+                                // AnalizadorLexico.t_simbolos.display();
+                               //System.out.println("se busco: "+lexem);
                                 if (lexem != null){     // si está declarada
                                         if (!(type.equals("SINGLE") || type.equals("UINTEGER") || type.equals("HEXA"))) {
                                                 //es tipo definido por usuario
-                                                System.out.println("El tipo es "+type+" y su uso es "+AnalizadorLexico.t_simbolos.get_use(type));
+                                               //System.out.println("El tipo es "+type+" y su uso es "+AnalizadorLexico.t_simbolos.get_use(type));
                                                 if ((AnalizadorLexico.t_simbolos.get_use(type)).equals("TYPE_NAME")) {
                                                         return (AnalizadorLexico.t_simbolos.get_subtype(type)); //devuelve el primitivo
                                                 }
@@ -818,7 +819,7 @@ goto_statement
         }*/
 
         public Boolean isCte(String valStr){
-                System.out.println("aaaa"+valStr);
+               //System.out.println("aaaa"+valStr);
                 if (AnalizadorLexico.t_simbolos.get_entry(valStr) != null){
                         return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
                 } else return false;
@@ -832,7 +833,7 @@ goto_statement
 
         public void popScope(){
                 actualScope = popScope(actualScope);
-                System.out.println("Scope tras salir: "+actualScope);
+               //System.out.println("Scope tras salir: "+actualScope);
         }
 
         public String popScope(String scope){
@@ -842,7 +843,6 @@ goto_statement
                 if (index != -1) {
                         scope = scope.substring(0, index);
                 } // else scope queda igual
-                TablaEtiquetas.popScope();
                 return scope;
         }
 
@@ -850,13 +850,13 @@ goto_statement
         public boolean isDeclared(String id){   // recibe id sin scoope
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
                 if (isCte(id)){System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
-                String scopeaux = actualScope;
+                String scopeaux = new String(actualScope);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
                         while (actualScope.lastIndexOf(":") != -1){
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {       
-                                        actualScope = scopeaux;
+                                        actualScope = actualScope.substring(0,actualScope.lastIndexOf(":"));
                                         return true;}
                                 popScope();
                         }
@@ -875,9 +875,10 @@ goto_statement
                         yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");}
                 
                 //chequear tipo sea valido (uinteger,hexa,single o definido por usuario)
-                AnalizadorLexico.t_simbolos.display();
+                // AnalizadorLexico.t_simbolos.display();
                 if (AnalizadorLexico.t_simbolos.get_entry(tipo) == null) {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipo de variable no valido. "); }
-                else {System.out.println("tipo de var declarada:" +AnalizadorLexico.t_simbolos.get_entry(tipo).getUse());}
+                else {//System.out.println("tipo de var declarada:" +AnalizadorLexico.t_simbolos.get_entry(tipo).getUse());
+                        }
                 
                 if (tipo.equals("UINTEGER") || tipo.equals("HEXA") ||tipo.equals("SINGLE") || (AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME"))) {
                 // pair ejemplo en TS: pairsito:main subtipo:uinteger use:typename  no hace falta aclarar es un pair xq es el unico tipo q puede definir  
@@ -908,9 +909,9 @@ goto_statement
         }
 
         public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
-                AnalizadorLexico.t_simbolos.display();
+                //AnalizadorLexico.t_simbolos.display();
 
-                System.out.print("chkAndAssign: id: "+id);
+                //System.out.print("chkAndAssign: id: "+id);
                 String posid = "";
                 String posexpr = "";
                 Boolean idPair = isPair(id);
@@ -919,9 +920,9 @@ goto_statement
                 if (idPair){
                         // posid es {1} o {2}
                         posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
-                        System.out.println("assign: posid: "+posid);
+                       //System.out.println("assign: posid: "+posid);
                         id = getPairName(id);
-                        System.out.println("assign: id: "+id);
+                       //System.out.println("assign: id: "+id);
                 }
                 if (exprPair){
                         posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}") + 1);
@@ -938,7 +939,7 @@ goto_statement
                                 lexemExpr = expr;}   // y lexem es el terceto (expr)
                         else{
                                 if (isCte(expr)){      // si es cte, la misma es como se busca en la tabla de simbolos
-                                        System.out.println(expr+" es cte");
+                                       //System.out.println(expr+" es cte");
                                         lexemExpr = expr;
                                         subtypeT = chkAndGetType(expr);
                                 } else if (isDeclared(expr)){ 
@@ -951,8 +952,8 @@ goto_statement
                         
                         String lexemID = getDeclared(id);
                         String subtypeID = chkAndGetType(id);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
-                        System.out.println("subtypeID: "+subtypeID);
-                        System.out.println("subtypeT: "+subtypeT);
+                       //System.out.println("subtypeID: "+subtypeID);
+                       //System.out.println("subtypeT: "+subtypeT);
                         if (idPair){lexemID = lexemID+posid;}
                         if (exprPair){lexemExpr = lexemExpr+posexpr;}
 
@@ -987,11 +988,11 @@ goto_statement
 
         public String getDeclared(String id){ //devuelve lexema completo con el cual buscar en TS.
                 //LLAMAR ES ID O FUNCION.  SI ES EXPR_PAIR, SE ASUME LLEGA SIN LA POSICION (SIN {})
-                String scopeaux = actualScope;
+                String scopeaux = new String(actualScope);;
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclared(id)){
 
-                        System.out.println("getDeclared: id: "+id);
+                       System.out.println("getDeclared: id: "+id);
                         if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                         else {
                                 while (scopeaux.lastIndexOf(":") != -1){
@@ -1003,7 +1004,7 @@ goto_statement
                                 }
                                 return null;    //si no esta declarada..
                         }
-                } else {return null;}
+                } else {System.out.println("NO ESTA DECLARADA");return null;}
 
         }
 

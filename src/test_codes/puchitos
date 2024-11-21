@@ -9,3 +9,15 @@
     ##u3 :=  1/0;    ## SI ES 0, DA ERROR!!! EL LEXICO NO AGREGA EL 0 A TS
     ##u3 := 1 / 1;
     ##s1 := 1.0+1;
+
+        ## Esto no va acá
+    tag3@
+    single FUN fun1 (single x1) begin
+        tag3@
+        single FUN fun2 (single x1) begin
+            single FUN fun3 (single x1) begin
+                goto tag3@;
+            end
+            tag3@
+        end
+    end

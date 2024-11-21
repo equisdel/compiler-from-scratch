@@ -1,4 +1,4 @@
-programafacil
+compatibility_test
 begin
 
     uinteger FUN fun1 (hexa p)
@@ -12,7 +12,7 @@ begin
             ret (x);
         end
         ret (u1); 
-        p := u1+u2;    ## Conversión implícitae
+        p := u1+u2;    ## Conversión implícita
     end
 
     single r;
