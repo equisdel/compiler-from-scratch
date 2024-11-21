@@ -113,7 +113,8 @@ var_list
 declare_fun     //     FUN uinteger fun1 (uinteger x1) begin DA ' SYNTAX ERROR ' POR PONER PRIMERO FUN Y DEPSUES EL TIPO DE RETORNO
         : declare_fun_header fun_body END { 
                 // Actualización del scope: fin de la función fuerza retorno al ámbito del padre
-                        System.out.println("Salgo del ambito: "+actualScope);
+                        $$.sval = Terceto.addTercetoT("END_FUN",scopeToFunction(actualScope),null,null);
+                        //System.out.println("Salgo del ambito: "+actualScope);
                         popScope();
                 }
         ;
@@ -153,7 +154,7 @@ declare_fun_header
                                 // Actualización del ID del parámetro: se actualiza el scope al actual
                                 AnalizadorLexico.t_simbolos.display();
                                 AnalizadorLexico.t_simbolos.del_entry(param_name);      // param_name llega con el scope y todo (desde donde fue llamado)
-                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",$1.sval,"VARIABLE_NAME",param_type);
+                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
 
                         // Posible generación de terceto de tipo LABEL
                                 $$.sval = Terceto.addTercetoT("LABEL_FUN",$3.sval+":"+act_scope,param_name+":"+act_scope,param_type); //para saber donde llamarla en assembler
@@ -218,7 +219,28 @@ parametro
         ;
 
 return_statement
-        : RET '(' expr ')'      /* semanticamente q hacemos con esto? */
+        : RET '(' expr ')' {     /* semanticamente q hacemos con esto? 
+        LOS CHEQUEOS SOBRE ESTO SON COMPLICADOS, POR LO Q ENTENDI SOLO HACE FALTA:
+        -CHEQUEAR QUE LA FUNCION TENGA AL MENOS UN RETURN SI SE NOS HACE FACIL
+        - EN ASSEMBLER PONER SIEMPRE UN RET POR DEFAULT (COMO RET 0) 
+        - si hay mas de 1 return es complicado contemplarlo
+        - hacer terceto de return?? seria pasar el valor de resultado a AX (entero) o EAX (single) y luego un ret
+        
+        */
+        // CHEQUEO EL RET DEVUELVA ALGO DEL MISMO TIPO QUE DEVUELVE LA FUNCION
+        if (AnalizadorLexico.t_simbolos.get_entry(scopeToFunction(actualScope)) != null){
+                if (AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)).equals(chkAndGetType($3.sval))){
+                        System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");
+                        System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
+                        $$.sval = Terceto.addTercetoT("RET",$3.sval,null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                } else {
+                        yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": el tipo de retorno no coincide con el tipo de la funcion. ");
+                }
+        } else {System.out.println("algo anda mal en return_statement, no encuentra la funcion actual ");
+                System.out.println(" actual scope: "+actualScope);
+                System.out.println("no se encontro en la TS: "+scopeToFunction(actualScope));        
+        }
+        }
         | RET expr {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": faltan parentesis en sentencia de return. ") ;}
         ;
 /* podria estar en una funcion (bien) o en una sentencia de control,*/
@@ -566,6 +588,7 @@ outf_statement
                 // si es ID o funcion o exprpair se pasa con scope
                 // CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIOn, QUE ESTE DECLARADO
                 // y si es pair pasarlo bien
+                System.out.println("scope actual: "+actualScope);
                 String lexem = $3.sval;
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
@@ -941,6 +964,14 @@ goto_statement
                                 Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
                                 Terceto.addTercetoT(":=",lexemID,lexemExpr,"SINGLE");
                         }// agregar otro else por si uno es uinteger y el otro hexa
+                        else if (subtypeID.equals("UINTEGER") && subtypeT.equals("HEXA")){
+                                Terceto.addTercetoT("stou",lexemExpr,null,"UINTEGER");
+                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
+                        }
+                        else if (subtypeID.equals("HEXA") && subtypeT.equals("UINTEGER")){
+                                Terceto.addTercetoT("stoh",lexemExpr,null,"HEXA");
+                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
+                        }
                         else {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
 
                 }
@@ -972,7 +1003,7 @@ goto_statement
                                 }
                                 return null;    //si no esta declarada..
                         }
-                } else {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": variable "+id+" no declarada. "); return null;}
+                } else {return null;}
 
         }
 
@@ -984,3 +1015,14 @@ goto_statement
                 // un pair tiene la posicion de acceso entre {}; ej: pairsito{1}
                 return (id.charAt(id.length()-1) == '}');
         }
+        public static String scopeToFunction(String f) {
+                // devuelve una funcion dado el scope.
+                // el scope esta en formato MAIN:FUN1:FUN2:FUN3:FUN4
+                // y la funcion a devolver seria FUN4:MAIN:FUN1:FUN2:FUN3
+                String[] parts = f.split(":");
+                StringBuilder result = new StringBuilder(parts[parts.length - 1]);
+                for (int i = 0; i < parts.length - 1; i++) {
+                    result.append(":").append(parts[i]);
+                }
+                return result.toString();
+            }

@@ -18,16 +18,19 @@ funcion1@MAIN proc _x_funcion1@MAIN:WORD
 	invoke printf, cfm$("%u\n"), _x_funcion1@MAIN
 	invoke StdOut, addr msgdebug
 	mov ax, _x_funcion1@MAIN	; el resultado
-ret 0
+ret 
 funcion1@MAIN endp
 
+
 start:
-xor eax,eax
 invoke funcion1@MAIN, parametro
 mov aux_funcion1@MAIN, ax
 invoke printf, cfm$("%u\n"), eax
 invoke ExitProcess, 0
 end start
+
+;SI LA FUNCION DEVUELVE SINGLE (FLOAT) SE USA EAX (32bits)
+; SI LA FUNCION DEVUELVE ENTERO SE USA AX
 
 
 ;invoke SendMessage, [hWnd], WM_CLOSE, 0, 0

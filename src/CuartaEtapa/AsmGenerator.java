@@ -312,29 +312,27 @@ public class AsmGenerator {
                         appendCodeBody("JMP "+op1+":");   // JMP es salto incondicional
                         break;
 
-                    case "LABEL_FUN" : {        // tiene que saber el tipo del parámetro
+                    case "LABEL_FUN" : {        //  USAR CONJUNTO DE TERCETOS PARA GUARDARLOS Y UNA VZ TERMINE LA FUNCION, PONERLA TODA JUNTA
+                                                // SINO ME QUEDAN UNAS DECLARADAS ADENTRO DE OTRAS
                         // el terceto guarda: ¿nos sirve de algo esta data?
                         // operador:    LABEL_FUN
                         // op1:         nombre de la función (con scope y reemplazos)
                         // op2:         nombre del parámetro formal (con scope y reemplazos)
                         // subtipo:     tipo del parametro formal
-                        appendCodeBody(op1+" PROC");
-                        appendCodeBody("XOR EAX, EAX");     // setea el registro EAX en todos 0s
-                        appendCodeBody("MOV EAX, [ESP+4]"); // carga el parámetro en EAX (32 bits son 4 bytes, funciona para UINTEGER y para SINGLE)
+                        // SI EL PARAMETRO ES ENTERO:
+                        appendCodeFun(op1+" PROC "+op2+":WORD");
+                        //appendCodeBody("XOR EAX, EAX");     // setea el registro EAX en todos 0s
+                        //appendCodeBody("MOV EAX, [ESP+4]"); // carga el parámetro en EAX (32 bits son 4 bytes, funciona para UINTEGER y para SINGLE)
                         // appendCode("POP ESP");          // quita el parámetro del tope de la pila?
                         // LO ULTIMO TIENE Q SER UN  'RET 0' POR DEFAULT
                     }
                         break;
 
-                    case "END_FUN" : {          // tiene que saber el tipo del retorno?     //PENSAR SI ES NECESARIA O NOR
+                    case "END_FUN" : {             
 
-                        appendCodeFun("ret");  // El retorno se guarda, según el tipo
+                        appendCodeFun("ret");  
                         appendCodeFun(op1+" ENDP");
-                        // el terceto guarda: ¿nos sirve de algo esta data?
-                        // operador:    LABEL_FUN
-                        // op1:         nombre de la función (con scope y reemplazos)
-                        // op2:         nombre del parámetro (con scope y reemplazos)
-                        // subtipo:     tipo del retorno
+
                     }
                         break;
 
@@ -360,6 +358,17 @@ public class AsmGenerator {
                         // a menos podamos pasar por parametro alguna variable.. o el resultado quede en la pila y luego de cada call pasamos lo de la pila a la var del terceto
                         break;
 
+                    case "RET" : { // tiene que saber el tipo del retorno
+                        // el terceto guarda: ¿nos sirve de algo esta data?
+                        // operador:    RET
+                        // op1:         expr
+                        // op2:         null
+                        // subtipo:     tipo de expr a retornar = tipo de retorno de funcion
+                        appendCodeFun("MOV EAX, "+getOperador(op1, terceto.subtipo));   
+                        appendCodeFun("ret");
+                    }
+                    break;
+
                     case "OUTF" : {
                         System.out.println("SWITCH CASE MATCH: OUTF");
                         //op2 null, op1: ID, cte, terceto (resultado de arimeticas, de funcion) O CHARCH!
@@ -384,7 +393,7 @@ public class AsmGenerator {
                     }   break;
         
                     case "SUMA" : { // TODO QUE ONDA LAS CTES NEGATIVAS!?
-                        // FALTA: EN SUMA, RESTA, Y DIVISION, SI ES CTE Y SINGLE CREAR LA AUX, NO SE PUEDE USAR INM.
+                        // FALTA: EN SUMA, RESTA, MUL  Y DIVISION, SI ES CTE Y SINGLE CREAR LA AUX, NO SE PUEDE USAR INM.
                         System.out.println("SWITCH CASE MATCH: SUMA");
                         // Declarar la variable "auxt_[id_terceto]".
                         appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
