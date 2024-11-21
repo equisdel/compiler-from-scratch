@@ -4,6 +4,7 @@ import PrimeraEtapa.AnalizadorLexico;
 import SegundaEtapa.*;
 import TercerEtapa.Terceto;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
@@ -97,16 +98,13 @@ public class Main {
          }
 
          Scanner input = new Scanner(System.in);
+         System.out.print(">> ");
          int test = input.nextInt();
          if (test >= 1 && test <= list_of_tests.length) {
             File selected_test = list_of_tests[test - 1];
-
-
-            FileManager fm_selected_test = new FileManager(selected_test);
-
-            System.out.println("\nContenido del archivo " + selected_test.getName() + ":");
-            fm_selected_test.display();
-
+            //FileManager fm_selected_test = new FileManager(selected_test);
+            //System.out.println("\nContenido del archivo " + selected_test.getName() + ":");
+            //fm_selected_test.display();
             input.close();
             return selected_test.getAbsolutePath();
          }
@@ -118,39 +116,44 @@ public class Main {
 
 	public static void main(String[] args) {
       
-      // Pide al usuario el camino al programa a compilar
-      System.out.print("\nIngrese el path absoluto del programa a compilar. Si solo presiona ENTER, se lo redirigirá a nuestro menú de programas de prueba.\n >> ");
-      Scanner input = new Scanner(System.in);
-      String p_path = input.nextLine().replace("\\","/").replace("\"", "");
-      if (p_path.equals("")) p_path = displayTestMenu();      // retorna null cuando la opción es incorrecta
+      String p_path;
+      if (Arrays.toString(args).equals("[]")) {  // si se pasa como argumento, todo esto se saltea
+         // Pide al usuario el camino al programa a compilar
+         System.out.print("\nIngrese el path absoluto del programa a compilar. Si solo presiona ENTER, se lo redirigirá a nuestro menú de programas de prueba.\n >> ");
+         Scanner input = new Scanner(System.in);
+         p_path = input.nextLine().replace("\\","/").replace("\"", "");
+         if (p_path.equals("")) p_path = displayTestMenu();      // retorna null cuando la opción es incorrecta
+         input.close();
+      } else p_path = args[0].replace("\\","/").replace("\"", "");
       
-      // Verifica la validez del input del usuario
-      if (p_path != null) {
+      
+      if (p_path != null) {                              // Verifica la validez del input del usuario
 
          File program = new File(p_path);
 
-         if (program.isAbsolute()) {  // Se asegura de que sea un path absoluto
+         if (program.isAbsolute()) {                     // Se asegura de que sea un path absoluto
             
-            if (program.exists() && program.isFile()) {  // El archivo es válido
+            if (program.exists() && program.isFile()) {  // Garantiza que el archivo existe
 
                // Procede a compilar
-               System.out.println("Archivo encontrado: " + program.getAbsolutePath());
+               System.out.println("\nCompilando \"" + program.getAbsolutePath()+"\"...");
                Parser parser = new Parser();
                AnalizadorLexico.compile(program.getAbsolutePath());
                parser.run();
                AnalizadorLexico.display();
                Terceto.print_all();
 
-               // Solo si no hay errores se procede a generar código assembler
+               // Si no hay errores, genera código assembler
                String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
                if (Parser.errores.isEmpty()) {
                   AsmGenerator.generate(executablePath);
                } else System.out.println("Hay errores.");
 
-            } else System.out.println("El archivo no existe o no es un archivo válido.");
-         } else System.out.println("Debe ingresar un path absoluto.");
+            } else System.out.println("El archivo no existe o no es un archivo válido.\n");
+         } else System.out.println("Debe ingresar un path absoluto.\n");
 
-	   }
+	   
+      } else System.out.println("Opción inválida.\n");
 
    }
 
