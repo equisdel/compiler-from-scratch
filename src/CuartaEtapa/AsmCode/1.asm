@@ -11,10 +11,8 @@ printf PROTO C : VARARG
 .data
 X@MAIN@FUN1@FUN2 DW ?
 R@MAIN REAL4 ?
-FUN2@MAIN@FUN1 DW ?
 U2@MAIN@FUN1 DW ?
 U1@MAIN@FUN1 DW ?
-FUN1@MAIN DW ?
 P@MAIN@FUN1 DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0

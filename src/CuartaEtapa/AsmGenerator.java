@@ -235,18 +235,19 @@ public class AsmGenerator {
             simbolo = AnalizadorLexico.t_simbolos.get_entry(lexema);
             //System.out.println(lexema);
             if (simbolo.getTipo().equals("ID")) {
-                // Caso instancia de tipo pair definido por el usuario
-                if (!(simbolo.getSubtipo().equals("UINTEGER") || simbolo.getSubtipo().equals("HEXA") || simbolo.getSubtipo().equals("SINGLE"))) {
-                    appendData(new AsmData("_"+lexema.replace(":","@")+"_1",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
-                    appendData(new AsmData("_"+lexema.replace(":","@")+"_2",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
-                }
-                // Cualquier otra variable se almacena de manera literal
-                else if (!simbolo.getUse().equals("TYPE_NAME")) {
-                    appendData(new AsmData(lexema.replace(":","@"),mapIDSubtypeToVarType(simbolo.getSubtipo()),"?"));
-                }
-                    // pairsito1:main                 ID    UINTEGER    TYPE_NAME 
-                    // pair_de_pairsito:main:fun1     ID    PAIRSITO1  var_name   
-            }
+                if (!simbolo.getUse().equals("FUN_NAME")){
+                    // Caso instancia de tipo pair definido por el usuario
+                    if (!(simbolo.getSubtipo().equals("UINTEGER") || simbolo.getSubtipo().equals("HEXA") || simbolo.getSubtipo().equals("SINGLE"))) {
+                        appendData(new AsmData("_"+lexema.replace(":","@")+"_1",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
+                        appendData(new AsmData("_"+lexema.replace(":","@")+"_2",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
+                    }
+                    // Cualquier otra variable se almacena de manera literal
+                    else if (!simbolo.getUse().equals("TYPE_NAME")) {
+                        appendData(new AsmData(lexema.replace(":","@"),mapIDSubtypeToVarType(simbolo.getSubtipo()),"?"));
+                    }
+                        // pairsito1:main                 ID    UINTEGER    TYPE_NAME 
+                        // pair_de_pairsito:main:fun1     ID    PAIRSITO1  var_name   
+            }   }
         }
         
     }
@@ -312,7 +313,7 @@ public class AsmGenerator {
                         appendCodeBody("JMP "+op1+":");   // JMP es salto incondicional
                         break;
 
-                    case "LABEL_FUN" : {        //  USAR CONJUNTO DE TERCETOS PARA GUARDARLOS Y UNA VZ TERMINE LA FUNCION, PONERLA TODA JUNTA
+                    case "INIC_FUN" : {        //  USAR CONJUNTO DE TERCETOS PARA GUARDARLOS Y UNA VZ TERMINE LA FUNCION, PONERLA TODA JUNTA
                                                 // SINO ME QUEDAN UNAS DECLARADAS ADENTRO DE OTRAS
                         // el terceto guarda: ¿nos sirve de algo esta data?
                         // operador:    LABEL_FUN
@@ -366,6 +367,16 @@ public class AsmGenerator {
                         // subtipo:     tipo de expr a retornar = tipo de retorno de funcion
                         appendCodeFun("MOV EAX, "+getOperador(op1, terceto.subtipo));   
                         appendCodeFun("ret");
+                    }
+                    break;
+
+                    case "BI" : {
+
+                    }
+                    break;
+
+                    case "BF" :{
+
                     }
                     break;
 
@@ -478,6 +489,7 @@ mensaje de error y terminar */
                                 appendCodeBody("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo)); //op2 es inmediato
                             } else {
                                 // si es float, creo la variable (no puedo usar inmediatos float)
+                                // ESTA PARTE PODRIA HACERSE EN GETOPERADOR. EL MISM ODEBERIA CREAR LA VARIABLE Y PASAR EL VALOR, Y DEVOLVER LA VARIABLE aux_gloat_[contador_t]
                                 appendData(new AsmData("aux_float_"+contador_t, "REAL4",getOperador(op2, terceto.subtipo)));
                                 appendCodeBody("fld "+"aux_float_"+contador_t);
                                 appendCodeBody("fstp "+getOperador(op1, terceto.subtipo));

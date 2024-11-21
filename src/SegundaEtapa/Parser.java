@@ -1294,7 +1294,7 @@ case 36:
                                 AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
 
                         /* Posible generación de terceto de tipo LABEL*/
-                                yyval.sval = Terceto.addTercetoT("LABEL_FUN",val_peek(4).sval+":"+act_scope,param_name+":"+act_scope,param_type); /*para saber donde llamarla en assembler*/
+                                yyval.sval = Terceto.addTercetoT("INIC_FUN",val_peek(4).sval+":"+act_scope,param_name+":"+act_scope,param_type); /*para saber donde llamarla en assembler*/
                         }
                 }
         }

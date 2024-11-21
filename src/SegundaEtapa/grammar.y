@@ -157,7 +157,7 @@ declare_fun_header
                                 AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
 
                         // Posible generación de terceto de tipo LABEL
-                                $$.sval = Terceto.addTercetoT("LABEL_FUN",$3.sval+":"+act_scope,param_name+":"+act_scope,param_type); //para saber donde llamarla en assembler
+                                $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+act_scope,param_type); //para saber donde llamarla en assembler
                         }
                 }
         }
