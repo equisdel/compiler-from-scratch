@@ -1,12 +1,18 @@
 programafacil
 begin
 
-    uinteger FUN fun1 (single p)
+    uinteger FUN fun1 (hexa p)
     begin
         uinteger u1,u2;
         u1,u2 := 1,2;
         outf(u1+u2);
-        p := u1+u2;    ## Conversión implícita
+        uinteger FUN fun2 (uinteger x)
+        begin
+            outf (x);
+            ret (x);
+        end
+        ret (u1); 
+        p := u1+u2;    ## Conversión implícitae
     end
 
     single r;

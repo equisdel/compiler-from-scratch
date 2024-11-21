@@ -10,3 +10,14 @@ printf PROTO C : VARARG
 
 .data
 __new_line__ DB 13, 10, 0 ; CRLF
+errorOverflowMsg db "ERROR: Overflow detectado!", 0
+
+
+.code
+OverflowHandler:
+    invoke StdOut, addr errorOverflowMsg
+    invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
+
+
+
+

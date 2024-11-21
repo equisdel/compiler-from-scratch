@@ -47,6 +47,18 @@ public class Terceto {
         return TerList.get(parseTercetoId(id)).subtipo;
     }
 
+    static public String getOperacion(String id){
+        return TerList.get(parseTercetoId(id)).operacion;
+    }
+
+    static public String getOp1(String id){
+        return TerList.get(parseTercetoId(id)).op1;
+    }
+
+    static public String getOp2(String id){
+        return TerList.get(parseTercetoId(id)).op2;
+    }
+
     // agregar a la pila
     static public void pushTerceto(String id){  //id viene con '< y '>'
         TerStack.push(parseTercetoId(id));

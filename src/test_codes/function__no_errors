@@ -1,0 +1,21 @@
+p_function_test
+begin
+
+    uinteger fun increase(uinteger p)
+    begin
+        p := p+1;
+        outf(p);
+        ret (p);
+    end
+
+    uinteger p,p_plus_1;
+    
+    p := 0;
+    outf([valor antes de la funcion:]); 
+    outf(p);
+
+    p_plus_1 := 0 + increase(p);
+    outf([valor luego de la funcion:]); 
+    outf(p_plus_1);
+
+end
