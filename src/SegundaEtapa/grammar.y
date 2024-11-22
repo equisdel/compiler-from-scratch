@@ -856,7 +856,7 @@ goto_statement
                 if (isDeclaredLocal(id)) {return true;}
                 else {
                         do {
-                                scopeaux = (scopeaux.lastIndexOf(":")!=-1) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
+                                scopeaux = (scopeaux.equals("MAIN")) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
                                         return true;
                                 System.out.println("EL SCOPEAUX: "+scopeaux);
@@ -997,7 +997,7 @@ goto_statement
                         if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                         else {
                                 do {
-                                        scopeaux = (scopeaux.lastIndexOf(":")!=-1) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
+                                        scopeaux = (scopeaux.equals("MAIN")) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                         if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
                                                 return id+":"+scopeaux;;
                                         System.out.println("EL SCOPEAUX: "+scopeaux);

@@ -10,8 +10,8 @@ printf PROTO C : VARARG
 
 .data
 Z@MAIN DW ?
+Y@MAIN@A@B DW ?
 X@MAIN@A DW ?
-Y@MAIN@B DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
@@ -30,36 +30,38 @@ invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
 A@MAIN PROC X@MAIN:WORD
-MOV chk_rec, 1
+MOV chk_rec, 0
 AND chk_rec, chk_rec
 JNZ RecursiveAttempt
-CALL A@MAIN
-MOV AX, auxt_1
+CALL B@MAIN@A
+MOV AX, auxt_6
 MOV X@MAIN@A, AX
 MOV EAX, X
 ret
 ret
 A@MAIN ENDP
 
-B@MAIN PROC Y@MAIN:WORD
-MOV chk_rec, 0
+B@MAIN@A PROC Y@MAIN@A:WORD
+MOV chk_rec, 1
 AND chk_rec, chk_rec
 JNZ RecursiveAttempt
 CALL A@MAIN
-MOV AX, auxt_8
-MOV Y@MAIN@B, AX
-MOV EAX, Z
+MOV AX, auxt_2
+MOV Y@MAIN@A@B, AX
+MOV EAX, Y
 ret
 ret
-B@MAIN ENDP
+B@MAIN@A ENDP
 
 start:
 
+MOV AX, 0
+MOV Z@MAIN, AX
 MOV chk_rec, 0
 AND chk_rec, chk_rec
 JNZ RecursiveAttempt
 CALL A@MAIN
-MOV AX, auxt_5
+MOV AX, auxt_11
 MOV Z@MAIN, AX
 
 end start

@@ -1,19 +1,25 @@
 p_recursivo
 begin
 
+    uinteger z;
+    
+    ## RECURSION INDIRECTA: da error en tiempo de ejecución
     uinteger fun A(uinteger x)
     begin
-        x := A(x);
+
+        uinteger fun B(uinteger y)
+        begin
+            y := A(y);              ## B llama a A
+            ret(y);
+        end
+
+        x := B(x);                  ## A llama a B
         ret(x);
-    end
 
-    uinteger z;
-    z := A(1);
-
-    uinteger fun B(uinteger y)
-    begin
-        y := A(y);
-        ret(z);
     end
+    
+    z := 0;         ## a. No da error.
+    ##  z := B(z)       ## b. Da error en tiempo de compilación: B no está al alcance.
+    z := A(z);      ## b. Da error en tiempo de ejecución: intento de recursión.
 
 end
