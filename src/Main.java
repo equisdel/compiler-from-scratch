@@ -1,5 +1,6 @@
 import CuartaEtapa.*;
 import PrimeraEtapa.AnalizadorLexico;
+import PrimeraEtapa.Error;
 import SegundaEtapa.*;
 import TercerEtapa.Terceto;
 import java.io.File;
@@ -63,15 +64,18 @@ public class Main {
                Parser parser = new Parser();
                AnalizadorLexico.compile(program.getAbsolutePath());
                parser.run();
-               AnalizadorLexico.display();
-               Terceto.print_all();
+
+               // Métricas de la ejecución
+               Error.display_all();      // errores y warnings
+               AnalizadorLexico.display();   // tabla de símbolos
+               Terceto.print_all();          // tercetos generados
 
                // Si no hay errores, genera código assembler
                String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
-               if (Parser.errores.isEmpty()) {
+               if (!Error.isCompilable()) {    // Verifica que no haya errores fatales
                   AsmGenerator.generate(executablePath,program.getName());
                } else {
-                  System.out.println("Hay errores.");
+                  System.out.println("Hay errores fatales en el programa. No es posible generar el ejecutable.");
                   for (String s : Parser.errores) {
                      System.out.println(s);
                   }

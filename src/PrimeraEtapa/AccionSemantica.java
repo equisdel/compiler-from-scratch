@@ -1,7 +1,7 @@
 package PrimeraEtapa;
 
 import java.io.IOException;
-import java.util.function.*;
+import java.util.function.Function;
 
 public class AccionSemantica {
 
@@ -271,7 +271,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_100 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 // Implementar cola de Warnings
-                System.out.println(ANSI_YELLOW+"WARNING - [LINE "+AnalizadorLexico.line_number+"]: "+ANSI_RESET+error_msg);
+                new Error(new String(error_msg),false,"LEXICO");
                 error_msg = null;
                 return 0;
             }

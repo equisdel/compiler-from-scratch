@@ -23,8 +23,8 @@
             "name": "Main",
             "request": "launch",
             "mainClass": "Main",
-            "projectName": "Compilador-Desde-Cero"
-            //"args": ["C:\\Users\\Delfina\\OneDrive\\Escritorio\\Github\\compiler-from-scratch-1\\src\\test_codes\\correcciones"]
+            "projectName": "Compilador-Desde-Cero",
+            "args": ["C:\\Users\\Delfina\\OneDrive\\Escritorio\\Github\\compiler-from-scratch-1\\src\\test_codes\\correcciones"]
 
         },
         {
