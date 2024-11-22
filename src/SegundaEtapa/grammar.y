@@ -839,7 +839,7 @@ goto_statement
         public String popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
                 int index = scope.lastIndexOf(":");
-                System.out.print("scope: "+scope);
+                System.out.print("popScope scope: "+scope);
                 if (index != -1) {
                         scope = scope.substring(0, index);
                 } // else scope queda igual
@@ -854,14 +854,13 @@ goto_statement
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
-                        while (actualScope.lastIndexOf(":") != -1){
-                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {       
-                                        actualScope = actualScope.substring(0,actualScope.lastIndexOf(":"));
+                        while (scopeaux.lastIndexOf(":") != -1){
+                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {       
+                                        scopeaux = scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                         return true;}
-                                popScope();
+                                 scopeaux = popScope(scopeaux);
                         }
                 }
-                actualScope = scopeaux;
                 return false;
         }
 

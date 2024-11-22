@@ -17,6 +17,8 @@ U1@MAIN@FUN1 DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
+errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursión directa ni indirecta.", 0
+chk_rec BYTE 0
 auxt_3 DW ?
 auxt_10 DW ?
 
@@ -26,6 +28,9 @@ invoke StdOut, addr errorOverflowMul
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 OverflowSub:
 invoke StdOut, addr errorOverflowSub
+invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
+RecursiveAttempt:
+invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
 FUN1@MAIN PROC P@MAIN:WORD

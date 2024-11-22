@@ -784,7 +784,7 @@ final static String yyrule[] = {
         public String popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
                 int index = scope.lastIndexOf(":");
-                System.out.print("scope: "+scope);
+                System.out.print("popScope scope: "+scope);
                 if (index != -1) {
                         scope = scope.substring(0, index);
                 } // else scope queda igual
@@ -799,14 +799,13 @@ final static String yyrule[] = {
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
-                        while (actualScope.lastIndexOf(":") != -1){
-                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {       
-                                        actualScope = actualScope.substring(0,actualScope.lastIndexOf(":"));
+                        while (scopeaux.lastIndexOf(":") != -1){
+                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {       
+                                        scopeaux = scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                         return true;}
-                                popScope();
+                                 scopeaux = popScope(scopeaux);
                         }
                 }
-                actualScope = scopeaux;
                 return false;
         }
 
@@ -972,7 +971,7 @@ final static String yyrule[] = {
                 }
                 return result.toString();
             }
-//#line 903 "Parser.java"
+//#line 902 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1842,7 +1841,7 @@ case 120:
 //#line 732 "grammar.y"
 {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba TAG "); }
 break;
-//#line 1768 "Parser.java"
+//#line 1767 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
