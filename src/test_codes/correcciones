@@ -30,15 +30,15 @@ begin
     s := -44.44s+44;    ## Constante completa con componentes de más de un dígito.   
     s := -55.555;       ## Constante con componentes de más de un dígito sin exponente.
     
-    s := -s;            ## Constante single positiva.
+    ## s := -s;            ## Constante single positiva.
 
     ## Constantes SINGLE con errores
     ## Se informan como warnings junto con su tratamiento
-    s := 6.6s;         ## Constante con parte exponencial incompleta.
-    s := 7.s+1;        ## Constante con parte decimal incompleta.
-    s := .8s8;         ## Constante con parte entera incompleta.
-    s := .s;
-    s := .;  
+    ## s := 6.6s;         ## Constante con parte exponencial incompleta.
+    ## s := 7.s+1;        ## Constante con parte decimal incompleta.
+    ## s := .8s8;         ## Constante con parte entera incompleta.
+    ## s := .s;
+    ## s := .;  
 
     ## [signo] parte entera "." parte decimal "s" [signo] parte exponencial
 

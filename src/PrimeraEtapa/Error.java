@@ -21,7 +21,7 @@ public class Error {
         this.etapa = etapa;
         this.is_fatal = is_fatal;
         if (is_fatal) contains_fatal_error = true;
-        this.error_msg = is_fatal   ?   ANSI_RED    +"Error  "+" [line "+line_number+"]:   "+ANSI_RESET+error_msg 
+        this.error_msg = is_fatal   ?   ANSI_RED    +"ERROR  "+" [line "+line_number+"]:   "+ANSI_RESET+error_msg 
                                     :   ANSI_YELLOW +"WARNING"+" [line "+line_number+"]:   "+ANSI_RESET+error_msg
                                     ;
         all_Errors.add(this);
@@ -44,7 +44,7 @@ public class Error {
     
     
     
-    public static boolean isCompilable() {return !contains_fatal_error;}
+    public static boolean isCompilable() {return !(contains_fatal_error);}
     
     public void display() {
         System.out.println(this.error_msg);
@@ -53,6 +53,7 @@ public class Error {
     public static void display_all() {
         for (Error e : all_Errors)
             e.display();
+        System.out.println();
     }
 
     public static void display_some(boolean fatals) {
