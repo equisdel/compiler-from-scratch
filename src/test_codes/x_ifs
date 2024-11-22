@@ -5,7 +5,6 @@ begin
 
 single sing1 , sing2;
 
-outf([impresion]);
 
 sing1,sing2 := 1.2s+2, 1.2s-2;
 

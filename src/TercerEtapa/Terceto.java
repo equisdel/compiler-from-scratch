@@ -90,6 +90,10 @@ public class Terceto {
         return ""+TerList.size();
     }
 
+    static public String getLast(){
+        return formatTercetoId(TerList.size()-1);
+    }
+
     @Override
     public String toString() {
         return "Terceto{" +

@@ -15,7 +15,7 @@ P@MAIN DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
-errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursión directa ni indirecta.", 0
+errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursiÃ³n directa ni indirecta.", 0
 chk_rec BYTE 0
 auxt_1 DW ?
 aux_charch_7  DB "VALOR ANTES DE LA FUNCION@ ",  0

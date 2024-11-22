@@ -1,10 +1,8 @@
 package PrimeraEtapa;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,6 +74,18 @@ public class TablaDeSimbolos {
         Simbolo retorno = symbols.get(key);
         if (retorno == null) return null;
         return retorno.getValue();
+    }
+
+    public void addCont(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return;
+        retorno.addCont();
+    }
+
+    public int getCont(String key) {
+        Simbolo retorno = symbols.get(key);
+        if (retorno == null) return -1;
+        return retorno.getCont();
     }
 
     public Set<String> getAllEntries() {

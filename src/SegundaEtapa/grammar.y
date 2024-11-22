@@ -155,11 +155,13 @@ declare_fun_header
                                 // Actualización del ID del parámetro: se actualiza el scope al actual
                                 // AnalizadorLexico.t_simbolos.display();
                                 AnalizadorLexico.t_simbolos.del_entry(param_name);      // param_name llega con el scope y todo (desde donde fue llamado)
-                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
+                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"PARAM_NAME");
 
                         // Posible generación de terceto de tipo LABEL
-                                $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+act_scope,param_type); //para saber donde llamarla en assembler
-                        }
+                                System.out.println("Parametro: "+param_name+" de tipo "+param_type);
+                                System.out.println("Lexema: "+param_name+":"+actualScope);
+                                $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+actualScope,param_type); //para saber donde llamarla en assembler
+                        }       // el parametro se 'define' DENTRO de la funcion. entonces tiene el scope de la funcion.
                 }
         }
 
@@ -233,7 +235,10 @@ return_statement
                 if (AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)).equals(chkAndGetType($3.sval))){
                        //System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");
                        //System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
-                        $$.sval = Terceto.addTercetoT("RET",getDeclared($3.sval),null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                       //$$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),getDeclared($3.sval),AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                       // PERO SI ES TERCETO NO FUNCIONAR
+                       $$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),$3.sval,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                        $$.sval = Terceto.addTercetoT("RET",getDeclared($3.sval),scopeToFunction(actualScope),AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": el tipo de retorno no coincide con el tipo de la funcion. ");
                 }
@@ -291,13 +296,16 @@ var_type
 if_statement
 : if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_statement y hacer esto ahi.
         //completo terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),null,String.valueOf(Integer.parseInt(($2.sval).substring(1,($2.sval).length()-1)+1))); 
+        Terceto.print_all();
+        System.out.println("debugging if: "+extractNumber($2.sval));
+        //Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
+        Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval))+1))+">"); 
 }
 | if_cond then_statement error {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 
 | if_cond then_statement else_statement {
         // completo el terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),String.valueOf(Integer.parseInt($3.sval) + 1),null); 
+        Terceto.completeTerceto(Terceto.popTerceto(),"<"+String.valueOf(Integer.parseInt(extractNumber($3.sval)) + 1)+">",null); 
 
 }
 ;
@@ -355,7 +363,7 @@ else_statement
 else_tk
         : ELSE {
                 $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, primer operando se completara despues.
-                Terceto.completeTerceto(Terceto.popTerceto(),null,String.valueOf(Integer.parseInt($$.sval) + 1));//creo seria $$.sval + 1 (pasar a int y luego volver a string)
+                Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($$.sval)) + 1)+">");//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval);
         }
         ;
@@ -403,11 +411,11 @@ cond_op
 
 assign_statement
         : ID ASSIGN expr {
-                chkAndAssign($1.sval,$3.sval);
+                $$.sval = chkAndAssign($1.sval,$3.sval);
                 }
 
         | expr_pair ASSIGN expr {
-                chkAndAssign($1.sval,$3.sval);
+                $$.sval = chkAndAssign($1.sval,$3.sval);
         }
         | var_type ID ASSIGN expr {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": no se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
@@ -533,16 +541,23 @@ fact    : ID    /*{
 }*/
 
         | CTE 
-        | '-' CTE  {    // SOLUCIONAR ESTOO, ¿CONTADOR DE REFENRCIAS? PROBAR CASOS DIF Y VER QUÉ Y COMO DETECTA LA CTE NEGATIVA
-                if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
-                else {
-                        $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
-                }
-        | '-' ID {      // uso tendria q ser "variable_name" o podria ser otra?
-                if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba variable de tipo single. "); }
-                else {
-                        $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
-                }
+        | '-' CTE  {    // si cont de CTE es 1, reemplazo esa entrada de la TS por -CTE
+                // si es mas de 1, creo nueva entrada con -CTE
+        if (!AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba constante de tipo single. "); }
+        else {
+                //$$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
+                if (AnalizadorLexico.t_simbolos.getCont($2.sval) == 1){
+                        AnalizadorLexico.t_simbolos.del_entry($2.sval);
+                } 
+                AnalizadorLexico.t_simbolos.add_entry("-"+$2.sval,"CTE","SINGLE");
+        }
+        $$.sval = "-"+$2.sval;
+}
+/*| '-' ID {      // uso tendria q ser "variable_name" o podria ser otra? ESTO NO HACE FALTA PERMITIRLO, AFUERAAA
+        if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba variable de tipo single. "); }
+        else {
+                $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
+        }*/
         | fun_invoc     // ej: funcion1(x)
         | expr_pair /* pairsito{1}  */ 
         ;
@@ -663,7 +678,7 @@ mult_assign_statement
                 }
                 else {  
                         for (int i = 0; i < idList.length; i++){
-                                chkAndAssign(idList[i],exprList[i]);
+                                $$.sval = chkAndAssign(idList[i],exprList[i]);
                         }
                 }
         }
@@ -909,7 +924,7 @@ goto_statement
                 return id.substring(0,id.lastIndexOf("{"));             // FIJARSE Q ANDE
         }
 
-        public void chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
+        public String chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida  
                 //AnalizadorLexico.t_simbolos.display();
 
                 //System.out.print("chkAndAssign: id: "+id);
@@ -959,24 +974,28 @@ goto_statement
                         if (exprPair){lexemExpr = lexemExpr+posexpr;}
 
                         if (subtypeT.equals(subtypeID)){       
-                                Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
+                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                         }
                         // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
                         else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
                                 Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
-                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"SINGLE");
+                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"SINGLE");
                         }// agregar otro else por si uno es uinteger y el otro hexa
                         else if (subtypeID.equals("UINTEGER") && subtypeT.equals("HEXA")){
                                 Terceto.addTercetoT("stou",lexemExpr,null,"UINTEGER");
-                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
+                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
                         }
                         else if (subtypeID.equals("HEXA") && subtypeT.equals("UINTEGER")){
-                                Terceto.addTercetoT("stoh",lexemExpr,null,"HEXA");
-                                Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
+                        Terceto.addTercetoT("stoh",lexemExpr,null,"HEXA");
+                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
                         }
-                        else {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); }
+                        else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
+                                System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
+                                yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": tipos incompatibles en asignacion. "); 
+                        }
 
                 }
+                return Terceto.getLast();
         }
 
         /*public String getType(String lexema){   // se le pasa sin scope
@@ -1027,3 +1046,11 @@ goto_statement
                 }
                 return result.toString();
             }
+
+        public static String extractNumber(String terceto) {
+        if (terceto.startsWith("<") && terceto.endsWith(">")) {
+            return terceto.substring(1, terceto.length() - 1);
+        } else {
+            return terceto; 
+        }
+    }
