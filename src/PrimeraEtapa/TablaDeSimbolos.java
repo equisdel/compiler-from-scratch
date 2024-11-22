@@ -91,7 +91,7 @@ public class TablaDeSimbolos {
         while (iterator.hasNext()) {
             Map.Entry<String, Simbolo> entry = iterator.next();
             String lexema = entry.getKey();
-            Simbolo simbolo_asociado = entry.getValue();
+            //Simbolo simbolo_asociado = entry.getValue();
             //if (!simbolo_asociado.getSubtipo().equals("RESERVED") && !(lexema.contains(":"))) {
             if (!(lexema.contains(":"))) {      // Se conserva todo lo que tenga scope
                 iterator.remove();

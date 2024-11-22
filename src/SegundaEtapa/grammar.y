@@ -849,18 +849,20 @@ goto_statement
 
         public boolean isDeclared(String id){   // recibe id sin scoope
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
-                if (isCte(id)){System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
+                if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
                 String scopeaux = new String(actualScope);
+                System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
-                        while (scopeaux.lastIndexOf(":") != -1){
-                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {       
-                                        scopeaux = scopeaux.substring(0,scopeaux.lastIndexOf(":"));
-                                        return true;}
-                                 scopeaux = popScope(scopeaux);
-                        }
+                        do {
+                                scopeaux = (scopeaux.lastIndexOf(":")!=-1) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
+                                if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
+                                        return true;
+                                System.out.println("EL SCOPEAUX: "+scopeaux);
+                        } while ((!scopeaux.equals("MAIN")));
                 }
+                //System.out.println("no hubo suerte amiga");
                 return false;
         }
 
@@ -994,14 +996,13 @@ goto_statement
                        System.out.println("getDeclared: id: "+id);
                         if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                         else {
-                                while (scopeaux.lastIndexOf(":") != -1){
-
-                                        if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null) {
-                                                return id+":"+scopeaux;
-                                        }
-                                        scopeaux = popScope(scopeaux);     // lo hace con actualScope
-                                }
-                                return null;    //si no esta declarada..
+                                do {
+                                        scopeaux = (scopeaux.lastIndexOf(":")!=-1) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
+                                        if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
+                                                return id+":"+scopeaux;;
+                                        System.out.println("EL SCOPEAUX: "+scopeaux);
+                                } while ((!scopeaux.equals("MAIN")));
+                                return null;
                         }
                 } else {System.out.println("NO ESTA DECLARADA");return null;}
 

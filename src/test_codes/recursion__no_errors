@@ -4,11 +4,16 @@ begin
     uinteger fun A(uinteger x)
     begin
         x := A(x);
+        ret(x);
     end
 
- ##   uinteger fun B(uinteger y)
- ##   begin
- ##       y := A(y);
- ##   end
+    uinteger z;
+    z := A(1);
+
+    uinteger fun B(uinteger y)
+    begin
+        y := A(y);
+        ret(z);
+    end
 
 end
