@@ -158,7 +158,8 @@ declare_fun_header
                                 AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
 
                         // Posible generación de terceto de tipo LABEL
-                                $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+act_scope,param_type); //para saber donde llamarla en assembler
+                                $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+actualScope,param_type); //para saber donde llamarla en assembler
+                                // el parametro se pasa con alcance de DENTRO de la funcion
                         }
                 }
         }
@@ -294,7 +295,10 @@ var_type
 if_statement
 : if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_statement y hacer esto ahi.
         //completo terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
+        Terceto.print_all();
+        System.out.println("debugging if: "+extractNumber($2.sval));
+        //Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
+        Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval))+1))+">"); 
 }
 | if_cond then_statement error {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": se esperaba END_IF") ; }
 

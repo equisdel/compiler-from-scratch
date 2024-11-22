@@ -20,9 +20,7 @@ errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo
 errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
 aux_float_0 REAL4 1.2S+2
-aux_float_0 REAL4 SING1@MAIN
 aux_float_1 REAL4 1.2S-2
-aux_float_1 REAL4 SING2@MAIN
 auxt_7 DW ?
 auxt_15 DW ?
 
@@ -37,13 +35,13 @@ RecursiveAttempt:
 invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
-TESTEVERYVERYLA@MAIN PROC INTVAL@MAIN:WORD
-JMP SALTITO@@MAIN:
-MOV AX INTVAL@MAIN@TESTEVERYVERYLA
+TESTEVERYVERYLA@MAIN PROC INTVAL@MAIN@TESTEVERYVERYLA:WORD
+JMP SALTITO@@MAIN
+MOV AX ,INTVAL@MAIN@TESTEVERYVERYLA
 MUL INTVAL@MAIN@TESTEVERYVERYLA
 CMP DX, 0
 JNE OverflowMul
-MOV aux_t7 EAX
+MOV auxt_7 ,AX
 MOV AX, auxt_7
 MOV @TESTEVERYVERYLA@MAIN, AX
 ret
@@ -53,20 +51,21 @@ TESTEVERYVERYLA@MAIN ENDP
 start:
 
 fld aux_float_0
-fstp aux_float_0
+fstp SING1@MAIN
 fld aux_float_1
-fstp aux_float_1
+fstp SING2@MAIN
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-CALL TESTEVERYVERYLA@MAIN
+invoke TESTEVERYVERYLA@MAIN, 5
 MOV AX, @TESTEVERYVERYLA@MAIN
 MOV AUX@MAIN, AX
 SALTITO@@MAIN:
 INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u\n"), AUX@MAIN
-MOV auxt_15,AUX@MAIN
-ADD auxt_15,1
+MOV AX, AUX@MAIN
+ADD AX, 1
+MOV auxt_15, AX
 MOV AX, auxt_15
 MOV AUX@MAIN, AX
 
