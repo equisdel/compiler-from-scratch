@@ -8,10 +8,9 @@ if "%~1"=="" (
 )
 
 :: Extrae el nombre del archivo sin extensión
-set "filename=%~n1"
 
 :: Compila el archivo .asm
-ml /c /coff "%filename%.asm"
+ml /c /coff "%filename%.asm" /Fo"%filename%.obj"
 if errorlevel 1 (
     echo Error al compilar %filename%.asm
     pause

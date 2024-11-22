@@ -35,9 +35,9 @@ statement_list
 
 statement
         : executable_statement 
-        | declare_pair optional_semicolon       {System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");}
-        | declare_var                           {System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);}
-        | declare_fun                           {System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");}
+        | declare_pair optional_semicolon       {/*System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | declare_var                           {/*System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);*/}
+        | declare_fun                           {/*System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
         | error ';'                             {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia\n");}
         ;       
         // Terminan con ';'
@@ -54,14 +54,14 @@ optional_not_semicolon
         ;
 
 executable_statement
-        : if_statement optional_semicolon               {System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number+"\n");}
-        | assign_statement optional_semicolon           {System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number+"\n");}
-        | outf_statement optional_semicolon             {System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number+"\n");}
-        | repeat_statement optional_semicolon           {System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number+"\n");}
-        | goto_statement optional_semicolon             {System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number+"\n");}
-        | mult_assign_statement optional_semicolon      {System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number+"\n");}
-        | return_statement optional_semicolon           {System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number+"\n");}
-        | tag_statement optional_not_semicolon          {System.out.println("Sentencia de TAG\n");}        // Asumimos que no lleva ';'
+        : if_statement optional_semicolon               {/*System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | assign_statement optional_semicolon           {/*System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | outf_statement optional_semicolon             {/*System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | repeat_statement optional_semicolon           {/*System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | goto_statement optional_semicolon             {/*System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | mult_assign_statement optional_semicolon      {/*System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | return_statement optional_semicolon           {/*System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
+        | tag_statement optional_not_semicolon          {/*System.out.println("Sentencia de TAG\n");*/}        // Asumimos que no lleva ';'
         ;
 
 executable_statement_list
@@ -233,7 +233,7 @@ return_statement
                 if (AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)).equals(chkAndGetType($3.sval))){
                        //System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");
                        //System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
-                        $$.sval = Terceto.addTercetoT("RET",$3.sval,null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                        $$.sval = Terceto.addTercetoT("RET",getDeclared($3.sval),null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": el tipo de retorno no coincide con el tipo de la funcion. ");
                 }
@@ -851,7 +851,7 @@ goto_statement
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
                 if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
                 String scopeaux = new String(actualScope);
-                System.out.println("EL SCOPEAUX: "+scopeaux);
+                //System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
@@ -859,7 +859,7 @@ goto_statement
                                 scopeaux = (scopeaux.equals("MAIN")) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
                                         return true;
-                                System.out.println("EL SCOPEAUX: "+scopeaux);
+                                //System.out.println("EL SCOPEAUX: "+scopeaux);
                         } while ((!scopeaux.equals("MAIN")));
                 }
                 //System.out.println("no hubo suerte amiga");
@@ -993,7 +993,7 @@ goto_statement
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclared(id)){
 
-                       System.out.println("getDeclared: id: "+id);
+                       //System.out.println("getDeclared: id: "+id);
                         if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                         else {
                                 do {

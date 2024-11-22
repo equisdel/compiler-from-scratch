@@ -388,9 +388,10 @@ public class AsmGenerator {
         case "CALL_FUN" :       // tiene que saber el tipo del retorno, porque luego lo va a asignar al del lado izq
             // TERCETO CALL FUN : ("CALL_FUN", id_funcion(conscope), idExpr (parametro real -> id,cte,expr,terceto), tipo_retorno)
                 appendCode("MOV chk_rec, "+isRecursive(op1));   // Si devuelve 1: el llamado es recursivo
-                appendCode("AND chk_rec, chk_rec"); // solo para setear flag ZF 
+                appendCode("CMP chk_rec, 0"); // solo para setear flag ZF 
                 appendCode("JNZ RecursiveAttempt"); // llama al error
                 appendCode("CALL "+op1);   // JMP es salto incondicional.
+                appendData(new AsmData("auxt_"+contador_t,"DWORD","?"));
                 //opcion 1: en assembler chequear dir de label actual con la que me llamo y ahi fijarse si es recursion o no, PERO NO LO PUEDO HACER ANDAR
                 //opcion 2: antes de cada CALL agregar una instr que chequee que no sea la misma tag que la actual (chequeo de dirs?)
                 // OPCION 3 ASQUEROSA PERO VALIDA (TP 2021): agregar para cada funcion, una varialbe como flag, esta flag esta en 0 o en 1 si estás en esa funcion
@@ -416,7 +417,6 @@ public class AsmGenerator {
                 // op1:         expr
                 // op2:         null
                 // subtipo:     tipo de expr a retornar = tipo de retorno de funcion
-                FunFile actual = func_nesting.peek();
                 appendCode("MOV EAX, "+getOperador(op1, terceto.subtipo));   
                 appendCode("ret");
             }

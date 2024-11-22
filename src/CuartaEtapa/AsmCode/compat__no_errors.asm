@@ -17,7 +17,7 @@ U1@MAIN@FUN1 DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
-errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursiÃ³n directa ni indirecta.", 0
+errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursión directa ni indirecta.", 0
 chk_rec BYTE 0
 auxt_3 DW ?
 auxt_10 DW ?
@@ -43,7 +43,7 @@ ADD auxt_3,U2@MAIN@FUN1
 INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u
 "), auxt_3
-MOV EAX, U1
+MOV EAX, U1@MAIN@FUN1
 ret
 MOV auxt_10,U1@MAIN@FUN1
 ADD auxt_10,U2@MAIN@FUN1
@@ -56,7 +56,7 @@ FUN2@MAIN@FUN1 PROC X@MAIN@FUN1:WORD
 INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u
 "), X@MAIN@FUN1@FUN2
-MOV EAX, X
+MOV EAX, X@MAIN@FUN1@FUN2
 ret
 ret
 FUN2@MAIN@FUN1 ENDP

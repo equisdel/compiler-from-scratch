@@ -29,9 +29,6 @@ public class Main {
          int test = input.nextInt();
          if (test >= 1 && test <= list_of_tests.length) {
             File selected_test = list_of_tests[test - 1];
-            //FileManager fm_selected_test = new FileManager(selected_test);
-            //System.out.println("\nContenido del archivo " + selected_test.getName() + ":");
-            //fm_selected_test.display();
             input.close();
             return selected_test.getAbsolutePath();
          }
@@ -62,7 +59,7 @@ public class Main {
             if (program.exists() && program.isFile()) {  // Garantiza que el archivo existe
 
                // Procede a compilar
-               System.out.println("\nCompilando \"" + program.getAbsolutePath()+"\"...");
+               System.out.println("\nCompilando \"" + program.getAbsolutePath()+"\"...\n");
                Parser parser = new Parser();
                AnalizadorLexico.compile(program.getAbsolutePath());
                parser.run();

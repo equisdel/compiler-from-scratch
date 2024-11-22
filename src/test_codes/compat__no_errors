@@ -3,16 +3,19 @@ begin
 
     uinteger FUN fun1 (hexa p)
     begin
-        uinteger u1,u2;
-        u1,u2 := 1,2;
-        outf(u1+u2);
+
+        uinteger u1,u2;                 ## Declaracion
+        u1,u2 := 1,2;                   ## Asignacion Múltiple
+        outf(u1+u2);                    ## Suma compatible + Impresión por pantalla
+
         uinteger FUN fun2 (uinteger x)
         begin
             outf (x);
-            ret (x);
+            ret (x);    
         end
-        ret (u1); 
-        p := u1+u2;    ## Conversión implícita
+
+        p := u1+u2;     ## Conversión implícita
+        ret(p);         ## Llamado a función
     end
 
     single r;

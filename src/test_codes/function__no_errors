@@ -1,4 +1,5 @@
 p_function_test
+
 begin
 
     uinteger fun increase(uinteger p)

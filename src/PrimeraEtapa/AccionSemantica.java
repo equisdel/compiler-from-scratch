@@ -312,7 +312,7 @@ public class AccionSemantica {
         String desc_104 = "Error léxico en cte. de tipo SINGLE: parte decimal ausente luego del '.'. Corrección + Warning.";
         Function<Void,Integer> action_104 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "Ausencia de la parte decimal de la constante SINGLE luego del '.'.";
+                AccionSemantica.error_msg = "La parte decimal de la constante SINGLE luego del '.' está ausente. Se toma como \"0\".";
                 all_actions[100].execute();     // Levanta el warning
                 AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";
                 all_actions[9].execute();       // Devuelve el último caracter leído a la entrada + Inserción en TS
@@ -323,9 +323,9 @@ public class AccionSemantica {
         String desc_105 = "Error léxico en cte. de tipo SINGLE: parte exponencial ausente luego de la 's'. Corrección + Warning.";
         Function<Void,Integer> action_105 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "Ausencia de la parte exponencial de la constante SINGLE luego de la 's'.";
+                AccionSemantica.error_msg = "La parte exponencial de la constante SINGLE luego de la 's' está ausente. Se toma como \"1\"";
                 all_actions[100].execute();     // Levanta el warning
-                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "0";
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "1";
                 all_actions[10].execute();      // Control de rangos
                 return 0;
             }

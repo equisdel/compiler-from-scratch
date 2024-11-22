@@ -796,7 +796,7 @@ final static String yyrule[] = {
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
                 if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
                 String scopeaux = new String(actualScope);
-                System.out.println("EL SCOPEAUX: "+scopeaux);
+                //System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
@@ -804,7 +804,7 @@ final static String yyrule[] = {
                                 scopeaux = (scopeaux.equals("MAIN")) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
                                         return true;
-                                System.out.println("EL SCOPEAUX: "+scopeaux);
+                                //System.out.println("EL SCOPEAUX: "+scopeaux);
                         } while ((!scopeaux.equals("MAIN")));
                 }
                 //System.out.println("no hubo suerte amiga");
@@ -938,7 +938,7 @@ final static String yyrule[] = {
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclared(id)){
 
-                       System.out.println("getDeclared: id: "+id);
+                       //System.out.println("getDeclared: id: "+id);
                         if (isDeclaredLocal(id)) {return id+":"+actualScope;}
                         else {
                                 do {
@@ -1160,15 +1160,15 @@ case 7:
 break;
 case 11:
 //#line 38 "grammar.y"
-{System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 12:
 //#line 39 "grammar.y"
-{System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);}
+{/*System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);*/}
 break;
 case 13:
 //#line 40 "grammar.y"
-{System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 14:
 //#line 41 "grammar.y"
@@ -1184,35 +1184,35 @@ case 17:
 break;
 case 19:
 //#line 57 "grammar.y"
-{System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de control IF en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 20:
 //#line 58 "grammar.y"
-{System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de asignacion en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 21:
 //#line 59 "grammar.y"
-{System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de impresion por pantalla en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 22:
 //#line 60 "grammar.y"
-{System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de repeat until en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 23:
 //#line 61 "grammar.y"
-{System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de salto goto en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 24:
 //#line 62 "grammar.y"
-{System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.print("Sentencia de asignacion multiple en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 25:
 //#line 63 "grammar.y"
-{System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number+"\n");}
+{/*System.out.println("Sentencia de retorno de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
 break;
 case 26:
 //#line 64 "grammar.y"
-{System.out.println("Sentencia de TAG\n");}
+{/*System.out.println("Sentencia de TAG\n");*/}
 break;
 case 29:
 //#line 74 "grammar.y"
@@ -1375,7 +1375,7 @@ case 46:
                 if (AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)).equals(chkAndGetType(val_peek(1).sval))){
                        /*System.out.println("El tipo de retorno coincide con el tipo de la funcion. ");*/
                        /*System.out.println("tipo de retorno: "+chkAndGetType($3.sval));*/
-                        yyval.sval = Terceto.addTercetoT("RET",val_peek(1).sval,null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                        yyval.sval = Terceto.addTercetoT("RET",getDeclared(val_peek(1).sval),null,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
                         yyerror("ERROR. Línea "+AnalizadorLexico.line_number+": el tipo de retorno no coincide con el tipo de la funcion. ");
                 }
