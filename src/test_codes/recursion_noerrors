@@ -9,8 +9,9 @@ begin
 
         uinteger fun B(uinteger y)
         begin
-            y := A(y);              ## B llama a A
-            ret(y);
+            ##y := A(y);              ## B llama a A
+            z:= 10;
+            ret(z);
         end
 
         x := B(x);                  ## A llama a B
@@ -19,7 +20,7 @@ begin
     end
     
     z := 0;         ## a. No da error.
-    ##  z := B(z)       ## b. Da error en tiempo de compilación: B no está al alcance.
+    ##z := B(z);       ## b. Da error en tiempo de compilación: B no está al alcance.
     z := A(z);      ## b. Da error en tiempo de ejecución: intento de recursión.
-
+    outf(z);
 end

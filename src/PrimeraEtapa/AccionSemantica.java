@@ -227,6 +227,7 @@ public class AccionSemantica {
             public Integer apply(Void t) {
                 AnalizadorLexico.lexema_subtype = "SINGLE";
                 all_actions[1].execute();
+                AnalizadorLexico.t_simbolos.addCont(AnalizadorLexico.lexema);
                 return 0;
             }
         };

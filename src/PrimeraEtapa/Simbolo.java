@@ -7,6 +7,7 @@ public class Simbolo {
     private String subtype;     // caso 'ID' o 'CTE': 'uinteger', 'single', 'reserved' y las cte no podrian ser uinteger o single o hexa?? 
     private String usage; //nombre de variable, nombre de función, nombre de tipo, nombre de parámetro, etc..
     private String value;
+    private int cont = 0;
     // tipo de parametro para funciones?
 
 
@@ -57,6 +58,14 @@ public class Simbolo {
 
     public String getValue(){
         return this.value;
+    }
+
+    public void addCont(){
+        this.cont++;
+    }
+
+    public int getCont(){
+        return this.cont;
     }
 
     public String display() {

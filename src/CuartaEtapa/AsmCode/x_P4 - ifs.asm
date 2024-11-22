@@ -9,17 +9,22 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-Z@MAIN DW ?
-Y@MAIN@A@B DW ?
-X@MAIN@A DW ?
+INTVAL@MAIN@TESTEVERYVERYLA DW ?
+SING2@MAIN REAL4 ?
+AUX@MAIN DW ?
+@TESTEVERYVERYLA@MAIN DW ?
+SING1@MAIN REAL4 ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
-errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursión directa ni indirecta.", 0
+errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
-auxt_2 DWORD ?
-auxt_6 DWORD ?
-auxt_11 DWORD ?
+aux_float_0 REAL4 1.2S+2
+aux_float_0 REAL4 SING1@MAIN
+aux_float_1 REAL4 1.2S-2
+aux_float_1 REAL4 SING2@MAIN
+auxt_7 DW ?
+auxt_15 DW ?
 
 .code
 OverflowMul:
@@ -32,40 +37,38 @@ RecursiveAttempt:
 invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
-A@MAIN PROC X@MAIN:WORD
-MOV chk_rec, 0
-CMP chk_rec, 0
-JNZ RecursiveAttempt
-CALL B@MAIN@A
-MOV AX, auxt_6
-MOV X@MAIN@A, AX
-MOV EAX, X@MAIN@A
+TESTEVERYVERYLA@MAIN PROC INTVAL@MAIN:WORD
+JMP SALTITO@@MAIN:
+MOV AX INTVAL@MAIN@TESTEVERYVERYLA
+MUL INTVAL@MAIN@TESTEVERYVERYLA
+CMP DX, 0
+JNE OverflowMul
+MOV aux_t7 EAX
+MOV AX, auxt_7
+MOV @TESTEVERYVERYLA@MAIN, AX
 ret
 ret
-A@MAIN ENDP
-
-B@MAIN@A PROC Y@MAIN@A:WORD
-MOV chk_rec, 1
-CMP chk_rec, 0
-JNZ RecursiveAttempt
-CALL A@MAIN
-MOV AX, auxt_2
-MOV Y@MAIN@A@B, AX
-MOV EAX, Y@MAIN@A@B
-ret
-ret
-B@MAIN@A ENDP
+TESTEVERYVERYLA@MAIN ENDP
 
 start:
 
-MOV AX, 0
-MOV Z@MAIN, AX
+fld aux_float_0
+fstp aux_float_0
+fld aux_float_1
+fstp aux_float_1
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-CALL A@MAIN
-MOV AX, auxt_11
-MOV Z@MAIN, AX
+CALL TESTEVERYVERYLA@MAIN
+MOV AX, @TESTEVERYVERYLA@MAIN
+MOV AUX@MAIN, AX
+SALTITO@@MAIN:
+INVOKE printf, addr __new_line__
+invoke printf, cfm$("%u\n"), AUX@MAIN
+MOV auxt_15,AUX@MAIN
+ADD auxt_15,1
+MOV AX, auxt_15
+MOV AUX@MAIN, AX
 
 end start
 
