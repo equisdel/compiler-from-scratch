@@ -155,12 +155,13 @@ declare_fun_header
                                 // Actualización del ID del parámetro: se actualiza el scope al actual
                                 // AnalizadorLexico.t_simbolos.display();
                                 AnalizadorLexico.t_simbolos.del_entry(param_name);      // param_name llega con el scope y todo (desde donde fue llamado)
-                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"VARIABLE_NAME");
+                                AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"PARAM_NAME");
 
                         // Posible generación de terceto de tipo LABEL
+                                System.out.println("Parametro: "+param_name+" de tipo "+param_type);
+                                System.out.println("Lexema: "+param_name+":"+actualScope);
                                 $$.sval = Terceto.addTercetoT("INIC_FUN",$3.sval+":"+act_scope,param_name+":"+actualScope,param_type); //para saber donde llamarla en assembler
-                                // el parametro se pasa con alcance de DENTRO de la funcion
-                        }
+                        }       // el parametro se 'define' DENTRO de la funcion. entonces tiene el scope de la funcion.
                 }
         }
 

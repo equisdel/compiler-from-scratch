@@ -278,7 +278,7 @@ public class AsmGenerator {
                         appendData(new AsmData("_"+lexema.replace(":","@")+"_2",mapIDSubtypeToVarType(AnalizadorLexico.t_simbolos.get_subtype(simbolo.getSubtipo())),"?"));
                     }
                     // Cualquier otra variable se almacena de manera literal
-                    else if (!simbolo.getUse().equals("TYPE_NAME")) {
+                    else if (!simbolo.getUse().equals("TYPE_NAME") && !simbolo.getUse().equals("PARAM_NAME")) {   // los tipos definidos, ni los parametros de funciones, son variables en el assembler.
                         appendData(new AsmData(lexema.replace(":","@"),mapIDSubtypeToVarType(simbolo.getSubtipo()),"?"));
                     }
                         // pairsito1:main                 ID    UINTEGER    TYPE_NAME 

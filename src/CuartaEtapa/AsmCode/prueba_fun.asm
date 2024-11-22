@@ -12,6 +12,7 @@ printf PROTO C : VARARG
 msgdebug db "entro a funcion1", 10, 0
 parametro DW 10
 aux_funcion1@MAIN WORD ?
+_x_funcion1@MAIN WORD ?
 
 .code
 funcion1@MAIN proc _x_funcion1@MAIN:WORD
