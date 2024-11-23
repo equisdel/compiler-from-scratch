@@ -364,6 +364,7 @@ else_statement
 else_tk
         : ELSE {
                 $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, primer operando se completara despues.
+                $$.sval = Terceto.addTerceto("LABEL_CTRL",)
                 Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($$.sval)) + 1)+">");//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval);
         }
