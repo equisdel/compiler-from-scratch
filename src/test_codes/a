@@ -1,0 +1,7 @@
+a
+begin
+
+    uinteger xd;
+    xd = 1;
+
+end
