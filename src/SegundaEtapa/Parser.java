@@ -1181,7 +1181,7 @@ case 13:
 break;
 case 14:
 //#line 42 "grammar.y"
-{yyerror("ERROR. Línea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia\n");}
+{yyerror("sintaxis incorrecta de sentencia");}
 break;
 case 16:
 //#line 49 "grammar.y"
@@ -1439,7 +1439,7 @@ break;
 case 58:
 //#line 320 "grammar.y"
 {
-                yyerror("ERROR. Línea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion"); }
+                yyerror("se esperaba ')' luego de la condicion"); }
 break;
 case 59:
 //#line 322 "grammar.y"

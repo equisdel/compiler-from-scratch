@@ -282,6 +282,7 @@ public class AccionSemantica {
         Function<Void,Integer> action_101 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
                 AccionSemantica.error_msg = "Escritura incompleta del operador '"+AnalizadorLexico.lexema+"='.";
+                AnalizadorLexico.lexema = AnalizadorLexico.lexema + "=";
                 all_actions[100].execute();     // Levanta el warning
                 all_actions[3].execute();       // Devuelve el último caracter leído a la entrada
                 return 0;

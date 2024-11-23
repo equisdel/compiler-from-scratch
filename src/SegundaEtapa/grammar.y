@@ -39,7 +39,7 @@ statement
         | declare_pair optional_semicolon       {/*System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");*/}
         | declare_var                           {/*System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);*/}
         | declare_fun                           {/*System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
-        | error ';'                             {yyerror("ERROR. Línea "+AnalizadorLexico.line_number+" : sintaxis incorrecta de sentencia\n");}
+        | error ';'                             {yyerror("sintaxis incorrecta de sentencia");}
         ;       
         // Terminan con ';'
         // Las sentencias declarativas pueden aparecer en cualquier lugar del código fuente, exceptuando los bloques de las sentencias de control.*/
@@ -275,7 +275,7 @@ var_type
         | IF cond THEN ctrl_block_statement END_IF {yyerror("se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
                //System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
-                yyerror("ERROR. Línea "+AnalizadorLexico.line_number +": se esperaba ')' antes del "+$4.sval+"."); }
+                yyerror("se esperaba ')' antes del "+$4.sval+"."); }
         | IF cond ')' THEN ctrl_block_statement END_IF {yyerror("se esperaba '(' antes de la condicion. "); }
         | IF '(' cond ')' THEN ctrl_block_statement error {yyerror("se esperaba END_IF") ; }
         | IF '(' cond ')' THEN END_IF {yyerror("Se esperaba sentencia/s ejecutable/s dentro del IF "); }
@@ -318,7 +318,7 @@ if_cond
         } 
         | IF cond {yyerror("se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond {
-                yyerror("ERROR. Línea "+AnalizadorLexico.line_number +": se esperaba ')' luego de la condicion"); }
+                yyerror("se esperaba ')' luego de la condicion"); }
         | IF cond ')' {yyerror("se esperaba '(' antes de la condicion. "); }
         ;
 

@@ -9,18 +9,21 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-X@MAIN@FUN1@FUN2 DW ?
-R@MAIN REAL4 ?
-P@MAIN@FUN1 DW ?
-U2@MAIN@FUN1 DW ?
-U1@MAIN@FUN1 DW ?
+P_R@MAIN REAL4 ?
+U1@MAIN@F DW ?
+@F@MAIN DD ?
+U3@MAIN@F DW ?
+U2@MAIN@F DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
-errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursión directa ni indirecta.", 0
+errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
 auxt_3 DW ?
-auxt_10 DW ?
+auxt_6 DW ?
+auxt_8 SINGLE ?
+aux_float_10 REAL4 P_F
+aux_float_13 REAL4 P_R
 
 .code
 OverflowMul:
@@ -33,38 +36,41 @@ RecursiveAttempt:
 invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
-FUN1@MAIN PROC P@MAIN:WORD
+F@MAIN PROC P_F@MAIN@F:WORD
 MOV AX, 1
-MOV U1@MAIN@FUN1, AX
+MOV U1@MAIN@F, AX
 MOV AX, 2
-MOV U2@MAIN@FUN1, AX
-MOV auxt_3,U1@MAIN@FUN1
-ADD auxt_3,U2@MAIN@FUN1
+MOV U2@MAIN@F, AX
+MOV AX, U1@MAIN@F
+ADD AX, U2@MAIN@F
+MOV auxt_3, AX
+MOV AX, auxt_3
+MOV U3@MAIN@F, AX
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u
-"), auxt_3
-MOV EAX, U1@MAIN@FUN1
-ret
-MOV auxt_10,U1@MAIN@FUN1
-ADD auxt_10,U2@MAIN@FUN1
-MOV AX, auxt_10
-MOV P@MAIN@FUN1, AX
-ret
-FUN1@MAIN ENDP
-
-FUN2@MAIN@FUN1 PROC X@MAIN@FUN1:WORD
+invoke printf, cfm$("%u\n"), U3@MAIN@F
+MOV AX, U1@MAIN@F
+ADD AX, U2@MAIN@F
+MOV auxt_6, AX
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u
-"), X@MAIN@FUN1@FUN2
-MOV EAX, X@MAIN@FUN1@FUN2
+invoke printf, cfm$("%u\n"), auxt_6
+fild U3@MAIN@F
+fstp auxt_8
+fld U3@MAIN@F
+fstp P_F@MAIN@F
+fld aux_float_10
+fstp @F@MAIN
 ret
 ret
-FUN2@MAIN@FUN1 ENDP
+F@MAIN ENDP
 
 start:
 
-fld varfloat
-fstp varfloat
+MOV chk_rec, 0
+CMP chk_rec, 0
+JNZ RecursiveAttempt
+invoke F@MAIN, aux_float_13
+fld @F@MAIN
+fstp P_R@MAIN
 
 end start
 

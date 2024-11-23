@@ -1,24 +1,23 @@
 compatibility_test
 begin
 
-    uinteger FUN fun1 (hexa p)
+    single FUN F(single p_f)
     begin
 
-        uinteger u1,u2;                 ## Declaracion
+        uinteger u1,u2,u3;              ## Declaracion
         u1,u2 := 1,2;                   ## Asignacion Múltiple
-        outf(u1+u2);                    ## Suma compatible + Impresión por pantalla
+        u3 := u1+u2;                    ## Suma compatible (mismo tipo)
 
-        uinteger FUN fun2 (uinteger x)
-        begin
-            outf (x);
-            ret (x);    
-        end
+        outf(u3);                       ## Imprime 3
+        outf(u1+u2);                    ## Imprime 3
 
-        p := u1+u2;     ## Conversión implícita
-        ret(p);         ## Llamado a función
+        p_f := u3;      ## Conversión implícita a single
+        ret(p_f);         ## Retorna 3.0
+
     end
 
-    single r;
-    r := 0.0;
+    single p_r;
+    p_r := F(p_r);
 
 end
+
