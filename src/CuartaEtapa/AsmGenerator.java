@@ -155,113 +155,7 @@ public class AsmGenerator {
             
             return single.replace("s","e");
         }
-        /* 
-        String signo, exponenteBin, mantisaBin;       // 1, 8 y 23 bits, respectivamente.
-            switch (single.substring(0,0)) {    // signo del single
-                case "+" : {
-                    signo = "0"; single = single.substring(1,single.length());
-            }
-                case "-" : {
-                    signo = "1"; single = single.substring(1,single.length());
-            }
-                default : signo = "0";        // positivo por defecto
-            }
-        // signo del single
-
-            // Separar la base (mantisa) y el exponente
-
-            String[] singlePorPartes = single.split("s");
-            float base;
-            int exponente;
-
-            try {
-                base = Float.parseFloat(singlePorPartes[0]);    // Puede no tener exponente (ausencia de "s")
-                exponente = singlePorPartes.length == 2 ? Integer.parseInt(singlePorPartes[1]) : 0;
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Formato inválido para el número single: " + single);
-            }
-
-            // Normalizar la base para la forma 1.mantisa
-            int desplazamiento = 0;
-            while (base >= 2.0) {  // Ajustar para que la base esté en el rango [1, 2)
-                base /= 2.0;
-                desplazamiento++;
-            }
-            while (base < 1.0) {  // Ajustar para que la base esté en el rango [1, 2)
-                base *= 2.0;
-                desplazamiento--;
-            }
-
-            int exponenteAjustado = exponente + desplazamiento + 127;  // Sesgo para precisión simple (127)
-            if (exponenteAjustado < 0 || exponenteAjustado > 255) {
-                throw new IllegalArgumentException("El exponente resultante está fuera del rango permitido por IEEE 754.");
-            }
-
-            // Convertir el exponente a binario de 8 bits
-            exponenteBin = String.format("%8s", Integer.toBinaryString(exponenteAjustado)).replace(' ', '0');
-            
-            // Calcular la mantisa (23 bits, sin el 1 implícito)
-            float fraccion = base - 1.0f;
-            StringBuilder mantisa = new StringBuilder();
-            for (int i = 0; i < 23; i++) {
-                fraccion *= 2;
-                if (fraccion >= 1.0) {
-                    mantisa.append("1");
-                    fraccion -= 1.0;
-                } else {
-                    mantisa.append("0");
-                }
-            }
-            mantisaBin = mantisa.toString();
-
-            String IEEE_754_representation = signo + exponenteBin + mantisaBin;
-            if (IEEE_754_representation.length() == 32)
-                return IEEE_754_representation;
-            else System.out.println("PROBLEMA: la representación IEEE 754 es errónea, no tiene 32 bits.");
-        /*
-            
-            // Conversión a formato IEEE 754
-            float ieeeValue = parseSingle(single);
-            String ieee754Binary = floatToIEEE754(ieeeValue);
-
-            // Mostrar resultados
-            System.out.println("Valor decimal: " + ieeeValue);
-            System.out.println("Representación IEEE 754: " + ieee754Binary);
-        }
-
-
-        // Paso 1: Parsear y calcular el valor decimal
-        public static float parseSingle(String singleFormat) {
-            // Separar la base (mantisa) y el exponente
-            String[] parts = singleFormat.split("s");
-            float base = Float.parseFloat(parts[0]);
-            int exponent = Integer.parseInt(parts[1]);
-
-            // Calcular el valor final (base * 2^exponente)
-            return (float) (base * Math.pow(2, exponent));
-        }
-        // Paso 2: Convertir a IEEE 754 en formato binario
-        public static String floatToIEEE754(float value) {
-            // Convertir a bits
-            int bits = Float.floatToIntBits(value);
-
-            // Extraer las partes de IEEE 754
-            int sign = (bits >> 31) & 1;             // Bit de signo
-            int exponent = (bits >> 23) & 0xFF;      // Exponente (8 bits)
-            int mantissa = bits & 0x7FFFFF;          // Mantisa (23 bits)
-
-            // Formatear en binario
-            return String.format("%1d | %8s | %23s",
-                    sign,
-                    Integer.toBinaryString(exponent).replace(' ', '0'),
-                    Integer.toBinaryString(mantissa).replace(' ', '0'));
-        }
-        0 |  1111111 |   110011001100110011010          2.4s-1  (1.2 en decimal)
         
-            return "";
-        }
-        */
-
     // Queda implementar esto al archivo de datos, junto con otras cosas (auxiliares de tercetos, por ej)
     private static void volcarTablaDeSimbolos() {
 
@@ -441,12 +335,14 @@ public class AsmGenerator {
             break;
     
             case "BI" : {       // podria usarse label y jumps?
-    
+                    // salto incondicional a op1 (terceto)
+                    appendCode("JMP "+op1);   // op1 es terceto. pasarlo a label
+                
             }
             break;
     
             case "BF" :{       // podria usarse label y jumps ?
-    
+                        // si op1(terceto) NO se cumple (es 0) salta a la etiqueta op2
             }
             break;
     
@@ -531,7 +427,8 @@ public class AsmGenerator {
                 } else {    // es uinteger o hexa CONTEMPLAR OVERLFLOW MUL -> corregir: los enteros son de 16 bits
                     
                 appendCode("MOV AX ,"+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
-                appendCode("MUL "+getOperador(op2, terceto.subtipo)); // MUL auxt_[id_terceto], final_op2
+                appendCode("MOV CX ,"+getOperador(op2, terceto.subtipo));
+                appendCode("MUL CX"); // MUL auxt_[id_terceto], final_op2
                 appendCode("CMP DX, 0");   // SI DA 0 ES PORQ NO HUBO OVERFLOW
                 appendCode("JNE OverflowMul");
                 appendCode("MOV "+"auxt_"+contador_t+" ,AX");      
@@ -547,20 +444,27 @@ public class AsmGenerator {
                     appendCode("fld "+getOperador(op1, terceto.subtipo));
                     appendCode("fdiv "+getOperador(op2, terceto.subtipo));
                     appendCode("fstp "+"auxt_"+contador_t);
-                } else if (AnalizadorLexico.t_simbolos.get_entry(op2) != null && !Parser.isTerceto(op2)) {  // si es cte
+                } else{ 
+                    appendCode("MOV AX, "+getOperador(op1, terceto.subtipo));   // NUMERADOR
+                    appendCode("MOV CX, "+getOperador(op2, terceto.subtipo));   // NUMERADOR
+                    appendCode("DIV CX");       //divido
+                    appendCode("MOV "+"auxt_"+contador_t+" ,AX");   // guardo. el resto (No nos interesa) queda en DX
+                }
+                /*  else if (AnalizadorLexico.t_simbolos.get_entry(op2) != null && !Parser.isTerceto(op2)) {  // si es cte
+                    
+                    appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                     appendCode("MOV auxt_"+contador_t+","+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                     appendCode("DIV auxt_"+contador_t+","+getOperador(op2, terceto.subtipo)); // DIV auxt_[id_terceto], final_op2
                 } else {    // si no es cte, es decir si es var o terceto
                     appendCode("MOV AX, "+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                     appendCode("DIV AX, "+getOperador(op2, terceto.subtipo)); // DIV auxt_[id_terceto], final_op2
                     appendCode("MOV auxt_"+contador_t+", AX");   // MOV final_op1, auxt_[id_terceto]
-                }
+                }*/
             }
             break;
     
             case ":=" : {
-                System.out.println("SWITCH CASE MATCH: :=");
-                System.out.println("op1: "+op1+" op2: "+op2);
+                //System.out.println("op1: "+op1+" op2: "+op2);
                 // a la izq: siempre ID (o acceso a pair), a la der: ID, CTE, REF_PAIR, INV_FUN, terceto
                 if ( AnalizadorLexico.t_simbolos.get_entry(op2) != null && !Parser.isTerceto(op2)) {    // si es cte
                     if (!terceto.subtipo.equals("SINGLE")){

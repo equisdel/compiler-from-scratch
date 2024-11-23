@@ -14,19 +14,22 @@ sing1,sing2 := 1.2s+2, 1.2s-2;
 uinteger fun testeveryverylarge(uinteger intval)
 begin
     if (intval > 10) then
-        goto SALTITO@;
+        ##goto SALTITO@;
+        RET (intval * 4 / 2);
     else
         RET (intval * intval); 
     end_if;
 end
 uinteger aux;
-aux := testeveryverylarge(5);
+aux := testeveryverylarge(15);
 SALTITO@
 outf(aux);
 
 repeat begin
 aux := aux + 1;
+outf(aux);
 end
 until (aux = 10);
-
+outf([AUX FINAL:]);
+outf(aux);
 end

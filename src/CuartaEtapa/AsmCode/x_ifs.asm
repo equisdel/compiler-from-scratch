@@ -20,8 +20,11 @@ errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la r
 chk_rec BYTE 0
 aux_float_0 REAL4 1.2S+2
 aux_float_1 REAL4 1.2S-2
-auxt_7 DW ?
-auxt_15 DW ?
+auxt_5 DW ?
+auxt_6 DW ?
+auxt_10 DW ?
+auxt_18 DW ?
+aux_charch_23  DB "AUX FINAL@ ",  0
 
 .code
 OverflowMul:
@@ -35,13 +38,26 @@ invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
 TESTEVERYVERYLA@MAIN PROC INTVAL@MAIN@TESTEVERYVERYLA:WORD
-;JMP SALTITO@@MAIN
 MOV AX ,INTVAL@MAIN@TESTEVERYVERYLA
-MUL INTVAL@MAIN@TESTEVERYVERYLA
+MOV CX ,4
+MUL CX
 CMP DX, 0
 JNE OverflowMul
-MOV auxt_7 ,AX
-MOV AX, auxt_7
+MOV auxt_5 ,AX
+MOV AX, auxt_5
+MOV CX, 2
+DIV CX
+MOV auxt_6 ,AX
+MOV AX, auxt_6
+MOV @TESTEVERYVERYLA@MAIN, AX
+ret
+MOV AX ,INTVAL@MAIN@TESTEVERYVERYLA
+MOV CX ,INTVAL@MAIN@TESTEVERYVERYLA
+MUL CX
+CMP DX, 0
+JNE OverflowMul
+MOV auxt_10 ,AX
+MOV AX, auxt_10
 MOV @TESTEVERYVERYLA@MAIN, AX
 ret
 ret
@@ -56,7 +72,7 @@ fstp SING2@MAIN
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-invoke TESTEVERYVERYLA@MAIN, 5
+invoke TESTEVERYVERYLA@MAIN, 15
 MOV AX, @TESTEVERYVERYLA@MAIN
 MOV AUX@MAIN, AX
 SALTITO@@MAIN:
@@ -64,9 +80,15 @@ INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u\n"), AUX@MAIN
 MOV AX, AUX@MAIN
 ADD AX, 1
-MOV auxt_15, AX
-MOV AX, auxt_15
+MOV auxt_18, AX
+MOV AX, auxt_18
 MOV AUX@MAIN, AX
+INVOKE printf, addr __new_line__
+invoke printf, cfm$("%u\n"), AUX@MAIN
+INVOKE printf, addr __new_line__
+invoke printf, addr aux_charch_23
+INVOKE printf, addr __new_line__
+invoke printf, cfm$("%u\n"), AUX@MAIN
 
 end start
 
