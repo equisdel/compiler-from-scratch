@@ -11,8 +11,8 @@ begin
         outf(u3);                       ## Imprime 3
         outf(u1+u2);                    ## Imprime 3
 
-        p_f := u3;      ## Conversión implícita a single
-        ret(p_f);         ## Retorna 3.0
+        p_f := u3;          ## Conversión implícita a single
+        ret(p_f);           ## Retorna 3.0
 
     end
 

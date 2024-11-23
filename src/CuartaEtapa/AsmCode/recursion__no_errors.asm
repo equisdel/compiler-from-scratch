@@ -9,21 +9,14 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-P_R@MAIN REAL4 ?
-U1@MAIN@F DW ?
-@F@MAIN DD ?
-U3@MAIN@F DW ?
-U2@MAIN@F DW ?
+Z@MAIN DW ?
+@A@MAIN DW ?
+@B@MAIN@A DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
 errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
-auxt_3 DW ?
-auxt_6 DW ?
-auxt_8 REAL4 ?
-aux_float_10 REAL4 P_F
-aux_float_13 REAL4 P_R
 
 .code
 OverflowMul:
@@ -36,56 +29,55 @@ RecursiveAttempt:
 invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
-F@MAIN PROC P_F@MAIN@F:WORD
-
-MOV AX, 1
-MOV U1@MAIN@F, AX
-
-MOV AX, 2
-MOV U2@MAIN@F, AX
-
-MOV AX, U1@MAIN@F
-ADD AX, U2@MAIN@F
-MOV auxt_3, AX
-
-MOV AX, auxt_3
-MOV U3@MAIN@F, AX
-
-INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), U3@MAIN@F
-
-MOV AX, U1@MAIN@F
-ADD AX, U2@MAIN@F
-MOV auxt_6, AX
-
-INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), auxt_6
-
-fild U3@MAIN@F
-fstp auxt_8
-
-fld U3@MAIN@F
-fstp P_F@MAIN@F
-
-fld aux_float_10
-fstp @F@MAIN
-
-ret
-
-ret
-F@MAIN ENDP
-
-start:
-
+A@MAIN PROC X@MAIN@A:WORD
 
 
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-invoke F@MAIN, aux_float_13
+invoke @B@MAIN@A, X@MAIN@A
 
-fld @F@MAIN
-fstp P_R@MAIN
+MOV AX, @B@MAIN@A
+MOV X@MAIN@A, AX
+
+MOV AX, X@MAIN@A
+MOV @A@MAIN, AX
+
+ret
+
+ret
+A@MAIN ENDP
+
+B@MAIN@A PROC Y@MAIN@A@B:WORD
+
+MOV AX, 10
+MOV Z@MAIN, AX
+
+MOV AX, Z@MAIN
+MOV @B@MAIN@A, AX
+
+ret
+
+ret
+B@MAIN@A ENDP
+
+start:
+
+
+
+MOV AX, 0
+MOV Z@MAIN, AX
+
+MOV chk_rec, 0
+CMP chk_rec, 0
+JNZ RecursiveAttempt
+invoke A@MAIN, Z@MAIN
+
+MOV AX, @A@MAIN
+MOV Z@MAIN, AX
+
+INVOKE printf, addr __new_line__
+invoke printf, cfm$("%u\n"), Z@MAIN
 
 end start
 

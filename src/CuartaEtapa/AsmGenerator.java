@@ -52,6 +52,7 @@ public class AsmGenerator {
             
     private static int contador_t = 0;
     private static ArrayList<Integer> tercetos_b = new ArrayList<>();
+    private static String next_jump_type = "";
 
     private static class AsmData {
         
@@ -259,7 +260,7 @@ public class AsmGenerator {
             String op2 = terceto.op2 != null ? terceto.op2.replace(":",scopeDelimitatorReplacement) : null;
 
             appendCode("");
-            appendCode("; Terceto <"+contador_t+">  "+terceto.toString().substring(8,terceto.toString().length()-1));
+            //appendCode("; Terceto <"+contador_t+">  "+terceto.toString().substring(8,terceto.toString().length()-1));
 
             java.util.Iterator<Integer> iterator = tercetos_b.iterator();
             while (iterator.hasNext()) {
@@ -354,23 +355,22 @@ public class AsmGenerator {
                     String t_bi = op1.substring(1,op1.length()-1);
                     tercetos_b.add(Integer.parseInt(t_bi));
                     appendCode("JMP labelt_"+op1.substring(1,op1.length()-1));   // op1 es terceto. pasarlo a label
-                
+                    next_jump_type = "[!]";
             }
             break;
     
             case "BF" :{     
-                appendCode("CMP "+getOperador(op1,"")+", 0     ; ZF = auxt_1 == 0 ? 1 : 0");
                 String t_bf = op2.substring(1,op2.length()-1);
                 tercetos_b.add(Integer.parseInt(t_bf));
-                appendCode("JNZ labelt_"+t_bf);
-
+                appendCode(next_jump_type+" labelt_"+t_bf);
+                next_jump_type = "[!]";
                     // podria usarse label y jumps ?
                         // si op1(terceto) NO se cumple (es 0) salta a la etiqueta op2
             }
             break;
     
             case "OUTF" : {
-                System.out.println("SWITCH CASE MATCH: OUTF");
+                //System.out.println("SWITCH CASE MATCH: OUTF");
                 //op2 null, op1: ID, cte, terceto (resultado de arimeticas, de funcion) O CHARCH!
                 appendCode(    "INVOKE printf, addr __new_line__");
                 if (terceto.subtipo.equals("SINGLE")) { // sea id,cte,terceto
@@ -379,7 +379,7 @@ public class AsmGenerator {
                     // opcion: auxt_contador_t_64
                     appendData(new AsmData("auxt_"+contador_t+"_64","64B","?"));
                     //pasar el valor de auxt__contador_t a auxt_contador_t_64
-                    appendCode("fld "+getOperador(op2, terceto.subtipo));
+                    appendCode("fld "+getOperador(op1, terceto.subtipo));
                     appendCode("fst "+"auxt_"+contador_t+"_64");
                     appendCode("invoke printf, cfm$(\"%.20Lf\\n\") auxt_"+contador_t+"_64");
                 } else if (terceto.subtipo.equals("UINTEGER")|| terceto.subtipo.equals("HEXA")) {   // HEXA COMO DEBERIA MOSTRARLA?
@@ -523,32 +523,48 @@ public class AsmGenerator {
             break;
 
             case "<" : {
-
+                appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
+                appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                next_jump_type = "JB";
             }
             break;
 
             case ">": {
+                appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
+                appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                next_jump_type = "JG";
+            }
+                
+                break;
 
+            case "<=" : {
+                appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
+                appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                next_jump_type = "JBE";
+            }
+            break;
+
+            case ">=": {
+                appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
+                appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                next_jump_type = "JGE";
             }
                 
                 break;
 
             case "=": {
-                appendData(new AsmData("auxt_"+contador_t, "BYTE", "?"));
-                appendCode("MOV BX, op1                 ; Mueve op1 a reg. B");
-                appendCode("CMP BX, op2                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
-                appendCode("SETZ auxt_"+contador_t+"                ; Guarda el valor de ZF en la var. auxiliar del terceto.");
+                appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
+                appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                next_jump_type = "JE";
 
             }
                 
                 break;
 
             case "!=": {
-                appendData(new AsmData("auxt_"+contador_t, "BYTE", "?"));
-                appendCode("MOV BX, op1                 ; Mueve op1 a reg. B");
-                appendCode("CMP BX, op2                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
-                appendCode("SETZ auxt_"+contador_t+"                ; Guarda el valor de ZF en la var. auxiliar del terceto.");
-                appendCode("XOR auxt_"+contador_t+", 1              ; Invierto el bit: situación deseable -> Z == 0.");       
+                appendCode("MOV BX, op1");               
+                appendCode("CMP BX, op2");            
+                next_jump_type = "JNE";  
             }
                 
                 break;

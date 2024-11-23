@@ -238,7 +238,8 @@ return_statement
                        //System.out.println("tipo de retorno: "+chkAndGetType($3.sval));
                        //$$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),getDeclared($3.sval),AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                        // PERO SI ES TERCETO NO FUNCIONAR
-                       $$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),$3.sval,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
+                       String param = (AnalizadorLexico.t_simbolos.get_entry($3.sval) != null && AnalizadorLexico.t_simbolos.get_entry($3.sval).getTipo().equals("ID")) ? getDeclared($3.sval) : $3.sval;
+                       $$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),param,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                         $$.sval = Terceto.addTercetoT("RET",getDeclared($3.sval),scopeToFunction(actualScope),AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
                         yyerror("El tipo de retorno no coincide con el tipo de la funcion. ");
@@ -595,7 +596,8 @@ fun_invoc
                         if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType($3.sval))) {
                                 yyerror("Tipo de parametro real no coincide con el del parametro formal. ");
                         } else {        // se va pasando el terceto del llamado a la funcion.
-                        $$.sval = Terceto.addTercetoT("CALL_FUN", lexema, $3.sval, AnalizadorLexico.t_simbolos.get_subtype(lexema));}
+                        String param = (AnalizadorLexico.t_simbolos.get_entry($3.sval) != null && AnalizadorLexico.t_simbolos.get_entry($3.sval).getTipo().equals("ID")) ? getDeclared($3.sval) : $3.sval;
+                        $$.sval = Terceto.addTercetoT("CALL_FUN", lexema, param, AnalizadorLexico.t_simbolos.get_subtype(lexema));}
                 } else {
                         yyerror($1.sval+" no es una funcion o no esta al alcance. ");
                 }

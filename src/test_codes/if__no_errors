@@ -2,15 +2,15 @@ if_else_test
 begin
 
     uinteger x;
-    x : 1;
-    ##x := 0;
+    x : 1;          ## Warning: escritura incompleta del operador ':='
+    ## x := 0;
 
-    if (x != 1) then
+    if (x = 1) then
         x := 0;
     else
         x := 1;
     end_if;
 
-    outf(x);    ## Imprime 1
+    outf(x);    ## Imprime 0
 
 end
