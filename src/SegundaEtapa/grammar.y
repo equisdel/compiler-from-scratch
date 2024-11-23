@@ -39,18 +39,18 @@ statement
         | declare_pair optional_semicolon       {/*System.out.println("Sentencia de declaracion de tipo en linea "+AnalizadorLexico.line_number+"\n");*/}
         | declare_var                           {/*System.out.println("Sentencia de declaracion de variable/s en linea "+AnalizadorLexico.line_number);*/}
         | declare_fun                           {/*System.out.println("Sentencia de declaracion de funcion en linea "+AnalizadorLexico.line_number+"\n");*/}
-        | error ';'                             {yyerror("sintaxis incorrecta de sentencia");}
+        | error ';'                             {yyerror("Sintaxis incorrecta de sentencia.");}
         ;       
         // Terminan con ';'
         // Las sentencias declarativas pueden aparecer en cualquier lugar del código fuente, exceptuando los bloques de las sentencias de control.*/
 
 optional_semicolon
         : ';'
-        | /* empty */                           {yyerror("se esperaba ';' al final de la sentencia.");}
+        | /* empty */                           {yyerror("Se esperaba ';' al final de la sentencia.");}
         ;  // Al usar esto, se contempla la falta de ';' sin el token error, y sin shift reduce conflicts.
 
 optional_not_semicolon
-        : ';'                                   {yyerror("se encontro ';' pero esa sentencia no lleva. Proba quitandoselo.");}
+        : ';'                                   {yyerror("Se encontró ';' pero esa sentencia no lleva. Proba quitandoselo.");}
         | /* vacio */
         ;
 
@@ -167,13 +167,13 @@ declare_fun_header
         }
 
         | var_type FUN error '(' parametro ')' BEGIN {
-                yyerror("se esperaba nombre de funcion.") ;
+                yyerror("Se esperaba nombre de funcion.") ;
                 }
 
         | var_type FUN ID '(' error ')' BEGIN {
                 // guardar el scope de la funcion
                 pushScope($3.sval); 
-                yyerror("parametro incorrecto. Verifica solo haya 1 parametro ");
+                yyerror("Parametro incorrecto. Verifica que solo haya 1 parametro. ");
                 if (!AnalizadorSemantico.validID($1.sval,$3.sval))
                         yyerror("Los identificadores que comienzan con 's' se reservan para variables de tipo single. Los que comienzan con 'u','v','w' están reservados para variables de tipo uinteger. ");
                 }
@@ -197,17 +197,17 @@ declare_pair
                         if ($4.sval.equals("UINTEGER") || $4.sval.equals("SINGLE") || $4.sval.equals("HEXA")) {
 
                                 if (AnalizadorLexico.t_simbolos.get_entry($6.sval+":MAIN") != null){
-                                        yyerror("Se esta redeclarando "+$6.sval +" en linea "+AnalizadorLexico.line_number);
+                                        yyerror("Se está intentando redeclarar "+$6.sval+".");
                                 } else {
                                         AnalizadorLexico.t_simbolos.add_entry($6.sval+":MAIN","ID",$4.sval,"TYPE_NAME");
                                 }
-                        } else {yyerror("tipo invalido para pair. Solo se permite primitivos: uinteger, single, hexadecimal."); }
+                        } else {yyerror("Tipo invalido para pair. Solo se permite primitivos: uinteger, single, hexadecimal."); }
                 }
 
         }
-        | TYPEDEF '<' var_type '>' ID {yyerror("se esperaba 'pair'.") ; }
-        | TYPEDEF PAIR var_type ID {yyerror("se esperaba que el tipo este entre <> .") ; }
-        | TYPEDEF PAIR '<' var_type '>' error {yyerror("se esperaba un ID al final de la declaracion"); }
+        | TYPEDEF '<' var_type '>' ID {yyerror("Se esperaba 'pair'.") ; }
+        | TYPEDEF PAIR var_type ID {yyerror("Se esperaba que el tipo este entre '<' y '>'.") ; }
+        | TYPEDEF PAIR '<' var_type '>' error {yyerror("Se esperaba un ID al final de la declaracion."); }
         ;
         /* por lo que entiendo, si pongo error, cualquier otra cosa (por lo q no coincide con otra) matchea */
         /* si no pusiera error y simplemente no pongo lo q puede faltar, es muy especifica la regla de error */
@@ -218,8 +218,8 @@ parametro
         : var_type ID {
                 $$.sval = $1.sval+"-"+$2.sval;
         }
-        | ID {yyerror("se esperaba tipo del parametro de la funcion. "); }
-        | var_type error {yyerror("se esperaba nombre de parametro"); }
+        | ID {yyerror("Se esperaba tipo del parametro de la funcion. "); }
+        | var_type error {yyerror("Se esperaba nombre de parametro."); }
         ;
 
 return_statement
@@ -241,14 +241,14 @@ return_statement
                        $$.sval = Terceto.addTercetoT(":=","@"+scopeToFunction(actualScope),$3.sval,AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                         $$.sval = Terceto.addTercetoT("RET",getDeclared($3.sval),scopeToFunction(actualScope),AnalizadorLexico.t_simbolos.get_subtype(scopeToFunction(actualScope)));
                 } else {
-                        yyerror("el tipo de retorno no coincide con el tipo de la funcion. ");
+                        yyerror("El tipo de retorno no coincide con el tipo de la funcion. ");
                 }
         } else {System.out.println("algo anda mal en return_statement, no encuentra la funcion actual ");
                //System.out.println(" actual scope: "+actualScope);
                //System.out.println("no se encontro en la TS: "+scopeToFunction(actualScope));        
         }
         }
-        | RET expr {yyerror("faltan parentesis en sentencia de return. ") ;}
+        | RET expr {yyerror("Faltan parentesis en sentencia de return. ") ;}
         ;
 /* podria estar en una funcion (bien) o en una sentencia de control,*/
 /* si esa sentencia de control esta adentro de una funcion, esta bien, sino no */
@@ -272,26 +272,26 @@ var_type
 
 /* 
         : IF '(' cond ')' THEN ctrl_block_statement END_IF {}
-        | IF cond THEN ctrl_block_statement END_IF {yyerror("se esperaba que la condicion este entre parentesis. "); }
+        | IF cond THEN ctrl_block_statement END_IF {yyerror("Se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond THEN ctrl_block_statement END_IF {
                //System.out.println("$1: "+$1.sval+" $$: "+$$.sval+" $4: "+$4.sval); //$3 devuelve el primer lexema de la condicion
-                yyerror("se esperaba ')' antes del "+$4.sval+"."); }
-        | IF cond ')' THEN ctrl_block_statement END_IF {yyerror("se esperaba '(' antes de la condicion. "); }
-        | IF '(' cond ')' THEN ctrl_block_statement error {yyerror("se esperaba END_IF") ; }
-        | IF '(' cond ')' THEN END_IF {yyerror("Se esperaba sentencia/s ejecutable/s dentro del IF "); }
-        | IF '(' cond ')' THEN error END_IF {yyerror("sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
+                yyerror("Se esperaba ')' antes del "+$4.sval+"."); }
+        | IF cond ')' THEN ctrl_block_statement END_IF {yyerror("Se esperaba '(' antes de la condicion. "); }
+        | IF '(' cond ')' THEN ctrl_block_statement error {yyerror("Se esperaba END_IF.") ; }
+        | IF '(' cond ')' THEN END_IF {yyerror("Se esperaba sentencia/s ejecutable/s dentro del IF."); }
+        | IF '(' cond ')' THEN error END_IF {yyerror("Sintaxis de sentencia ejecutable dentro del IF, incorrecta. "); }
 
 
         | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF
-        | IF '(' cond ')' THEN ELSE END_IF {yyerror("se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE ") ; }
-        | IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {yyerror("Se esperaba sentencia/s ejecutable/s luego del THEN ") ; }
+        | IF '(' cond ')' THEN ELSE END_IF {yyerror("Se esperaba sentencia/s ejecutable/s luego del THEN y luego del ELSE. ") ; }
+        | IF '(' cond ')' THEN ELSE ctrl_block_statement END_IF {yyerror("Se esperaba sentencia/s ejecutable/s luego del THEN. ") ; }
         | IF '(' cond ')' THEN ctrl_block_statement ELSE END_IF {yyerror("Se esperaba sentencia ejecutable luego del else. ") ; }
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {yyerror("sintaxis de sentencia ejecutable luego del else, incorrecta ") ; }
-        | IF '(' cond ')' THEN error ELSE ctrl_block_statement END_IF {yyerror("sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN ") ; }
-        | IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("se esperaba que la condicion este dentro de parentesis. ") ; }
-        | IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("se esperaba ')' luego de la condicion. "); }
-        | IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("se esperaba '(' antes de la condicion. "); }
-        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("se esperaba END_IF ") ; }
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE error END_IF {yyerror("Sintaxis de sentencia ejecutable luego del else, incorrecta. ") ; }
+        | IF '(' cond ')' THEN error ELSE ctrl_block_statement END_IF {yyerror("Sintaxis de sentencia/s ejecutable/s incorrecta luego del THEN. ") ; }
+        | IF cond THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Se esperaba que la condicion este dentro de parentesis. ") ; }
+        | IF '(' cond  THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Se esperaba ')' luego de la condicion. "); }
+        | IF  cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement END_IF {yyerror("Se esperaba '(' antes de la condicion. "); }
+        | IF '(' cond ')' THEN ctrl_block_statement ELSE ctrl_block_statement error {yyerror("Se esperaba END_IF. ") ; }
         ;
 */
 if_statement
@@ -302,7 +302,7 @@ if_statement
         //Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
         Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval))+1))+">"); 
 }
-| if_cond then_statement error {yyerror("se esperaba END_IF") ; }
+| if_cond then_statement error {yyerror("Se esperaba END_IF.") ; }
 
 | if_cond then_statement else_statement {
         // completo el terceto
@@ -316,9 +316,9 @@ if_cond
                 $$.sval = Terceto.addTerceto("BF",$3.sval,null);
                 Terceto.pushTerceto($$.sval); //apilo terceto incompleto.
         } 
-        | IF cond {yyerror("se esperaba que la condicion este entre parentesis. "); }
+        | IF cond {yyerror("Se esperaba que la condicion este entre parentesis. "); }
         | IF '(' cond {
-                yyerror("se esperaba ')' luego de la condicion"); }
+                yyerror("Se esperaba ')' luego de la condicion"); }
         | IF cond ')' {yyerror("se esperaba '(' antes de la condicion. "); }
         ;
 
@@ -350,8 +350,8 @@ then_statement
         : THEN ctrl_block_statement {
                 $$.sval = $2.sval;       //devuelve ultimo terceto
         }
-        /*| THEN  {yyerror("Se esperaba sentencia/s ejecutable/s dentro del IF "); }*/
-        | THEN error {yyerror("sintaxis de sentencia ejecutable dentro del IF, incorrecta "); }
+        /*| THEN  {yyerror("Se esperaba sentencia/s ejecutable/s dentro del IF. "); }*/
+        | THEN error {yyerror("Sintaxis de sentencia ejecutable dentro del IF, incorrecta."); }
         ;
 
 else_statement
@@ -364,7 +364,7 @@ else_statement
 else_tk
         : ELSE {
                 $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, primer operando se completara despues.
-                $$.sval = Terceto.addTerceto("LABEL_CTRL",)
+                //$$.sval = Terceto.addTerceto("LABEL_CTRL",)
                 Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($$.sval)) + 1)+">");//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval);
         }
@@ -377,12 +377,14 @@ cond
         : expr cond_op expr {   // NO CONTEMPLA USAR TIPOS DEFINIDOS POR USUARIOOOOOOO
                 String t_subtype1 = chkAndGetType($1.sval);
                 String id1 = $1.sval;
+                if (AnalizadorLexico.t_simbolos.get_entry(id1)!=null && AnalizadorLexico.t_simbolos.get_entry(id1).getTipo().equals("ID")) id1 = getDeclared(id1);
                 String t_subtype2 = chkAndGetType($3.sval);
                 String id2 = $3.sval;
+                if (AnalizadorLexico.t_simbolos.get_entry(id2)!=null && AnalizadorLexico.t_simbolos.get_entry(id2).getTipo().equals("ID")) id2 = getDeclared(id2);
                 // compatibilidades y conversiones:
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
-                                $$.sval=Terceto.addTercetoT($2.sval,id1,id2, t_subtype1);       // NO SE SI HACE FALTA TIPO PERO PORLASDUDAS POR AHORA LO PONGO
+                                $$.sval=Terceto.addTercetoT($2.sval,id1,id2,t_subtype1);       // NO SE SI HACE FALTA TIPO PERO PORLASDUDAS POR AHORA LO PONGO
                         } else if (t_subtype1.equals("SINGLE")) {
                                 $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);              // se pasa el tipo de id2 para saber si es uinteger o hexa
                                 $$.sval= Terceto.addTercetoT($2.sval,id1,id2, "SINGLE");
@@ -399,7 +401,7 @@ cond
                 } else {System.out.println("Un tipo dio null en condicion");}
                 
         }
-        | error {yyerror("se esperaba comparador ") ; }
+        | error {yyerror("Se esperaba comparador.") ; }
         ;
 
 cond_op
@@ -419,7 +421,7 @@ assign_statement
         | expr_pair ASSIGN expr {
                 $$.sval = chkAndAssign($1.sval,$3.sval);
         }
-        | var_type ID ASSIGN expr {yyerror("no se permite asignacion en declaracion. Separa las sentencias. ") ;}
+        | var_type ID ASSIGN expr {yyerror("No se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
 
         // el terceto de operaciones es el mismo para signel o uinteger, ya que el tipo del terceto es
@@ -477,7 +479,7 @@ expr    : expr '+' term    {
 
         }
         | term 
-        | error {yyerror("sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
+        | error {yyerror("Sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
         ;
         // a := 5 + sing1 - 3 * 2 + 1;
 
@@ -538,14 +540,14 @@ fact    : ID    /*{
                         $$.sval = $1.sval;
                        //System.out.println("ID es "+$1.sval);
                 } else {
-                        yyerror("variable "+$1.sval+" no declarada o no esta al alcance.");
+                        yyerror("Variable "+$1.sval+" no declarada o no esta al alcance.");
                 }
 }*/
 
         | CTE 
         | '-' CTE  {    // si cont de CTE es 1, reemplazo esa entrada de la TS por -CTE
                 // si es mas de 1, creo nueva entrada con -CTE
-        if (!AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("se esperaba constante de tipo single. "); }
+        if (!AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("Se esperaba constante de tipo single. "); }
         else {
                 //$$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
                 if (AnalizadorLexico.t_simbolos.getCont($2.sval) == 1){
@@ -556,7 +558,7 @@ fact    : ID    /*{
         $$.sval = "-"+$2.sval;
 }
 /*| '-' ID {      // uso tendria q ser "variable_name" o podria ser otra? ESTO NO HACE FALTA PERMITIRLO, AFUERAAA
-        if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("se esperaba variable de tipo single. "); }
+        if (AnalizadorLexico.t_simbolos.get_subtype($2.sval).equals("SINGLE")) {yyerror("Se esperaba variable de tipo single. "); }
         else {
                 $$.sval=Terceto.addTercetoT("-","0",$2.sval,AnalizadorLexico.t_simbolos.get_subtype($2.sval));}
         }*/
@@ -572,14 +574,14 @@ expr_pair
                         String baseType = (AnalizadorLexico.t_simbolos.get_subtype(lexem));
                        //System.out.println("lexem: "+lexem+" baseType: "+baseType);
                         if (!AnalizadorLexico.t_simbolos.get_use(baseType).equals("TYPE_NAME")) {
-                                yyerror("se esperaba variable de tipo pair. "); }
+                                yyerror("Se esperaba variable de tipo pair. "); }
                         else {
                                 if (!($3.sval.equals("1") || $3.sval.equals("2"))) {
-                                yyerror("se esperaba constante 1 o 2. "); 
+                                yyerror("Se esperaba constante 1 o 2. "); 
                                 }
                                 else {$$.sval = $1.sval+"{"+$3.sval+"}";}
                         }
-                } else {yyerror("variable no declarada. "); }
+                } else {yyerror("Variable de tipo pair no declarada. "); }
                 //TODO: EN $$.sval DEVOLVER EL LEXEMA QUE REPRESENTARIA A ESE PAIR EN ESA POSICION (POR EJEMPLO pairsito{1})
         }
         ;
@@ -591,14 +593,14 @@ fun_invoc
                 if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
                         //chequear tipo de parametros
                         if (!AnalizadorLexico.t_simbolos.get_value(lexema).equals(chkAndGetType($3.sval))) {
-                                yyerror("tipo de parametro incorrecto. ");
+                                yyerror("Tipo de parametro real no coincide con el del parametro formal. ");
                         } else {        // se va pasando el terceto del llamado a la funcion.
                         $$.sval = Terceto.addTercetoT("CALL_FUN", lexema, $3.sval, AnalizadorLexico.t_simbolos.get_subtype(lexema));}
                 } else {
                         yyerror($1.sval+" no es una funcion o no esta al alcance. ");
                 }
         }
-        | ID '(' expr error ')' {yyerror("sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion ") ; }
+        | ID '(' expr error ')' {yyerror("Sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion. ") ; }
         ;
 
 outf_statement
@@ -624,8 +626,8 @@ outf_statement
         | OUTF '(' CHARCH ')'{
                 $$.sval = Terceto.addTercetoT("OUTF",$3.sval,null,"CHARCH");
         }
-        | OUTF '(' ')' {yyerror("se esperaba parametro en OUTF "); }
-        | OUTF error {yyerror("parametro incorrecto en OUTF "); }
+        | OUTF '(' ')' {yyerror("Se esperaba parametro en OUTF. "); }
+        | OUTF error {yyerror("Parametro incorrecto en OUTF. "); }
         ;
 
 //tercetos repeat:
@@ -649,17 +651,17 @@ repeat_statement
                 $$.sval = Terceto.addTerceto("BF",$6.sval,$1.sval);
                 // si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());
         }
-        | repeat_begin executable_statement_list END UNTIL cond {yyerror("se esperaba que la condicion este entre parentesis "); }
-        | repeat_begin executable_statement_list END UNTIL '(' cond {yyerror("se esperaba ')' luego de la condicion. "); }
-        | repeat_begin executable_statement_list END UNTIL cond ')' {yyerror("se esperaba '(' antes de la condicion. "); }
+        | repeat_begin executable_statement_list END UNTIL cond {yyerror("Se esperaba que la condicion este entre parentesis. "); }
+        | repeat_begin executable_statement_list END UNTIL '(' cond {yyerror("Se esperaba ')' luego de la condicion UNTIL. "); }
+        | repeat_begin executable_statement_list END UNTIL cond ')' {yyerror("Se esperaba '(' antes de la condicion UNTIL. "); }
 
-        | repeat_begin END UNTIL '(' cond ')' {yyerror("se esperaba cuerpo de repeat until "); }
-        | repeat_begin END UNTIL cond {yyerror("se esperaba cuerpo de repeat until, y que la condicion este entre parentesis. "); }
-        | repeat_begin END UNTIL '(' cond {yyerror("se esperaba cuerpo de repeat until, y ')' luego de la condicion. "); }
-        | repeat_begin END UNTIL cond ')' {yyerror("se esperaba cuerpo de repeat until, y'(' antes de la condicion. "); }
-        | repeat_begin executable_statement_list END '(' cond ')' {yyerror("se esperaba UNTIL luego de 'END' "); }
-        | repeat_begin executable_statement_list END UNTIL '(' ')' {yyerror("se esperaba condicion luego de UNTIL "); }
-        /*| REPEAT BEGIN executable_statement_list END UNTIL error {yyerror("se esperaba condicion luego de UNTIL");} */
+        | repeat_begin END UNTIL '(' cond ')' {yyerror("Se esperaba cuerpo de REPEAT-UNTIL."); }
+        | repeat_begin END UNTIL cond {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y que la condicion este entre parentesis. "); }
+        | repeat_begin END UNTIL '(' cond {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y ')' luego de la condicion. "); }
+        | repeat_begin END UNTIL cond ')' {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y'(' antes de la condicion. "); }
+        | repeat_begin executable_statement_list END '(' cond ')' {yyerror("Se esperaba UNTIL luego de 'END'."); }
+        | repeat_begin executable_statement_list END UNTIL '(' ')' {yyerror("Se esperaba condicion luego de UNTIL."); }
+        /*| REPEAT BEGIN executable_statement_list END UNTIL error {yyerror("Se esperaba condicion luego de UNTIL.");} */
         ;
 
 repeat_begin
@@ -676,7 +678,7 @@ mult_assign_statement
                 String[] idList = $1.sval.split(",");
                 String[] exprList = $3.sval.split(",");
                 if (idList.length != exprList.length){
-                        yyerror("cantidad de expresiones no coincide con cantidad de variables. ");
+                        yyerror("La cantidad de expresiones no coincide con cantidad de variables. ");
                 }
                 else {  
                         for (int i = 0; i < idList.length; i++){
@@ -684,7 +686,7 @@ mult_assign_statement
                         }
                 }
         }
-        | id_list ASSIGN error {yyerror("lista de expresiones incorrecta, puede que falte ',' entre las expresiones ") ; }
+        | id_list ASSIGN error {yyerror("La lista de expresiones es incorrecta, puede que falte ',' entre las expresiones. ") ; }
         /*si hay mas de 1 id a la izq y solo 1 expr a la der asumimos esta mal..?? ver enunciado*/
         ;
 
@@ -711,12 +713,12 @@ expr_list       /* solo se usa en asignacion multiple */
         : expr ',' expr{
                 $$.sval = $1.sval + "," + $3.sval;
         }
-        /* | expr expr {yyerror("se esperaba una ',' entre las expresiones en ; }  */
+        /* | expr expr {yyerror("Se esperaba una ',' entre las expresiones en ; }  */
         | expr_list ',' expr{
                 $$.sval = $$.sval + ',' + $3.sval;
                 
         }
-        /*| error {yyerror("lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
+        /*| error {yyerror("Lista de expresiones sintacticamente incorrecta. Asegurate haya ',' entre las expresiones"); }*/
         ;
 
 tag_statement               //chequear no exista otro tag igual en todo el programa
@@ -746,7 +748,7 @@ goto_statement
                         TablaEtiquetas.add_goto($2.sval,Terceto.parseTercetoId($$.sval),AnalizadorLexico.line_number);     // donde puse 0 iría número de línea en lo posible
                 //}
         }
-        | GOTO error {yyerror("se esperaba TAG "); }
+        | GOTO error {yyerror("Se esperaba TAG en la sentencia GOTO."); }
         ;
 /* ejemplo de un tag:     tagsito@ */
 
@@ -825,7 +827,7 @@ goto_statement
                                                 }
                                         } else {return AnalizadorLexico.t_simbolos.get_subtype(lexem);}
                                         // si es tipo primitivo
-                                } else yyerror("identificador "+valStr+" no declarado. ");
+                                } else yyerror("Identificador "+valStr+" no declarado. ");
                                 
                                 return null;
                         }

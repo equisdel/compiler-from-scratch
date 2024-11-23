@@ -66,17 +66,16 @@ public class Main {
                parser.run();
 
                // Métricas de la ejecución
-               Error.display_all();      // errores y warnings
+               Error.display_all();          // errores y warnings
                AnalizadorLexico.display();   // tabla de símbolos
                Terceto.print_all();          // tercetos generados
 
                // Si no hay errores, genera código assembler
                String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
-               if (Error.isCompilable()) {    // Verifica que no haya errores fatales
+               if (Error.isCompilable())     // Verifica que no haya errores fatales
                   AsmGenerator.generate(executablePath,program.getName());
-               } else {
+               else
                   System.out.println("\n\n\u001B[31mHay errores fatales en el programa. No es posible generar el ejecutable.\u001B[0m\n\n");
-               }
 
             } else System.out.println("El archivo no existe o no es un archivo válido.\n");
          } else System.out.println("Debe ingresar un path absoluto.\n");

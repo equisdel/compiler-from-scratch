@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
+import javax.swing.text.html.HTMLDocument.Iterator;
+
 //import javax.jws.soap.SOAPBinding.Use;
 
 // GENERANDO EL .CODE TODAVIA PUEDO TENER TODA LA TS. LUEGO DE GENERAR .DATA AHI NOSE USA MAS
@@ -49,6 +51,7 @@ public class AsmGenerator {
     }
             
     private static int contador_t = 0;
+    private static ArrayList<Integer> tercetos_b = new ArrayList<>();
 
     private static class AsmData {
         
@@ -254,7 +257,19 @@ public class AsmGenerator {
             final String scopeDelimitatorReplacement = "@";    // Reemplaza a ":"
             String op1 = terceto.op1 != null ? terceto.op1.replace(":",scopeDelimitatorReplacement) : null;
             String op2 = terceto.op2 != null ? terceto.op2.replace(":",scopeDelimitatorReplacement) : null;
-    
+
+            appendCode("");
+            appendCode("; Terceto <"+contador_t+">  "+terceto.toString().substring(8,terceto.toString().length()-1));
+
+            java.util.Iterator<Integer> iterator = tercetos_b.iterator();
+            while (iterator.hasNext()) {
+                Integer t_bf = iterator.next();
+                if (t_bf.equals(contador_t)) {  // Usa equals para comparar objetos
+                    iterator.remove();          // Elimina el elemento de forma segura
+                    appendCode("labelt_" + contador_t + ":");
+                }
+            }
+
             switch (terceto.operacion) {
                 
                 case "LABEL_TAG" :  
@@ -336,12 +351,20 @@ public class AsmGenerator {
     
             case "BI" : {       // podria usarse label y jumps?
                     // salto incondicional a op1 (terceto)
-                    appendCode("JMP "+op1);   // op1 es terceto. pasarlo a label
+                    String t_bi = op1.substring(1,op1.length()-1);
+                    tercetos_b.add(Integer.parseInt(t_bi));
+                    appendCode("JMP labelt_"+op1.substring(1,op1.length()-1));   // op1 es terceto. pasarlo a label
                 
             }
             break;
     
-            case "BF" :{       // podria usarse label y jumps ?
+            case "BF" :{     
+                appendCode("CMP "+getOperador(op1,"")+", 0     ; ZF = auxt_1 == 0 ? 1 : 0");
+                String t_bf = op2.substring(1,op2.length()-1);
+                tercetos_b.add(Integer.parseInt(t_bf));
+                appendCode("JNZ labelt_"+t_bf);
+
+                    // podria usarse label y jumps ?
                         // si op1(terceto) NO se cumple (es 0) salta a la etiqueta op2
             }
             break;
@@ -488,7 +511,7 @@ public class AsmGenerator {
             break;  
     
             case "utos" : {    // minuscula?
-                System.out.println("SWITCH CASE MATCH: UTOS");
+                
                 op1 = ifHexaTrans(op1);
                 appendData(new AsmData("auxt_"+contador_t,"SINGLE","?"));
                 // sea uinteger o hexa no cambia nada lo q devuelve
@@ -499,14 +522,34 @@ public class AsmGenerator {
             }
             break;
 
-            case "<" : {}
+            case "<" : {
+
+            }
             break;
 
-            case ">":
+            case ">": {
+
+            }
                 
                 break;
 
-            case "=":
+            case "=": {
+                appendData(new AsmData("auxt_"+contador_t, "BYTE", "?"));
+                appendCode("MOV BX, op1                 ; Mueve op1 a reg. B");
+                appendCode("CMP BX, op2                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                appendCode("SETZ auxt_"+contador_t+"                ; Guarda el valor de ZF en la var. auxiliar del terceto.");
+
+            }
+                
+                break;
+
+            case "!=": {
+                appendData(new AsmData("auxt_"+contador_t, "BYTE", "?"));
+                appendCode("MOV BX, op1                 ; Mueve op1 a reg. B");
+                appendCode("CMP BX, op2                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
+                appendCode("SETZ auxt_"+contador_t+"                ; Guarda el valor de ZF en la var. auxiliar del terceto.");
+                appendCode("XOR auxt_"+contador_t+", 1              ; Invierto el bit: situación deseable -> Z == 0.");       
+            }
                 
                 break;
 
