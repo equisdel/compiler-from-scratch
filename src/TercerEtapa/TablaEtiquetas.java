@@ -1,5 +1,6 @@
 package TercerEtapa;
 import SegundaEtapa.Parser;
+import PrimeraEtapa.Error;
 import java.util.*;
 
 public class TablaEtiquetas {
@@ -28,13 +29,13 @@ public class TablaEtiquetas {
     public static void pushScope() {
         initialize();
         scope_actual = Parser.actualScope;
-        System.out.println("Entering "+scope_actual);
+        //System.out.println("Entering "+scope_actual);
         // Apilar en gotos_en_espera
         gotos_en_espera.push(new HashSet<>());      // Se apila el conjunto del nuevo ámbito
     }
 
     public static void popScope() {
-        System.out.println("\nExiting "+scope_actual);
+        //System.out.println("\nExiting "+scope_actual);
         scope_actual = Parser.actualScope;
 
         Set<GoToInfo> gotos_en_espera_scope_actual = gotos_en_espera.peek();
@@ -126,7 +127,7 @@ public class TablaEtiquetas {
             //    si se declaró: termina acá, el goto está asociado a esa etiqueta (actualización de tabla).
             //System.out.println("camino1");
             tabla.get(tag).get(scope_actual).add(nuevo_goto);
-            TablaEtiquetas.display(); 
+            //TablaEtiquetas.display(); 
         } else {
             //System.out.println("camino2");
             //    si no se declaró localmente, se extiende la búsqueda a ámbitos padres
@@ -157,17 +158,17 @@ public class TablaEtiquetas {
             System.out.println("[TablaEtiquetas:end()] Error en la actualización de ámbitos (el número de elementos en la pila es "+gotos_en_espera.size());
         else if (!gotos_en_espera.peek().isEmpty()) {
             for (GoToInfo goTo : gotos_en_espera.peek()) {
-                System.out.println("ERROR en linea ["+goTo.line+"]: sentencia GOTO "+goTo.tag+" referencia a una etiqueta inexistente/inalcanzable.");
+                new Error(goTo.line,"sentencia GOTO "+goTo.tag+" referencia a una etiqueta inexistente/inalcanzable.");
             }
         }
 
-        TablaEtiquetas.display();
+        //TablaEtiquetas.display();
 
         for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
             for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
                 for (GoToInfo value : entry2.getValue()) {
                     //Terceto.print();
-                    System.out.print(value.terceto+" - "+value.line+" - "+entry.getKey()+":"+entry2.getKey()+"\n");
+                    //System.out.print(value.terceto+" - "+value.line+" - "+entry.getKey()+":"+entry2.getKey()+"\n");
                     Terceto.completeTerceto(value.terceto, entry.getKey()+":"+entry2.getKey(), null);
                 }
             }

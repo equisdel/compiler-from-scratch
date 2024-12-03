@@ -35,7 +35,7 @@ A@MAIN PROC X@MAIN@A:WORD
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-invoke @B@MAIN@A, X@MAIN@A
+invoke B@MAIN@A, X@MAIN@A
 
 MOV AX, @B@MAIN@A
 MOV X@MAIN@A, AX

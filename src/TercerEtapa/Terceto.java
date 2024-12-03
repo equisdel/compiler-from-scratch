@@ -76,12 +76,12 @@ public class Terceto {
         if (op1 != null) {
             if (t.op1 == null){    
             t.op1 = op1;
-            } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
+            } else {/*System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");*/}
         }
         if (op2!= null) {
             if (t.op2 == null){
             t.op2 = op2;
-        } else {System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");}
+        } else {/*System.out.println("DEBUGGING: SE INTENTO COMPLETAR UN TERCETO QUE YA TENIA VALOR");*/}
         }
         if (debug){System.out.println("Terceto completado: "+ id);}
     }

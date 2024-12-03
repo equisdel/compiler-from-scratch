@@ -710,7 +710,7 @@ final static String yyrule[] = {
                 // devuelve lexema (ID con scope)
                 if (isFunction(id)) {
                         return (Terceto.getOp1(id));
-                } else {System.out.println("CUIDADO SE ESTA PASANDO UN ID QUE NO ES DE FUNCION A getFunctionID");
+                } else {/*System.out.println("CUIDADO SE ESTA PASANDO UN ID QUE NO ES DE FUNCION A getFunctionID");*/
                         return null;
                 }
         }
@@ -761,9 +761,9 @@ final static String yyrule[] = {
         }*/
 
         public Boolean isCte(String valStr){
-               //System.out.println("aaaa"+valStr);
-                if (AnalizadorLexico.t_simbolos.get_entry(valStr) != null){
-                        return (AnalizadorLexico.t_simbolos.get_entry(valStr).getTipo().equals("CTE")); 
+                String valStr_to_upper = valStr.toUpperCase();  // caso HEXA
+                if (AnalizadorLexico.t_simbolos.get_entry(valStr_to_upper) != null){
+                        return (AnalizadorLexico.t_simbolos.get_entry(valStr_to_upper).getTipo().equals("CTE")); 
                 } else return false;
                 // si no esta, no es cte o no está
         }
@@ -781,7 +781,7 @@ final static String yyrule[] = {
         public String popScope(String scope){
                 // quita ultimo scope, q esta delimitado con ':'
                 int index = scope.lastIndexOf(":");
-                System.out.print("popScope scope: "+scope);
+                //System.out.print("popScope scope: "+scope);
                 if (index != -1) {
                         scope = scope.substring(0, index);
                 } // else scope queda igual
@@ -791,7 +791,7 @@ final static String yyrule[] = {
 
         public boolean isDeclared(String id){   // recibe id sin scoope
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
-                if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");}
+                if (isCte(id)) {/*System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared");*/}
                 String scopeaux = new String(actualScope);
                 //System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
@@ -804,7 +804,6 @@ final static String yyrule[] = {
                                 //System.out.println("EL SCOPEAUX: "+scopeaux);
                         } while ((!scopeaux.equals("MAIN")));
                 }
-                //System.out.println("no hubo suerte amiga");
                 return false;
         }
 
@@ -874,13 +873,14 @@ final static String yyrule[] = {
                 if (!isDeclared(id))
                 {yyerror("variable "+id+" no declarada. "); }
                 else {
-                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN PUTO TERCETOOO
+                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN TERCETO
                         String lexemExpr = "";
                         String subtypeT = "";
                         if (isTerceto(expr)) {
                                 subtypeT = chkAndGetType(expr);
                                 lexemExpr = expr;}   // y lexem es el terceto (expr)
                         else{
+                                expr = expr.toUpperCase();
                                 if (isCte(expr)){      // si es cte, la misma es como se busca en la tabla de simbolos
                                        //System.out.println(expr+" es cte");
                                         lexemExpr = expr;
@@ -917,7 +917,7 @@ final static String yyrule[] = {
                                 return Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
                         }
                         else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
-                                System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
+                                //System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
                                 yyerror("tipos incompatibles en asignacion. "); 
                         }
 
@@ -946,11 +946,11 @@ final static String yyrule[] = {
                                         scopeaux = (scopeaux.equals("MAIN")) ? "MAIN" : scopeaux.substring(0,scopeaux.lastIndexOf(":"));
                                         if (AnalizadorLexico.t_simbolos.get_entry(id+":"+scopeaux) != null)     
                                                 return id+":"+scopeaux;;
-                                        System.out.println("EL SCOPEAUX: "+scopeaux);
+                                        //System.out.println("EL SCOPEAUX: "+scopeaux);
                                 } while ((!scopeaux.equals("MAIN")));
                                 return null;
                         }
-                } else {System.out.println("NO ESTA DECLARADA");return null;}
+                } else {/*System.out.println("NO ESTA DECLARADA");*/return null;}
 
         }
 
@@ -1290,7 +1290,7 @@ case 36:
                                 /* Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)*/
                                 AnalizadorLexico.t_simbolos.del_entry(val_peek(4).sval);
                                 AnalizadorLexico.t_simbolos.add_entry(val_peek(4).sval+":"+actualScope,"ID",val_peek(6).sval,"FUN_NAME",param_type);
-                                AnalizadorLexico.t_simbolos.display();
+                                /*AnalizadorLexico.t_simbolos.display();*/
                                 /*String param_lexem = getDeclared(param_name);*/
                                 /*System.out.println("param_lexem == "+param_lexem);*/
                                 
@@ -1304,8 +1304,8 @@ case 36:
                                 AnalizadorLexico.t_simbolos.add_entry(param_name+":"+actualScope,"ID",param_type,"PARAM_NAME");
 
                         /* Posible generación de terceto de tipo LABEL*/
-                                System.out.println("Parametro: "+param_name+" de tipo "+param_type);
-                                System.out.println("Lexema: "+param_name+":"+actualScope);
+                                /*System.out.println("Parametro: "+param_name+" de tipo "+param_type);*/
+                                /*System.out.println("Lexema: "+param_name+":"+actualScope);*/
                                 yyval.sval = Terceto.addTercetoT("INIC_FUN",val_peek(4).sval+":"+act_scope,param_name+":"+actualScope,param_type); /*para saber donde llamarla en assembler*/
                         }       /* el parametro se 'define' DENTRO de la funcion. entonces tiene el scope de la funcion.*/
                 }
@@ -1394,7 +1394,7 @@ case 46:
                 } else {
                         yyerror("El tipo de retorno no coincide con el tipo de la funcion. ");
                 }
-        } else {System.out.println("algo anda mal en return_statement, no encuentra la funcion actual ");
+        } else {/*System.out.println("algo anda mal en return_statement, no encuentra la funcion actual ");*/
                /*System.out.println(" actual scope: "+actualScope);*/
                /*System.out.println("no se encontro en la TS: "+scopeToFunction(actualScope));        */
         }
@@ -1409,7 +1409,7 @@ case 53:
 {       /*pdoria poner end_if dentro de then_statement y hacer esto ahi.*/
         /*completo terceto*/
         Terceto.print_all();
-        System.out.println("debugging if: "+extractNumber(val_peek(1).sval));
+        /*System.out.println("debugging if: "+extractNumber($2.sval));*/
         /*Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); */
         Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber(val_peek(1).sval))+1))+">"); 
 }
@@ -1507,7 +1507,7 @@ case 68:
                                         yyval.sval= Terceto.addTercetoT("utos",id2,null, "HEXA");
                                         yyval.sval= Terceto.addTercetoT(val_peek(1).sval,id1,id2, "UINTEGER");
                         }
-                } else {System.out.println("Un tipo dio null en condicion");}
+                } else {/*System.out.println("Un tipo dio null en condicion");*/}
                 
         }
 break;
@@ -1555,7 +1555,7 @@ case 79:
                                         yyval.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
                                         yyval.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
                         } else {yyval.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");}
-                } else {System.out.println("Un tipo dio null en suma");}
+                } else {/*System.out.println("Un tipo dio null en suma");*/}
 }
 break;
 case 80:
@@ -1582,7 +1582,7 @@ case 80:
                                         yyval.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
                                         yyval.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
                         } else {yyval.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");}
-                } else {System.out.println("Un tipo dio null en resta");}
+                } else {/*System.out.println("Un tipo dio null en resta");*/}
 
         }
 break;
@@ -1614,7 +1614,7 @@ case 83:
                                         yyval.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
                                         yyval.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
                         } else {yyval.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");}
-                } else {System.out.println("Un tipo dio null en multiplicacion");}
+                } else {/*System.out.println("Un tipo dio null en multiplicacion");*/}
         }
 break;
 case 84:
@@ -1641,7 +1641,7 @@ case 84:
                                         yyval.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
                                         yyval.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
                         } else {yyval.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");}
-                } else {System.out.println("Un tipo dio null en division");}
+                } else {/*System.out.println("Un tipo dio null en division");*/}
         }
 break;
 case 88:
@@ -1682,7 +1682,7 @@ break;
 case 92:
 //#line 591 "grammar.y"
 { 
-                System.out.println("\n\nEl lexema a buscar: "+val_peek(3).sval);
+                /*System.out.println("\n\nEl lexema a buscar: "+$1.sval);*/
                 String lexema = getDeclared(val_peek(3).sval);
                 if (lexema != null && AnalizadorLexico.t_simbolos.get_use(lexema).equals("FUN_NAME")) {
                         /*chequear tipo de parametros*/

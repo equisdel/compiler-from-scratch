@@ -135,7 +135,7 @@ public class AsmGenerator {
             assembler.appendFile(header);           
             assembler.appendFile(punto_data);       
             assembler.appendFile(punto_code);       
-            System.out.println("Existen "+func_files.size()+" funciones en el programa (sin contar main).");
+            //System.out.println("Existen "+func_files.size()+" funciones en el programa (sin contar main).");
 
         } catch (IOException e) {}
         
@@ -220,14 +220,14 @@ public class AsmGenerator {
             // Si operador es CTE:      literal (inmediato, el operador mismo)
         Simbolo ref_op = AnalizadorLexico.t_simbolos.get_entry(operador.replace("@",":"));   // funciona porque a esta etapa llega el lexema con scope incluido
         if (ref_op != null) {                       // Es un ID  (cte no esta en TS porque hubo limpieza)
-            System.out.println(operador+" es un ID o algo de la T. de S.");
+            //System.out.println(operador+" es un ID o algo de la T. de S.");
             return operador;
         } else if (Parser.isTerceto(operador)) {    // Es un terceto (de expr, de funcion)
             if (Terceto.getOperacion(operador).equals("CALL_FUN")) {    // si es la invocacion a una funcion uso la variable que guarda el resultado de la misma
                 return ("@"+Terceto.getOp1(operador).replace(":", "@"));
 
             } else {
-                System.out.println(operador+" es un terceto");
+                //System.out.println(operador+" es un terceto");
                 return "auxt_"+operador.substring(1,operador.length()-1);  // Ejemplo: terceto <2> : auxt_2
             }
         } else {
@@ -243,12 +243,12 @@ public class AsmGenerator {
                 // _cte1 real4 1.2     -1.2s-8 [0-9][a-z]'.''+/-' : ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
                 //agregar a .data  varfloat real4 mapSingleToFloat(operador);
                 appendData(new AsmData("aux_float_"+contador_t, "REAL4", operador.replace("s", "e")));
-                System.out.println("SE AGREGO CTE FLOAT: "+"aux_float_"+contador_t+" REAL4 "+operador.replace("S", "e"));
+                //System.out.println("SE AGREGO CTE FLOAT: "+"aux_float_"+contador_t+" REAL4 "+operador.replace("S", "e"));
                 return ("aux_float_"+contador_t);} //a todo single devuelve varfloat ?
             else if (subtipo.equals("UINTEGER") || subtipo.equals("HEXA"))   {    // TAMBIEN CONTEMPLAR HEXA : intentarlos tratar igual a ver si funciona
                 return operador;
             }
-            else System.out.println("PROBLEMA: El subtipo no es ni SINGLE ni UINTEGER.");
+            //else System.out.println("PROBLEMA: El subtipo no es ni SINGLE ni UINTEGER.");
         }
         return null;
     }
@@ -393,7 +393,6 @@ public class AsmGenerator {
             }   break;
     
             case "SUMA" : { // QUE ONDA LAS CTES NEGATIVAS!?
-                System.out.println("SWITCH CASE MATCH: SUMA");
                 // Declarar la variable "auxt_[id_terceto]".
                 appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
                 if (terceto.subtipo.equals("SINGLE")){ 
@@ -417,7 +416,6 @@ public class AsmGenerator {
     operaciones entre enteros sin signo. En caso que una resta entre datos de este tipo arroje un resultado
     negativo, deberá emitir un mensaje de error y terminar */
                 // Análogo a la SUMA
-                System.out.println("SWITCH CASE MATCH: RESTA");
                 appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
                 if (terceto.subtipo.equals("SINGLE")){
                     appendCode("fld "+getOperador(op1, terceto.subtipo));
@@ -441,7 +439,6 @@ public class AsmGenerator {
     EL CODIGO ASSEMBLER deberá controlar el resultado de la operación indicada, para los tipos de datos
     enteros asignados al grupo. Si el mismo excede el rango del tipo del resultado, deberá emitir un
     mensaje de error y terminar */
-                System.out.println("SWITCH CASE MATCH: MUL");// Análogo a la SUMA
                 appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
                 if (terceto.subtipo.equals("SINGLE")){
                     appendCode("fld "+getOperador(op1, terceto.subtipo));
@@ -460,7 +457,6 @@ public class AsmGenerator {
             break;
     
             case "DIV" : { // QUE ONDA LAS CTES NEGATIVAS!?
-                System.out.println("SWITCH CASE MATCH: DIV");
                 // Declarar la variable "auxt_[id_terceto]".
                 appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
                 if (terceto.subtipo.equals("SINGLE")){ 
@@ -494,7 +490,6 @@ public class AsmGenerator {
                         appendCode("MOV "+getOperador(op1, terceto.subtipo)+","+getOperador(op2, terceto.subtipo)); //op2 es inmediato
                     } else {
                         // si es float, creo la variable (no puedo usar inmediatos float)
-                        System.out.println("singletooon");
                         appendCode("fld " + getOperador(op2, "SINGLE"));
                         appendCode("fstp "+getOperador(op1, terceto.subtipo));
                     }
@@ -571,7 +566,7 @@ public class AsmGenerator {
 
             // FALTAN TERCETOS NEQ LEQ MEQ
 
-            default : System.out.println("PROBLEMA: El terceto no fue implementado.");
+            default : System.out.println("");//System.out.println("PROBLEMA: El terceto no fue implementado.");
                     }
                         }
                                 
@@ -592,14 +587,15 @@ public class AsmGenerator {
     */
     
     public static void generate(String executablePath, String program) {
-        System.out.println("\n\n"+Terceto.TerList.size()+"\n");
+        //System.out.println("\n\n"+Terceto.TerList.size()+"\n");
         destPath = executablePath;
         init(program);
         for (Terceto terceto : Terceto.TerList) {
-            System.out.println("\n"+terceto.toString());
+            //System.out.println("\n"+terceto.toString());
             mapTercetoToAssembler(terceto);
             contador_t++;   // siempre coincidira con el numero del terceto
         }
+        System.out.println("\n");
         finish();
     }
 }

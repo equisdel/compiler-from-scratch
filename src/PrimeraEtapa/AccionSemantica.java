@@ -388,7 +388,7 @@ public class AccionSemantica {
         String desc_111 = "Error de incumplimiento de rangos en cte. de tipo UINTEGER/HEXA.";
         Function<Void,Integer> action_111 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AccionSemantica.error_msg = "La constante de tipo UINTEGER/HEXA se encuentra fuera del rango permitido. RANGO: [0, 65535]. Se toma como "+AnalizadorLexico.lexema;
+                AccionSemantica.error_msg = "La constante de tipo UINTEGER/HEXA se encuentra fuera del rango permitido. RANGO: [0, 65535]. Se toma como 65535 (lim. superior).";
                 all_actions[100].execute();     // Levanta el warning
                 return 0;
             }
@@ -477,11 +477,6 @@ public class AccionSemantica {
 
         AccionSemantica as_199 = new AccionSemantica(199, desc_199, action_199);
 
-    // prueba de accion 112
-        /*
-            AnalizadorLexico.lexema = "3s+4";
-            AccionSemantica.all_actions[10].execute();
-            System.out.println(AnalizadorLexico.lexema);
-        */
+
     }
 }

@@ -3,9 +3,9 @@ import java.util.ArrayList;
 
 public class Error {
 
-    final String ANSI_RED = "\u001B[31m";  
-    final String ANSI_YELLOW = "\u001B[33m";
-    final String ANSI_RESET = "\u001B[0m"; 
+    final String ANSI_RED = "";//"\u001B[31m";  
+    final String ANSI_YELLOW = "";//"\u001B[33m";
+    final String ANSI_RESET = "";//"\u001B[0m"; 
     
     static ArrayList<Error> all_Errors = new ArrayList<>();
     static boolean contains_fatal_error = false;
