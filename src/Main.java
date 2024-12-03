@@ -71,7 +71,7 @@ public class Main {
                Terceto.print_all();          // tercetos generados
 
                // Si no hay errores, genera código assembler
-               String executablePath = "src\\CuartaEtapa\\AsmCode\\";   // ¿Dónde se almacena el ejecutable?
+               String executablePath = ".\\";   // ¿Dónde se almacena el ejecutable?
                if (Error.isCompilable()) {    // Verifica que no haya errores fatales
                   System.out.println("\n\nNo hay errores fatales en el programa. Se procede a generar el .asm en: "+executablePath+program.getName()+".asm");
                   AsmGenerator.generate(executablePath,program.getName());
