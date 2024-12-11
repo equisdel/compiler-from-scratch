@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
-
 //import javax.jws.soap.SOAPBinding.Use;
 
 // GENERANDO EL .CODE TODAVIA PUEDO TENER TODA LA TS. LUEGO DE GENERAR .DATA AHI NOSE USA MAS
@@ -167,7 +165,6 @@ public class AsmGenerator {
         Simbolo simbolo;
         for (String lexema : AnalizadorLexico.t_simbolos.getAllEntries()) {
             simbolo = AnalizadorLexico.t_simbolos.get_entry(lexema);
-            //System.out.println(lexema);
             if (simbolo.getTipo().equals("ID")) {
                 if (!simbolo.getUse().equals("FUN_NAME")){
                     // Caso instancia de tipo pair definido por el usuario
@@ -239,7 +236,7 @@ public class AsmGenerator {
             //System.out.println("cte: "+operador+": El subtipo es "+subtipo);
             if (Parser.isPair(operador)) {  //pairsito{1}
                 return ("_"+operador.replace("{","_").replace("}",""));
-            } else if (subtipo.equals("SINGLE")){
+            } else if (subtipo.equals("SINGLE")){   //
                 // _cte1 real4 1.2     -1.2s-8 [0-9][a-z]'.''+/-' : ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'
                 //agregar a .data  varfloat real4 mapSingleToFloat(operador);
                 appendData(new AsmData("aux_float_"+contador_t, "REAL4", operador.replace("s", "e")));

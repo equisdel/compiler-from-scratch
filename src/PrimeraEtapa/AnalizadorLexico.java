@@ -49,6 +49,7 @@ public class AnalizadorLexico {
 			}
 		}
 		AnalizadorLexico.t_simbolos.display();
+		AnalizadorLexico.t_simbolos.clean();
 	}
 	
 

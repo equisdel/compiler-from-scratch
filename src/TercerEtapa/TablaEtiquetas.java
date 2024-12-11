@@ -140,6 +140,7 @@ public class TablaEtiquetas {
     }
     //metod0 de immpresion de tabla
     public static void display() {
+        initialize();
         //System.out.println("Tamaño de la pila: "+gotos_en_espera.size());
         for (Map.Entry<String, HashMap<String, Set<GoToInfo>>> entry : tabla.entrySet()) {
             for (Map.Entry<String, Set<GoToInfo>> entry2 : entry.getValue().entrySet()) {
@@ -152,7 +153,7 @@ public class TablaEtiquetas {
     }
 
     public static void end() {
-
+        initialize();
         // Verificar que no existan gotos en espera, si los hay entonces debería dar error y enlistar las líneas de las tags huerfanas
         if (gotos_en_espera.size() != 1)    // MAIN sería el único
             System.out.println("[TablaEtiquetas:end()] Error en la actualización de ámbitos (el número de elementos en la pila es "+gotos_en_espera.size());

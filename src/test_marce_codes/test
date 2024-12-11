@@ -1,0 +1,27 @@
+p_test
+
+begin
+
+    single s;
+    uinteger u;
+
+    uinteger fun s_fun(uinteger uuu) 
+    begin
+
+        single ss;
+        s := 0x0;
+        ss := 2*s;
+        
+        uinteger uu;
+        u := 0;
+        uu := 2*u;
+
+        ss := s + ss;
+        uu := u + uu;
+
+        ret (uu);
+    end
+
+    u := s_fun(u);
+
+end

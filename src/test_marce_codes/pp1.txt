@@ -1,0 +1,24 @@
+pp1
+begin
+
+
+typedef pair <uinteger> parsito1;
+
+typedef pair <uinteger> parsito2 ;
+
+parsito1 p11, p12;
+
+p11{1} := p12{2};
+
+parsito2 p21, p22;
+p21{1} := 1;
+p22{2} := 2;
+
+## no se permite asignacion entre pairs, solo entre accesos al mismo
+
+p22{1} := p21{1};
+outf(p22{1});
+outf(p22{2});
+
+end
+

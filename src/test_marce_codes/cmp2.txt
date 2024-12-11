@@ -1,0 +1,28 @@
+nombre
+BEGIN
+		single da, db, dc;
+	
+	da := 1.0;
+	db := 2.0;
+	dc := 3.0;
+	da := db + dc * 2.0 - db / 2.0 + 4.0;
+	if (da = 11.0) then
+	   outf([igual]);
+	end_if;
+	if (da > 10.0) then
+	   outf([mayor]);
+	end_if;
+	if (da >= 11.0) then
+	   outf([mayor o igual]);
+	end_if;	
+	if (da < 12.0) then
+	   outf([menor]);
+	end_if;
+	if (da <= 11.0) then
+	   outf([menor o igual]);
+	end_if;	
+	
+	da := 1.2 + 2.4;
+	outf(da);
+	
+	END

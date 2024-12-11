@@ -1,5 +1,5 @@
 package TercerEtapa;
-
+import PrimeraEtapa.Error;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,16 +16,23 @@ public class AnalizadorSemantico {
     private static TablaPair tabla = new TablaPair();
 
     public static boolean validID(String type, String ID) {
-        String inicial = ID.substring(0,0);
-        if (inicial.equals("s")) {
-            if (!type.equals("single")) 
+        
+        String inicial = ID.substring(0,1);
+        //System.out.println("[!!!] validID: (type:"+type+"; ID: "+ID+") -> inicial: "+inicial);
+        if (inicial.equals("S")) {
+            if (!type.equals("SINGLE")) {
+                new Error("Los identificadores que comienzan con 's' se reservan para variables de tipo single.");
                 return false;
-        } else if ((inicial.equals("u")) || (inicial.equals("v")) || (inicial.equals("w"))) {
-            if (!type.equals("uinteger") || !type.equals("hexa")) 
+            }
+        } else if ((inicial.equals("U")) || (inicial.equals("V")) || (inicial.equals("W"))) {
+            if (!(type.equals("UINTEGER") || type.equals("HEXA"))) {
+                new Error("Los identificadores que comienzan con 'u', 'v' o 'w' se reservan para variables de tipo uinteger.");
                 return false;
+            }
         }/*  else {
             if (type.equals("single") || (type.equals("uinteger")) || !type.equals("hexa")) 
                 return false; }*/
+        //System.out.println("Retorna TRUE (es válido)");
         return true;
     }
 

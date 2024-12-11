@@ -1,0 +1,42 @@
+nombre
+BEGIN
+	uinteger a, b, c, x, y2, z;
+	single ax, axe, axf;
+
+	single FUN funcion1(single parametro)
+	BEGIN
+		uinteger a, x;
+		single pepe;
+		outf([en fun1]);
+		parametro := parametro + 1;
+		pepe := a + b * x + parametro;
+		outf(parametro);
+		##pepe := funcion2(parametro);
+		outf(pepe);
+		RET (pepe + 1);
+	END
+	
+	uinteger FUN funcion2(uinteger parametro)
+	begin
+	  outf([en fun22]);
+	  parametro := parametro + 1;
+	  outf(parametro);
+	  ax := parametro;
+	  single a;
+	  a := funcion1(ax);
+	  outf(a);
+	  ##RET(a);
+	end
+	
+	a := 2;
+	x := 1;
+	y2 := 2;
+	z := 3;
+
+	c := 1;
+	ax := 1.9;
+	b := funcion2( c);
+	outf(b);
+
+
+END

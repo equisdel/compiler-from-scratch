@@ -1,0 +1,8 @@
+ombre
+BEGIN
+	uinteger da, db, dc;
+	da := 1;
+	outf(da);
+	db := da * 5;
+	outf(db);
+END

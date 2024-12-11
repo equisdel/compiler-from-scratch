@@ -11,7 +11,7 @@ public class Main {
    
    public static String displayTestMenu() {
       
-      String rel_path = "src/test_codes";
+      String rel_path = "src/test_marce_codes";
       //File var2 = new File(rel_path);
       File[] list_of_tests = new File(rel_path).listFiles();
 

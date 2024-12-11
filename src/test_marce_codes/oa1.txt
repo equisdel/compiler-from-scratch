@@ -1,0 +1,18 @@
+nombre
+BEGIN
+	uinteger a, b, c;
+	uinteger i;
+	outf([prueba de operaciones aritméticas]);
+	outf([-------------------------------------------------]);
+	a := 1;
+	b := 2;
+	c := 3;
+	a := b + c * 2 - b / 2 + 4;
+	outf(a);
+	if (a = 11) then
+	  outf([dio bien]);
+	  else
+	  outf([dio mal]);
+	end_if;
+
+	END

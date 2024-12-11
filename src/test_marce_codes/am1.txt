@@ -1,0 +1,14 @@
+programap3
+begin
+uinteger a,b,c;
+single x,y,z;
+outf([inicio]);
+a,b,c:=1,2,3;
+outf(a);
+outf(b);
+outf(c);
+x,y,z := 1.0, 2.0;
+outf(x);
+outf(y);
+outf(z);
+end

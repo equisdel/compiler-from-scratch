@@ -1,0 +1,21 @@
+programap3
+begin
+
+single sing1 , sing2;
+sing1,sing2 := 1.2s+2, 1.2s-2;
+
+
+uinteger aux;
+aux := 1;
+SALTITO@
+outf(aux);
+
+repeat begin
+	aux := aux + 1;
+	outf(aux);
+end
+until (aux = 10);
+
+outf([AUX FINAL:]);
+outf(aux);
+end
