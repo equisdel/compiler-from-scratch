@@ -9,19 +9,30 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-_P11@MAIN_1 DW ?
-_P11@MAIN_2 DW ?
-_P12@MAIN_1 DW ?
-_P12@MAIN_2 DW ?
-_P21@MAIN_1 DW ?
-_P21@MAIN_2 DW ?
-_P22@MAIN_1 DW ?
-_P22@MAIN_2 DW ?
+DC@MAIN REAL4 ?
+DB@MAIN REAL4 ?
+DA@MAIN REAL4 ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
 errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
+aux_float_0 DD 1.0
+aux_float_1 DD 2.0e+2
+aux_float_2 DD 3.0
+auxt_3 REAL4 ?
+aux_float_3_bis DD 2.0
+auxt_4 REAL4 ?
+auxt_5 REAL4 ?
+aux_float_5_bis DD 2.0
+auxt_6 REAL4 ?
+auxt_7 REAL4 ?
+aux_float_7_bis DD 4.0
+auxt_9_64 DQ ?
+auxt_10 REAL4 ?
+aux_float_10 DD 1.2
+aux_float_10_bis DD 2.4
+auxt_12_64 DQ ?
 
 .code
 OverflowMul:
@@ -37,23 +48,57 @@ invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 start:
 
 
-MOV AX, _P12@MAIN_2
-MOV _P11@MAIN_1, AX
+fld aux_float_0
+fstp DA@MAIN
 
-MOV AX, 1
-MOV _P21@MAIN_1, AX
+fld aux_float_1
+fstp DB@MAIN
 
-MOV AX, 2
-MOV _P22@MAIN_2, AX
+fld aux_float_2
+fstp DC@MAIN
 
-MOV AX, _P21@MAIN_1
-MOV _P22@MAIN_1, AX
+fld DC@MAIN
+fmul aux_float_3_bis
+fstp auxt_3
+
+fld DB@MAIN
+fld auxt_3
+fadd
+fstp auxt_4
+
+fld DB@MAIN
+fdiv aux_float_5_bis
+fstp auxt_5
+
+fld auxt_4
+fsub auxt_5
+fstp auxt_6
+
+fld auxt_6
+fld aux_float_7_bis
+fadd
+fstp auxt_7
+
+fld auxt_7
+fstp DA@MAIN
 
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), _P22@MAIN_1
+fld DA@MAIN
+fst auxt_9_64
+invoke printf, cfm$("%.20Lf\n"), auxt_9_64
+
+fld aux_float_10
+fld aux_float_10_bis
+fadd
+fstp auxt_10
+
+fld auxt_10
+fstp DA@MAIN
 
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), _P22@MAIN_2
+fld DA@MAIN
+fst auxt_12_64
+invoke printf, cfm$("%.20Lf\n"), auxt_12_64
 
 invoke printf, addr __new_line__
 

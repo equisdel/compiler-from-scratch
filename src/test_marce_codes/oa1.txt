@@ -2,7 +2,7 @@ nombre
 BEGIN
 	uinteger a, b, c;
 	uinteger i;
-	outf([prueba de operaciones aritméticas]);
+	outf([prueba de operaciones aritmeticas]);
 	outf([-------------------------------------------------]);
 	a := 1;
 	b := 2;

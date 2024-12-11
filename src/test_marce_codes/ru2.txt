@@ -6,16 +6,22 @@ sing1,sing2 := 1.2s+2, 1.2s-2;
 
 
 uinteger aux;
-aux := 1;
+aux := 0;
 SALTITO@
 outf(aux);
 
 repeat begin
-	aux := aux + 1;
+	outf([valor actual ->]);
 	outf(aux);
-end
-until (aux = 10);
-
-outf([AUX FINAL:]);
-outf(aux);
+	if (aux < 10) then
+		outf([aux menor a 10]);
+		if (aux > 5) then
+			outf([aux mayor a 5]);
+			if (aux = 9) then
+				outf([aux igual a 9]);
+			end_if;
+		end_if;
+	end_if;
+	aux := aux + 1;
+end until (aux > 10);
 end

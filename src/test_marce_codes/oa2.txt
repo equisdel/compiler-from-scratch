@@ -2,7 +2,7 @@ ombre
 BEGIN
 	single da, db, dc;
 	da := 1.0;
-	db := 2.0;
+	db := 2.0s+2;
 	dc := 3.0;
 	da := db + dc * 2.0 - db / 2.0 + 4.0;
 	outf(da);

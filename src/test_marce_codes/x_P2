@@ -1,0 +1,36 @@
+## Este programa de prueba tiene errores de declaración de variables y funciones.
+
+programap3
+begin
+    
+    single sing1 sing2;             ## ERROR: se quieren declarar múltiples variables sin separarlas con ','
+    outf([impresion])               ## Impresión válida
+    sing1,sing2 := 1.2s+2 , 1.2s-2; ## Asignación múltiple válida
+    
+    uinteger fun testeveryverylarge(uinteger intval)    ## WARNING: id de la función excede el largo permitido
+    begin
+        single saru;
+        if (intval < 10) THEN
+            goto SALTITO@;
+        end_if;
+    end
+
+typedef pair uinteger pairsito;
+typedef <uinteger> parsito2 ;
+typedef pair <uinteger> parsito3;
+
+parsito3 prueba;
+single prueba;
+uinteger aux, aux2;
+aux := testeveryverylarge(5);
+SALTITO@
+outf();
+repeat begin
+    aux := aux + 5;
+end
+until ();
+repeat begin
+    aux := aux1 + 1;
+end
+until (aux = 10;
+

@@ -18,6 +18,7 @@ prog    : ID BEGIN statement_list END
                 {
                 // FIN DEL PROGRAMA, CHEQUEAR:
                 //AnalizadorLexico.t_simbolos.clean();    // Limpieza de T. de Simbolos: quita todo lo que no tenga scope
+                Terceto.addTerceto("END",null,null);
                 TablaEtiquetas.end();                   // Asocia sentencias GoTo con su correspondiente etiqueta
                 }
         | error BEGIN statement_list END        {yyerror("Falta el nombre del programa en la primer linea. "); }
@@ -131,18 +132,18 @@ declare_fun_header
 
         : var_type FUN ID '(' parametro ')' BEGIN 
                 {
-                AnalizadorSemantico.validID($2.sval,$3.sval);           // Chequeo de tipos embebidos
+                AnalizadorSemantico.validID($2.sval,$3.sval,"FUN_NAME");           // Chequeo de tipos embebidos
                         // Control de ID: debe ser único en el scope actual
                         if (isDeclaredLocal($3.sval))   {
                                 String declared_type = chkAndGetType($3.sval);
-                                if (declared_type.equals("I"))
+                                if (declared_type.equals("I"))  // ?
                                 yyerror("El nombre seleccionado para la funcion no está disponible en el scope actual.");yyerror("No se permite la redeclaración de funciones: el nombre seleccionado no está disponible en el scope actual.");
-                        }    
+                        }
                         else {
                                 String param_name = $5.sval.split("-")[1]; 
                                 String param_type = $5.sval.split("-")[0];
                                //System.out.println("param_name, param_type == "+param_name+", "+param_type);
-                                
+                                AnalizadorSemantico.validID(param_type,param_name,"PARAM_NAME");
                                 // Actualización del ID: scope, uso, tipos de PARAMETRO y RETORNO (usamos los campos "SUBTIPO" y "VALOR" de la T. de S. respectivamente)
                                 AnalizadorLexico.t_simbolos.del_entry($3.sval);
                                 AnalizadorLexico.t_simbolos.add_entry($3.sval+":"+actualScope,"ID",$1.sval,"FUN_NAME",param_type);
@@ -174,7 +175,7 @@ declare_fun_header
                 // guardar el scope de la funcion
                 pushScope($3.sval); 
                 yyerror("Parametro incorrecto. Verifica que solo haya 1 parametro. ");
-                AnalizadorSemantico.validID($1.sval,$3.sval);
+                AnalizadorSemantico.validID($1.sval,$3.sval,"FUN_NAME");
                 }
         ;
 
@@ -191,7 +192,7 @@ declare_pair
  */
         : TYPEDEF PAIR '<' var_type '>' ID  {
                 // se le pone scope 'MAIN' 
-                AnalizadorSemantico.validID($4.sval,$6.sval);
+                AnalizadorSemantico.validID($4.sval,$6.sval,"TYPE_NAME");
                         if ($4.sval.equals("UINTEGER") || $4.sval.equals("SINGLE") || $4.sval.equals("HEXA")) {
 
                                 if (AnalizadorLexico.t_simbolos.get_entry($6.sval+":MAIN") != null){
@@ -299,7 +300,7 @@ if_statement
         Terceto.print_all();
         //System.out.println("debugging if: "+extractNumber($2.sval));
         //Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
-        Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval))+1))+">"); 
+        Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($2.sval))+1)+">"); 
 }
 | if_cond then_statement error {yyerror("Se esperaba END_IF.") ; }
 
@@ -415,11 +416,11 @@ cond_op
 
 assign_statement
         : ID ASSIGN expr {
-                $$.sval = chkAndAssign($1.sval,$3.sval,false);
+                $$.sval = chkAndAssign($1.sval,$3.sval);
                 }
 
         | expr_pair ASSIGN expr {
-                $$.sval = chkAndAssign($1.sval,$3.sval,false);
+                $$.sval = chkAndAssign($1.sval,$3.sval);
         }
         | var_type ID ASSIGN expr {yyerror("No se permite asignacion en declaracion. Separa las sentencias. ") ;}
         ;
@@ -448,10 +449,10 @@ expr    : expr '+' term    {
                                         $$.sval= Terceto.addTercetoT("SUMA",id1,id2, t_subtype1);}
                         } else if (t_subtype1.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("SUMA",id1,Terceto.getLast(), "SINGLE");
                         }else if (t_subtype2.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                        $$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("SUMA",Terceto.getLast(),id2, "SINGLE");
                         } else {$$.sval= Terceto.addTercetoT("SUMA",id1,id2, "SINGLE");}
                 } else {/*System.out.println("Un tipo dio null en suma");*/}
 }
@@ -474,10 +475,10 @@ expr    : expr '+' term    {
                                         $$.sval= Terceto.addTercetoT("RESTA",id1,id2, t_subtype1);}
                         } else if (t_subtype1.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("RESTA",id1,Terceto.getLast(), "SINGLE");
                         }else if (t_subtype2.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                        $$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("RESTA",Terceto.getLast(),id2, "SINGLE");
                         } else {$$.sval= Terceto.addTercetoT("RESTA",id1,id2, "SINGLE");}
                 } else {/*System.out.println("Un tipo dio null en resta");*/}
 
@@ -504,10 +505,10 @@ term    : term '*' fact {
                                         $$.sval= Terceto.addTercetoT("MUL",id1,id2, t_subtype1);}
                         } else if (t_subtype1.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("MUL",id1,Terceto.getLast(), "SINGLE");
                         }else if (t_subtype2.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                        $$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("MUL",Terceto.getLast(),id2, "SINGLE");
                         } else {$$.sval= Terceto.addTercetoT("MUL",id1,id2, "SINGLE");}
                 } else {/*System.out.println("Un tipo dio null en multiplicacion");*/}
         }
@@ -528,10 +529,10 @@ term    : term '*' fact {
                                         $$.sval= Terceto.addTercetoT("DIV",id1,id2, t_subtype1);}
                         } else if (t_subtype1.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id2,null, t_subtype2);
-                                        $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("DIV",id1,Terceto.getLast(), "SINGLE");
                         }else if (t_subtype2.equals("SINGLE")){
                                         $$.sval= Terceto.addTercetoT("utos",id1,null, t_subtype1);
-                                        $$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");
+                                        $$.sval= Terceto.addTercetoT("DIV",Terceto.getLast(),id2, "SINGLE");            // HACER ESTO EN EL RESTO DE OP ARITMETICASSSSSSSSSSSSSSSSSSSSS
                         } else {$$.sval= Terceto.addTercetoT("DIV",id1,id2, "SINGLE");}
                 } else {/*System.out.println("Un tipo dio null en division");*/}
         }
@@ -668,6 +669,7 @@ repeat_begin
                 //UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)
                 // opcion 2:
                 $$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
+                Terceto.addTerceto("LABEL_TAG","labelt_"+Terceto.getTercetoCount(),null); // pone un label al inicio de la esctructura
         }
         ;
 
@@ -680,24 +682,30 @@ mult_assign_statement
                 if (idList.length > exprList.length){
                 // si hay mas ids que expr, las ids sobrantes se las asigna 0.
                         for (int i = 0; i < exprList.length; i++){
-                                $$.sval = chkAndAssign(idList[i],exprList[i],false);
+                                $$.sval = chkAndAssign(idList[i],exprList[i]);
                         }
-
+                        // agrego a 0 a las TS
+                        AnalizadorLexico.t_simbolos.add_entry("0","CTE","UINTEGER");
                         for (int i = exprList.length; i < idList.length; i++){
-                                $$.sval = chkAndAssign(idList[i],"0",true);
+                                $$.sval = chkAndAssign(idList[i],"0");
                         }
                         new Error(AnalizadorLexico.line_number,"La cantidad de elementos del lado izquierdo de la asignacion, es mayor a la cantidad de elementos del lado derecho.",false,"SEMANTICO");
                 } else if (idList.length < exprList.length){
                         for (int i = 0; i < idList.length; i++){
-                                $$.sval = chkAndAssign(idList[i],exprList[i],false);
+                                $$.sval = chkAndAssign(idList[i],exprList[i]);
                         }
                         new Error(AnalizadorLexico.line_number,"La cantidad de elementos del lado izquierdo de la asignacion, es menor a la cantidad de elementos del lado derecho.",false,"SEMANTICO");
                 }
                 else {  
                         for (int i = 0; i < idList.length; i++){
-                                $$.sval = chkAndAssign(idList[i],exprList[i],false);
+                                $$.sval = chkAndAssign(idList[i],exprList[i]);
                         }
                 }
+        }
+        | ID ASSIGN expr_list {
+                String[] exprList = $3.sval.split(",");
+                $$.sval = chkAndAssign($1.sval,exprList[0]);
+                new Error(AnalizadorLexico.line_number,"La cantidad de elementos del lado izquierdo de la asignacion, es menor a la cantidad de elementos del lado derecho.",false,"SEMANTICO");
         }
         | id_list ASSIGN error {yyerror("La lista de expresiones es incorrecta, puede que falte ',' entre las expresiones. ") ; }
         /*si hay mas de 1 id a la izq y solo 1 expr a la der asumimos esta mal..?? ver enunciado*/
@@ -926,7 +934,7 @@ goto_statement
 
         public static void chkAndDeclareVar(String tipo, String id){
                 
-                AnalizadorSemantico.validID(tipo,id);
+                AnalizadorSemantico.validID(tipo,id,"VARIABLE_NAME");
                 //chequear tipo sea valido (uinteger,hexa,single o definido por usuario)
                 // AnalizadorLexico.t_simbolos.display();
                 if (AnalizadorLexico.t_simbolos.get_entry(tipo) == null) {yyerror("tipo de variable no valido. "); }
@@ -962,82 +970,78 @@ goto_statement
                 return id.substring(0,id.lastIndexOf("{"));             // FIJARSE Q ANDE
         }
 
-        public static String chkAndAssign(String id, String expr, Boolean Value){       // chequea id este declarado y expr sea valida. Value es true si expr es un valor a usar (ej: 0 )
+        public static String chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida.
                 //AnalizadorLexico.t_simbolos.display();
-
-                //System.out.print("chkAndAssign: id: "+id);
-                String posid = "";
-                String posexpr = "";
-                System.out.println("chkAndAssign: expr: "+expr);
-                System.out.println("chkAndAssign: id: "+id);
-                Boolean idPair = isPair(id);
-                Boolean exprPair = isPair(expr);
-                //AnalizadorLexico.t_simbolos.display();
-                if (idPair){
-                        // posid es {1} o {2}
-                        posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
-                       //System.out.println("assign: posid: "+posid);
-                        id = getPairName(id);
-                       //System.out.println("assign: id: "+id);
-                }
-                if (exprPair){
-                        posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}") + 1);
-                        expr = getPairName(expr);
-                }
-                if (!isDeclared(id))
-                {yyerror("variable "+id+" no declarada. "); }
-                else {
-                        // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN TERCETO
-                        String lexemExpr = "";
-                        String subtypeT = "";
-                        if (isTerceto(expr)) {
-                                subtypeT = chkAndGetType(expr);
-                                lexemExpr = expr;}   // y lexem es el terceto (expr)
-                        else{
-                                expr = expr.toUpperCase();
-                                if (isCte(expr)){      // si es cte, la misma es como se busca en la tabla de simbolos
-                                       //System.out.println(expr+" es cte");
-                                        lexemExpr = expr;
+                        //System.out.print("chkAndAssign: id: "+id);
+                        String posid = "";
+                        String posexpr = "";
+                        //System.out.println("chkAndAssign: expr: "+expr);
+                        //System.out.println("chkAndAssign: id: "+id);
+                        Boolean idPair = isPair(id);
+                        Boolean exprPair = isPair(expr);
+                        //AnalizadorLexico.t_simbolos.display();
+                        if (idPair){
+                                // posid es {1} o {2}
+                                posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
+                        //System.out.println("assign: posid: "+posid);
+                                id = getPairName(id);
+                        //System.out.println("assign: id: "+id);
+                        }
+                        if (exprPair){
+                                posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}") + 1);
+                                expr = getPairName(expr);
+                        }
+                        if (!isDeclared(id))
+                        {yyerror("variable "+id+" no declarada. "); }
+                        else {
+                                // EXPR PUEDE SER :CTE, ID, EXPRPAIR, FUN_INVOC, O UN TERCETO
+                                String lexemExpr = "";
+                                String subtypeT = "";
+                                if (isTerceto(expr)) {
                                         subtypeT = chkAndGetType(expr);
-                                } else if (isDeclared(expr)){ 
-                                                lexemExpr = getDeclared(expr);
-                                                subtypeT = chkAndGetType(expr+posexpr); // si no era pair, posexpr es vacio
+                                        lexemExpr = expr;}   // y lexem es el terceto (expr)
+                                else{
+                                        expr = expr.toUpperCase();
+                                        if (isCte(expr)){      // si es cte, la misma es como se busca en la tabla de simbolos
+                                        //System.out.println(expr+" es cte");
+                                                lexemExpr = expr;
+                                                subtypeT = chkAndGetType(expr);
+                                        } else if (isDeclared(expr)){ 
+                                                        lexemExpr = getDeclared(expr);
+                                                        subtypeT = chkAndGetType(expr+posexpr); // si no era pair, posexpr es vacio
+                                                }
+                                                else {yyerror(""+expr+" no declarada. ");}
+
                                         }
-                                        else {yyerror(""+expr+" no declarada. ");}
-
+                                
+                                String lexemID = getDeclared(id);
+                                String subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
+                                //System.out.println("subtypeID: "+subtypeID);
+                                //System.out.println("subtypeT: "+subtypeT);
+                                if (idPair){lexemID = lexemID+posid;}
+                                if (exprPair){lexemExpr = lexemExpr+posexpr;}
+                                if (subtypeT.equals(subtypeID)){       
+                                        return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                                 }
-                        
-                        String lexemID = getDeclared(id);
-                        String subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
-                       //System.out.println("subtypeID: "+subtypeID);
-                       //System.out.println("subtypeT: "+subtypeT);
-                        if (idPair){lexemID = lexemID+posid;}
-                        if (exprPair){lexemExpr = lexemExpr+posexpr;}
+                                // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
+                                else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
+                                        Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
+                                        return Terceto.addTercetoT(":=",lexemID,Terceto.getLast(),"SINGLE");
+                                }// agregar otro else por si uno es uinteger y el otro hexa
+                                else if (subtypeID.equals("UINTEGER") && subtypeT.equals("HEXA")){
+                                        return Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
+                                }
+                                else if (subtypeID.equals("HEXA") && subtypeT.equals("UINTEGER")){
+                                        return Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
+                                }
+                                else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
+                                        //System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
+                                        yyerror("tipos incompatibles en asignacion. "); 
+                                }
 
-                        if (subtypeT.equals(subtypeID)){       
-                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                         }
-                        // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
-                        else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
-                                Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
-                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"SINGLE");
-                        }// agregar otro else por si uno es uinteger y el otro hexa
-                        else if (subtypeID.equals("UINTEGER") && subtypeT.equals("HEXA")){
-                                Terceto.addTercetoT("stou",lexemExpr,null,"UINTEGER");
-                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
-                        }
-                        else if (subtypeID.equals("HEXA") && subtypeT.equals("UINTEGER")){
-                        Terceto.addTercetoT("stoh",lexemExpr,null,"HEXA");
-                                return Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
-                        }
-                        else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
-                                //System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
-                                yyerror("tipos incompatibles en asignacion. "); 
-                        }
-
+                        return Terceto.getLast();
                 }
-                return Terceto.getLast();
-        }
 
         /*public String getType(String lexema){   // se le pasa sin scope
                 // puede ser: variable, funcion, cte, expr_pair, terceto

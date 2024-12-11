@@ -5,8 +5,7 @@ begin
     single s;
     uinteger u;
 
-    uinteger fun s_fun(uinteger uuu) 
-    begin
+    uinteger fun s_fun(uinteger uuu) begin
 
         single ss;
         s := 0x0;

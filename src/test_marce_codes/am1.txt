@@ -7,7 +7,7 @@ a,b,c:=1,2,3;
 outf(a);
 outf(b);
 outf(c);
-x,y,z := 1.0, 2.0;
+x,y,z:=1.0,2.0,3;
 outf(x);
 outf(y);
 outf(z);

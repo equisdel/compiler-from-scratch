@@ -15,25 +15,30 @@ public class AnalizadorSemantico {
 
     private static TablaPair tabla = new TablaPair();
 
-    public static boolean validID(String type, String ID) {
+    public static boolean validID(String type, String ID, String use) {
         
-        String inicial = ID.substring(0,1);
-        //System.out.println("[!!!] validID: (type:"+type+"; ID: "+ID+") -> inicial: "+inicial);
-        if (inicial.equals("S")) {
-            if (!type.equals("SINGLE")) {
-                new Error("Los identificadores que comienzan con 's' se reservan para variables de tipo single.");
-                return false;
-            }
-        } else if ((inicial.equals("U")) || (inicial.equals("V")) || (inicial.equals("W"))) {
-            if (!(type.equals("UINTEGER") || type.equals("HEXA"))) {
-                new Error("Los identificadores que comienzan con 'u', 'v' o 'w' se reservan para variables de tipo uinteger.");
-                return false;
-            }
-        }/*  else {
-            if (type.equals("single") || (type.equals("uinteger")) || !type.equals("hexa")) 
-                return false; }*/
-        //System.out.println("Retorna TRUE (es válido)");
-        return true;
+        if (!use.equals("VARIABLE_NAME") && (ID.substring(0,1).equals("S") || ID.substring(0,1).equals("U") || ID.substring(0,1).equals("V") || ID.substring(0,1).equals("W"))) {
+            new Error("Los identificadores que comienzan con 's','u','v' o 'w' se reservan para tipos embebidos, single o uinteger.");
+            return false;
+        } else {
+                String inicial = ID.substring(0,1);
+                //System.out.println("[!!!] validID: (type:"+type+"; ID: "+ID+") -> inicial: "+inicial);
+                if (inicial.equals("S")) {
+                    if (!type.equals("SINGLE")) {
+                        new Error("Los identificadores que comienzan con 's' se reservan para variables de tipo single.");
+                        return false;
+                    }
+                } else if ((inicial.equals("U")) || (inicial.equals("V")) || (inicial.equals("W"))) {
+                    if (!(type.equals("UINTEGER") || type.equals("HEXA"))) {
+                        new Error("Los identificadores que comienzan con 'u', 'v' o 'w' se reservan para variables de tipo uinteger.");
+                        return false;
+                    }
+                }/*  else {
+                    if (type.equals("single") || (type.equals("uinteger")) || !type.equals("hexa")) 
+                        return false; }*/
+                //System.out.println("Retorna TRUE (es válido)");
+                return true;
+        }
     }
 
     public static int getTipo(String key) {
