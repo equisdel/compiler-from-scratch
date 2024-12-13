@@ -451,6 +451,7 @@ public class AsmGenerator {
                         
                     appendCode("MOV AX ,"+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                     appendCode("MOV CX ,"+getOperador(op2, terceto.subtipo));
+                    // ACA PONER UN 0 EN DX SINO PUEDE ANDAR MAL.                               HACER
                     appendCode("MUL CX"); // MUL auxt_[id_terceto], final_op2
                     appendCode("CMP DX, 0");   // SI DA 0 ES PORQ NO HUBO OVERFLOW
                     appendCode("JNE OverflowMul");
