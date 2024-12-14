@@ -204,10 +204,10 @@ public class AccionSemantica {
                 AnalizadorLexico.lexema_type = "ID";
                 char inicial = Character.toLowerCase(AnalizadorLexico.lexema.charAt(0));
                 switch(inicial) {
-                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";     break;   // Usar var subtype
-                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
-                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
-                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";   break;
+                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";     AnalizadorLexico.lexema = AnalizadorLexico.lexema + ":MAIN";  break;   // Usar var subtype
+                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";   AnalizadorLexico.lexema = AnalizadorLexico.lexema + ":MAIN";  break;
+                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";   AnalizadorLexico.lexema = AnalizadorLexico.lexema + ":MAIN";  break;
+                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";   AnalizadorLexico.lexema = AnalizadorLexico.lexema + ":MAIN";  break;
                 }
                 return 0;
             }

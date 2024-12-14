@@ -1,12 +1,12 @@
 programap3
 begin
-uinteger a,b,c;
+##uinteger ua,ub,uc;
 single x,y,z;
 outf([inicio]);
-a,b,c:=1,2,3;
-outf(a);
-outf(b);
-outf(c);
+ua,ub,uc:=1,2,3;
+outf(ua);
+outf(ub);
+outf(uc);
 x,y,z:=1.0,2.0,3;
 outf(x);
 outf(y);

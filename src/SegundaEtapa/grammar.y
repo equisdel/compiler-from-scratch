@@ -432,16 +432,12 @@ expr    : expr '+' term    {
                 String id1 = $1.sval;
                 String id2 = $3.sval;
                 if (!isTerceto(id1) && (!isCte(id1)) ){
-                        id1 = getDeclared(id1);
-                        System.out.println("getDeclared(id1): "+id1);}
-
+                        id1 = getDeclared(id1);}
                 if (!isTerceto(id2) && (!isCte(id2)) ){
-                        id2 = getDeclared(id2);
-                        System.out.println("getDeclared(id2): "+id2);}
+                        id2 = getDeclared(id2);}
                 String t_subtype1 = chkAndGetType($1.sval);             
                //System.out.println("tipo1: "+t_subtype1);
                 String t_subtype2 = chkAndGetType($3.sval);
-                System.out.println("sss subtype: "+t_subtype2);
                //System.out.println("tipo2: "+t_subtype2);
                 if (t_subtype1 != null && t_subtype2 != null) {
                         if (t_subtype1.equals(t_subtype2)){
@@ -843,7 +839,6 @@ goto_statement
                         else {  // variable, invoc. a funcion o expr_pair
 
                                 // CASO PAIR
-                                System.out.println("chkAndGetType: "+valStr);
                                 if (isPair(valStr)) {  
                                         lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
                                         lexem = getDeclared(lexem);
@@ -911,9 +906,11 @@ goto_statement
 
 
         public static boolean isDeclared(String id) {   // recibe id sin scoope
+                // PROBELMA DE EMBEBIDOS: LLEGA CON :MAIN
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
                 if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared:"+id);}
                 String scopeaux = new String(actualScope);
+                //System.out.println("a isDeclared llego: "+id);
                 //System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
@@ -946,12 +943,17 @@ goto_statement
                 // y otra entrada: p1:main:f1 subtipo: pairsito use: variable_name
                                 if (AnalizadorLexico.t_simbolos.get_entry(id+":"+actualScope) != null) {
                                         yyerror("La variable "+id+" esta siendo redeclarada. Ya fue declarada en el scope actual. ");}
+                                else if (id.substring(0,1).equals("S") || id.substring(0,1).equals("U") || id.substring(0,1).equals("V") || id.substring(0,1).equals("W")) {
+                                        // si comienza con s,u,v,w, ya tiene tipo embebido, y aca da error de redeclaracion
+                                        yyerror("Se intento redeclarar un tipo embebido.");
+                                } 
                                 else {
+                                
                                 // si no fue declarada, agregar a la tabla de simbolos, el scope y el tipo:
                                 AnalizadorLexico.t_simbolos.del_entry(id);
                                 //AnalizadorLexico.t_simbolos.display();
                                 if (AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN") != null && AnalizadorLexico.t_simbolos.get_entry(tipo+":MAIN").getUse().equals("TYPE_NAME")){
-                                        // SI EL TIPO ES DEFINIDO X USER, VA CON :MAIN
+                                        // SI EL TIPO ES DEFINIDO POR USER, VA CON :MAIN
                                         AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo+":MAIN");
                                 }else {AnalizadorLexico.t_simbolos.add_entry(id+":"+actualScope,"ID",tipo);}
                                 
@@ -1055,6 +1057,10 @@ goto_statement
                 //LLAMAR SI ES ID O FUNCION.  SI ES EXPR_PAIR, SE ASUME LLEGA SIN LA POSICION (SIN {})
                 String scopeaux = new String(actualScope);
                 //AnalizadorLexico.t_simbolos.display();
+                /*if (id.substring(0,1).equals("S") || id.substring(0,1).equals("U") || id.substring(0,1).equals("V") || id.substring(0,1).equals("W")){ // si es embebida
+                        return id + ":MAIN";
+                } */
+                 
                 if (isDeclared(id)){
 
                        //System.out.println("getDeclared: id: "+id);
