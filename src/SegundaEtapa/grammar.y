@@ -607,7 +607,7 @@ outf_statement
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         // es variable o funcion
-                        if (isPair(lexem)) {
+                        if (isPairAccess(lexem)) {
                                 pos = lexem.substring(lexem.lastIndexOf("{"),lexem.lastIndexOf("}") + 1);
                                //System.out.println("pos: "+pos);
                                 lexem = getDeclared(getPairName(lexem)) + pos;
@@ -839,7 +839,7 @@ goto_statement
                         else {  // variable, invoc. a funcion o expr_pair
 
                                 // CASO PAIR
-                                if (isPair(valStr)) {  
+                                if (isPairAccess(valStr)) {  
                                         lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
                                         lexem = getDeclared(lexem);
                                 } 
@@ -979,9 +979,9 @@ goto_statement
                         String posexpr = "";
                         //System.out.println("chkAndAssign: expr: "+expr);
                         //System.out.println("chkAndAssign: id: "+id);
-                        Boolean idPair = isPair(id);
-                        Boolean exprPair = isPair(expr);
-                        //AnalizadorLexico.t_simbolos.display();
+                        Boolean idPair = isPairAccess(id,"assign");   // en una asignacion, dos pair pueden asignarse
+                        Boolean exprPair = isPairAccess(expr,"assign");
+                        // PAIR SIN ACCESO PUEDE SOLO SI AMBAS PARTES DE LA ASIGNACIÓN LO SON
                         if (idPair){
                                 // posid es {1} o {2}
                                 posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
@@ -1082,14 +1082,23 @@ goto_statement
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
         }
 
-        public static Boolean isPair (String id){
+        public static Boolean isPair(String id){
+                return (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))) 
+        }
+
+        public static Boolean isPairAccess(String id){
+                return isPairAccess(id,"");
+        }
+
+        public static Boolean isPairAccess (String id, String op){
                 // un pair tiene la posicion de acceso entre {}; ej: pairsito{1}
                 if (!isCte(id)){
                         if (AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)) != null) {
                                         if (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))) {
-                                                if (!(id.charAt(id.length()-1) == '}')){
+                                                if (!(id.charAt(id.length()-1) == '}') && !op.equals("assign")){
+                                                        System.out.println("op: "+op);
                                                         yyerror("Se intento acceder a un pair sin especificar la posicion de acceso: "+id);
-                                                }   
+                                                }
                                         }
                         }
                 }

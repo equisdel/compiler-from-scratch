@@ -749,7 +749,7 @@ final static String yyrule[] = {
                         else {  // variable, invoc. a funcion o expr_pair
 
                                 // CASO PAIR
-                                if (isPair(valStr)) {  
+                                if (isPairAccess(valStr)) {  
                                         lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
                                         lexem = getDeclared(lexem);
                                 } 
@@ -816,11 +816,12 @@ final static String yyrule[] = {
 
 
         public static boolean isDeclared(String id) {   // recibe id sin scoope
+                // PROBELMA DE EMBEBIDOS: LLEGA CON :MAIN
                 // chequea si ya fue declarada en el scope actual u otro global al mismo ( va pregutnando con cada scope, sacando el ultimo. comienza en el actual)
                 if (isCte(id)) {System.out.println("OJO ESTAS PASANDO UNA CTE A isDeclared:"+id);}
                 String scopeaux = new String(actualScope);
-                System.out.println("a isDeclared llego: "+id);
-                System.out.println("EL SCOPEAUX: "+scopeaux);
+                //System.out.println("a isDeclared llego: "+id);
+                //System.out.println("EL SCOPEAUX: "+scopeaux);
                 //AnalizadorLexico.t_simbolos.display();
                 if (isDeclaredLocal(id)) {return true;}
                 else {
@@ -888,9 +889,9 @@ final static String yyrule[] = {
                         String posexpr = "";
                         //System.out.println("chkAndAssign: expr: "+expr);
                         //System.out.println("chkAndAssign: id: "+id);
-                        Boolean idPair = isPair(id);
-                        Boolean exprPair = isPair(expr);
-                        //AnalizadorLexico.t_simbolos.display();
+                        Boolean idPair = isPairAccess(id,"assign");   // en una asignacion, dos pair pueden asignarse
+                        Boolean exprPair = isPairAccess(expr,"assign");
+                        // PAIR SIN ACCESO PUEDE SOLO SI AMBAS PARTES DE LA ASIGNACIÓN LO SON
                         if (idPair){
                                 // posid es {1} o {2}
                                 posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
@@ -991,14 +992,23 @@ final static String yyrule[] = {
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
         }
 
-        public static Boolean isPair (String id){
+        public static Boolean isPair(String id){
+                return (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))) 
+        }
+
+        public static Boolean isPairAccess(String id){
+                return isPairAccess(id,"");
+        }
+
+        public static Boolean isPairAccess (String id, String op){
                 // un pair tiene la posicion de acceso entre {}; ej: pairsito{1}
                 if (!isCte(id)){
                         if (AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)) != null) {
                                         if (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))) {
-                                                if (!(id.charAt(id.length()-1) == '}')){
+                                                if (!(id.charAt(id.length()-1) == '}') && !op.equals("assign")){
+                                                        System.out.println("op: "+op);
                                                         yyerror("Se intento acceder a un pair sin especificar la posicion de acceso: "+id);
-                                                }   
+                                                }
                                         }
                         }
                 }
@@ -1023,7 +1033,7 @@ final static String yyrule[] = {
             return terceto; 
         }
     }
-//#line 954 "Parser.java"
+//#line 964 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1752,7 +1762,7 @@ case 94:
                 String pos = "";
                 if (!isTerceto(lexem) && (!isCte(lexem)) && (!isCharch(lexem))){
                         /* es variable o funcion*/
-                        if (isPair(lexem)) {
+                        if (isPairAccess(lexem)) {
                                 pos = lexem.substring(lexem.lastIndexOf("{"),lexem.lastIndexOf("}") + 1);
                                /*System.out.println("pos: "+pos);*/
                                 lexem = getDeclared(getPairName(lexem)) + pos;
@@ -1936,7 +1946,7 @@ case 120:
 //#line 774 "grammar.y"
 {yyerror("Se esperaba TAG en la sentencia GOTO."); }
 break;
-//#line 1862 "Parser.java"
+//#line 1872 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
