@@ -2,7 +2,7 @@ pp1
 begin
 
 
-typedef pair <uinteger> parsito1;
+typedef pair <single> parsito1;
 
 typedef pair <uinteger> parsito2 ;
 

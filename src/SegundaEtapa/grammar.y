@@ -838,7 +838,7 @@ goto_statement
                         
                         else {  // variable, invoc. a funcion o expr_pair
 
-                                // CASO PAIR
+                                // CASO ACCESO A PAIR
                                 if (isPairAccess(valStr)) {  
                                         lexem = valStr.substring(0,valStr.indexOf("{")); // me quedo con el id del pair
                                         lexem = getDeclared(lexem);
@@ -975,6 +975,8 @@ goto_statement
         public static String chkAndAssign(String id, String expr){       // chequea id este declarado y expr sea valida.
                 //AnalizadorLexico.t_simbolos.display();
                         //System.out.print("chkAndAssign: id: "+id);
+                        String pid = id;
+                        String pexpr = expr;
                         String posid = "";
                         String posexpr = "";
                         //System.out.println("chkAndAssign: expr: "+expr);
@@ -984,12 +986,14 @@ goto_statement
                         // PAIR SIN ACCESO PUEDE SOLO SI AMBAS PARTES DE LA ASIGNACIÓN LO SON
                         if (idPair){
                                 // posid es {1} o {2}
+                                System.out.println(id+"id es acceso a pair");
                                 posid = id.substring(id.lastIndexOf("{"),id.lastIndexOf("}") + 1);
                         //System.out.println("assign: posid: "+posid);
                                 id = getPairName(id);
                         //System.out.println("assign: id: "+id);
                         }
                         if (exprPair){
+                                System.out.println(expr+"expr es acceso a pair");
                                 posexpr = expr.substring(expr.lastIndexOf("{"),expr.lastIndexOf("}") + 1);
                                 expr = getPairName(expr);
                         }
@@ -1009,23 +1013,39 @@ goto_statement
                                                 lexemExpr = expr;
                                                 subtypeT = chkAndGetType(expr);
                                         } else if (isDeclared(expr)){ 
-                                                        lexemExpr = getDeclared(expr);
-                                                        subtypeT = chkAndGetType(expr+posexpr); // si no era pair, posexpr es vacio
+                                                         lexemExpr = getDeclared(expr);
+                                                        if (!isPairAccess(pexpr,"assign") && isPair(pexpr)){      // caso asignacion de pair -> p1 := p2
+                                                                subtypeT = AnalizadorLexico.t_simbolos.get_subtype(lexemExpr);
+                                                                System.out.println("pair completo,"+ lexemExpr+" subtypeT: "+subtypeT);
+                                                        } else {                // caso acceso a pair
+                                                                subtypeT = chkAndGetType(expr+posexpr); // si no era pair, posexpr es vacio
+                                                        }
                                                 }
                                                 else {yyerror(""+expr+" no declarada. ");}
 
                                         }
                                 
                                 String lexemID = getDeclared(id);
-                                String subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
+                                String subtypeID = "";
+                                if (!isPairAccess(pid,"assign") && isPair(pid) ){      // caso asignacion de pair -> p1 := p2
+                                        subtypeID = AnalizadorLexico.t_simbolos.get_subtype(lexemID);
+                                        System.out.println("pair completo, "+lexemID+" subtypeID: "+subtypeID);
+                                } else {
+                                        subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
+                                }
                                 //System.out.println("subtypeID: "+subtypeID);
                                 //System.out.println("subtypeT: "+subtypeT);
                                 if (idPair){lexemID = lexemID+posid;}
                                 if (exprPair){lexemExpr = lexemExpr+posexpr;}
-                                if (subtypeT.equals(subtypeID)){       
+                                if (!isPairAccess(pid,"assign") && isPair(pid) && !isPairAccess(pexpr,"assign") && isPair(pexpr)){
+                                        System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
+                                        subtypeID = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemID));
+                                        subtypeT = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemExpr));
+                                }           // si es asignacion entre pairs completos
+                                if (subtypeT.equals(subtypeID)){
                                         return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                                 }
-                                // TODO: FALTA DEVOLVER EN $$ EL ID DEL TERCETO (NECESARIO PARA ESTRUCTURAS DE CONTROL..)
+                                
                                 else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
                                         Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
                                         return Terceto.addTercetoT(":=",lexemID,Terceto.getLast(),"SINGLE");
@@ -1039,6 +1059,8 @@ goto_statement
                                 else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
                                         //System.out.println("subtypeID:"+subtypeID+" subtypeT:"+subtypeT);
                                         yyerror("tipos incompatibles en asignacion. "); 
+                                        System.out.println("tipo id: "+subtypeID+" tipo expr: "+subtypeT);
+                                        System.out.println("id: "+id+" expr: "+expr);
                                 }
 
                         }
@@ -1082,8 +1104,8 @@ goto_statement
                 return (id.charAt(0) == '[' && id.charAt(id.length()-1) == ']');
         }
 
-        public static Boolean isPair(String id){
-                return (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))) 
+        public static Boolean isPair(String id){       
+                return (!(AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("UINTEGER") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("HEXA") || AnalizadorLexico.t_simbolos.get_subtype(getDeclared(id)).equals("SINGLE"))); 
         }
 
         public static Boolean isPairAccess(String id){
