@@ -237,7 +237,7 @@ public class AsmGenerator {
             // hacer el pasaje o traduccion en caso de single 
             // los tipo float no se pueden usar como inmediatos
             //System.out.println("cte: "+operador+": El subtipo es "+subtipo);
-            if (Parser.isPair(operador)) {  //pairsito{1}
+            if (Parser.isPairAccess(operador)) {  //pairsito{1}
                 return ("_"+operador.replace("{","_").replace("}",""));
             } else if (subtipo.equals("SINGLE")){   //
                 // _cte1 real4 1.2     -1.2s-8 [0-9][a-z]'.''+/-' : ctes__1__2s_8  | ctes_152__21s3 | '+', '-':'_', '.':'__'

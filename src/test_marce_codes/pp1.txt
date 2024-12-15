@@ -16,9 +16,9 @@ p21{2} := 6;
 
 ## no se permite asignacion entre pairs, solo entre accesos al mismo
 
-p22 := p21;
-outf(p22{1});
-outf(p22{2});
+p11 := p21;
+outf(p11{1});
+outf(p11{2});
 
 end
 

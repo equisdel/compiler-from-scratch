@@ -1037,23 +1037,53 @@ goto_statement
                                 //System.out.println("subtypeT: "+subtypeT);
                                 if (idPair){lexemID = lexemID+posid;}
                                 if (exprPair){lexemExpr = lexemExpr+posexpr;}
+                                Boolean pairs = false;
                                 if (!isPairAccess(pid,"assign") && isPair(pid) && !isPairAccess(pexpr,"assign") && isPair(pexpr)){
+                                        pairs = true;
                                         System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
                                         subtypeID = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemID));
                                         subtypeT = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemExpr));
                                 }           // si es asignacion entre pairs completos
                                 if (subtypeT.equals(subtypeID)){
+                                        if (pairs){
+                                                Terceto.addTercetoT(":=",lexemID+"{1}",lexemExpr+"{1}",subtypeID);
+                                                return Terceto.addTercetoT(":=",lexemID+"{2}",lexemExpr+"{2}",subtypeID);
+                                        }
                                         return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
                                 }
                                 
                                 else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
+                                        if (pairs){
+                                                String taux1 = "";
+                                                String taux2 = "";
+                                               taux1 = Terceto.addTercetoT("utos",lexemExpr+"{1}",null,"SINGLE");
+                                               taux2 = Terceto.addTercetoT("utos",lexemExpr+"{2}",null,"SINGLE");
+                                               Terceto.addTercetoT(":=",lexemID+"{1}",taux1,"SINGLE");
+                                               return Terceto.addTercetoT(":=",lexemID+"{2}",taux2,"SINGLE");
+                                        }
                                         Terceto.addTercetoT("utos",lexemExpr,null,"SINGLE");
                                         return Terceto.addTercetoT(":=",lexemID,Terceto.getLast(),"SINGLE");
                                 }// agregar otro else por si uno es uinteger y el otro hexa
                                 else if (subtypeID.equals("UINTEGER") && subtypeT.equals("HEXA")){
+                                        if (pairs){
+                                                String taux1 = "";
+                                                String taux2 = "";
+                                               taux1 = Terceto.addTercetoT("utos",lexemExpr+"{1}",null,"UINTEGER");
+                                               taux2 = Terceto.addTercetoT("utos",lexemExpr+"{2}",null,"UINTEGER");
+                                               Terceto.addTercetoT(":=",lexemID+"{1}",taux1,"UINTEGER");
+                                               return Terceto.addTercetoT(":=",lexemID+"{2}",taux2,"UINTEGER");
+                                        }
                                         return Terceto.addTercetoT(":=",lexemID,lexemExpr,"UINTEGER");
                                 }
                                 else if (subtypeID.equals("HEXA") && subtypeT.equals("UINTEGER")){
+                                        if (pairs){
+                                                String taux1 = "";
+                                                String taux2 = "";
+                                               taux1 = Terceto.addTercetoT("utos",lexemExpr+"{1}",null,"HEXA");
+                                               taux2 = Terceto.addTercetoT("utos",lexemExpr+"{2}",null,"HEXA");
+                                               Terceto.addTercetoT(":=",lexemID+"{1}",taux1,"HEXA");
+                                               return Terceto.addTercetoT(":=",lexemID+"{2}",taux2,"HEXA");
+                                        }
                                         return Terceto.addTercetoT(":=",lexemID,lexemExpr,"HEXA");
                                 }
                                 else if (!subtypeID.equals("") && !subtypeT.equals("")) {       // para que no de error de tipos incompatibles si enrealidad era otro error antes
