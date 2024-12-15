@@ -1,0 +1,28 @@
+programap3
+begin
+
+
+	uinteger a, b, c;
+	uinteger i, j;
+	outf([anidadas]);
+	i := 1 ; 
+	REPEAT BEGIN	
+		OUTF([ en el repeat]);
+		outf(i);
+		if (i <5) then
+		  outf([then]);
+		 else
+			outf([else]);
+			j := 4;
+			repeat
+			begin
+			  outf([en repeat2]);
+			  outf(J);
+			  j := j -2;
+			END
+			until (j < 0);
+		end_if;
+	END UNTIL (i > 10);
+	OUTF([fuera del for]);
+	
+end

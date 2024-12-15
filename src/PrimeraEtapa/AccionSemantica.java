@@ -10,6 +10,7 @@ public class AccionSemantica {
     private int id;
     private String descripcion;
     private Function<Void, Integer> action;
+    static boolean embedded = false;
     static String error_msg = "Error"; // Variable compartida entre las acciones por si quieren elevar mensajes de
                                        // Warning
 
@@ -102,10 +103,11 @@ public class AccionSemantica {
                     // ¿Redeclaración? ¿Distinto scope? ¿Distinto subtipo? Cuestiones que pueden surgir más adelante
                                        // Es un nuevo identificador
                 } else {
-                        all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
                         if (key.length() > max_length)  // El identificador supera el límite máximo de caracteres
                             all_actions[107].execute(); //   -> Trunca el identificador + Warning
+                        all_actions[22].execute();      // Identifica el tipo 'ID' (y subtipo si corresponde) del lexema
                         all_actions[7].execute();       // Agrega el identificador a la tabla de simbolos
+                        AccionSemantica.embedded = false;
                     
                 }
                 return 0;
@@ -116,7 +118,10 @@ public class AccionSemantica {
         String desc_7 = "Agrega una nueva entrada a la tabla de simbolos.";
         Function<Void,Integer> action_7 = new Function<Void,Integer>() {
             public Integer apply(Void t) {
-                AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.lexema, AnalizadorLexico.lexema_type, AnalizadorLexico.lexema_subtype);
+                if (embedded) {
+                    AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.lexema+":MAIN", AnalizadorLexico.lexema_type, AnalizadorLexico.lexema_subtype, "VARIABLE_NAME");
+                }
+                else AnalizadorLexico.t_simbolos.add_entry(AnalizadorLexico.lexema, AnalizadorLexico.lexema_type, AnalizadorLexico.lexema_subtype);
                 return 0;
             }
         };
@@ -204,10 +209,18 @@ public class AccionSemantica {
                 AnalizadorLexico.lexema_type = "ID";
                 char inicial = Character.toLowerCase(AnalizadorLexico.lexema.charAt(0));
                 switch(inicial) {
-                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";    break;   // Usar var subtype
-                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";  break;
-                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";  break;
-                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";  break;
+                    case 's':   AnalizadorLexico.lexema_subtype = "SINGLE";    
+                                AccionSemantica.embedded = true;
+                                break;   // Usar var subtype
+                    case 'u':   AnalizadorLexico.lexema_subtype = "UINTEGER";  
+                                AccionSemantica.embedded = true;
+                                break;
+                    case 'v':   AnalizadorLexico.lexema_subtype = "UINTEGER";  
+                                AccionSemantica.embedded = true;
+                                break;
+                    case 'w':   AnalizadorLexico.lexema_subtype = "UINTEGER";  
+                                AccionSemantica.embedded = true;
+                                break;
                 }
                 return 0;
             }

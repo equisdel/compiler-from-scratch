@@ -9,25 +9,23 @@ dll_dllcrt0 PROTO C
 printf PROTO C : VARARG
 
 .data
-Z@MAIN REAL4 ?
-UB@MAIN DW ?
-X@MAIN REAL4 ?
-UA@MAIN DW ?
-Y@MAIN REAL4 ?
-UC@MAIN DW ?
+A@MAIN DW ?
+J@MAIN DW ?
+B@MAIN DW ?
+C@MAIN DW ?
+I@MAIN DW ?
 __new_line__ DB 13, 10, 0 ; CRLF
 errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros excede el limite de 16 bits", 0
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
 errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
-aux_charch_0  DB "INICIO ",  0
-aux_float_7 DD 1.0
-aux_float_8 DD 2.0
-auxt_9 REAL4 ?
-aux_float_9 DD 3
-auxt_11_64 DQ ?
-auxt_12_64 DQ ?
-auxt_13_64 DQ ?
+aux_charch_0  DB "ANIDADAS ",  0
+aux_charch_3  DB " EN EL REPEAT ",  0
+aux_charch_7  DB "THEN ",  0
+aux_charch_9  DB "ELSE ",  0
+aux_charch_12  DB "EN REPEAT2 ",  0
+auxt_14 DW ?
+aux_charch_20  DB "FUERA DEL FOR ",  0
 
 .code
 OverflowMul:
@@ -47,49 +45,64 @@ INVOKE printf, addr __new_line__
 invoke printf, addr aux_charch_0
 
 MOV AX, 1
-MOV UA@MAIN, AX
+MOV I@MAIN, AX
 
-MOV AX, 2
-MOV UB@MAIN, AX
-
-MOV AX, 3
-MOV UC@MAIN, AX
+labelt_2:
 
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), UA@MAIN
+invoke printf, addr aux_charch_3
 
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), UB@MAIN
+invoke printf, cfm$("%u\n"), I@MAIN
+
+MOV BX, I@MAIN                  ; Mueve op1 a reg. B
+CMP BX, 5                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
+
+JAE labelt_9
 
 INVOKE printf, addr __new_line__
-invoke printf, cfm$("%u\n"), UC@MAIN
+invoke printf, addr aux_charch_7
 
-fld aux_float_7
-fstp X@MAIN
+JMP labelt_10
 
-fld aux_float_8
-fstp Y@MAIN
+labelt_9:
+INVOKE printf, addr __new_line__
+invoke printf, addr aux_charch_9
 
-fild aux_float_9
-fstp auxt_9
+labelt_10:
+MOV AX, 4
+MOV J@MAIN, AX
 
-fld auxt_9
-fstp Z@MAIN
+labelt_11:
 
 INVOKE printf, addr __new_line__
-fld X@MAIN
-fst auxt_11_64
-invoke printf, cfm$("%.20Lf\n"), auxt_11_64
+invoke printf, addr aux_charch_12
 
 INVOKE printf, addr __new_line__
-fld Y@MAIN
-fst auxt_12_64
-invoke printf, cfm$("%.20Lf\n"), auxt_12_64
+invoke printf, cfm$("%u\n"), J@MAIN
+
+MOV AX, J@MAIN
+MOV BX, 2
+CMP AX, BX
+jb OverflowSub
+SUB AX, BX
+MOV auxt_14, AX
+
+MOV AX, auxt_14
+MOV J@MAIN, AX
+
+MOV BX, J@MAIN                  ; Mueve op1 a reg. B
+CMP BX, 0                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
+
+JAE labelt_11
+
+MOV BX, I@MAIN                  ; Mueve op1 a reg. B
+CMP BX, 10                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
+
+JBE labelt_2
 
 INVOKE printf, addr __new_line__
-fld Z@MAIN
-fst auxt_13_64
-invoke printf, cfm$("%.20Lf\n"), auxt_13_64
+invoke printf, addr aux_charch_20
 
 invoke printf, addr __new_line__
 

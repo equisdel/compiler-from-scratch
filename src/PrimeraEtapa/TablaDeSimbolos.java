@@ -111,7 +111,7 @@ public class TablaDeSimbolos {
 
     public void display() {
         System.out.println("TABLA DE SIMBOLOS");
-        System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n","LEXEMA","TIPO","SUBTIPO","USO","VALOR");
+        System.out.printf("| %-20s | %-10s |  %-12s |  %-14s | %-6s | %n","LEXEMA","TIPO","SUBTIPO","USO","PARAM");
         System.out.printf("|%-20s|%-10s|%-12s|%-14s|%-6s|%n","----------------------","------------","---------------","-----------------","--------");
         for (Map.Entry<String, Simbolo> entry : symbols.entrySet()) {
             //System.out.print("Clave: " + entry.getKey()+" ");

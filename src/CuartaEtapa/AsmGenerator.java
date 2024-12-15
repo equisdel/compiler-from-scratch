@@ -50,7 +50,7 @@ public class AsmGenerator {
             
     private static int contador_t = 0;
     private static ArrayList<Integer> tercetos_b = new ArrayList<>();
-    private static String next_jump_type = "";
+    private static Stack<String> next_jump_type = new Stack<>();
 
     private static class AsmData {
         
@@ -357,15 +357,13 @@ public class AsmGenerator {
                         String t_bi = op1.substring(1,op1.length()-1);
                         tercetos_b.add(Integer.parseInt(t_bi));
                         appendCode("JMP labelt_"+op1.substring(1,op1.length()-1));   // op1 es terceto. pasarlo a label
-                        next_jump_type = "[!]";
                 }
                 break;
         
                 case "BF" :{     
                     String t_bf = op2.substring(1,op2.length()-1);
                     tercetos_b.add(Integer.parseInt(t_bf));
-                    appendCode(next_jump_type+" labelt_"+t_bf);
-                    next_jump_type = "[!]";
+                    appendCode(next_jump_type.pop()+" labelt_"+t_bf);
                         // podria usarse label y jumps ?
                             // si op1(terceto) NO se cumple (es 0) salta a la etiqueta op2
                 }
@@ -527,10 +525,10 @@ public class AsmGenerator {
                 if (terceto.subtipo.equals("UINTEGER")) {
                     appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
                     appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
-                    next_jump_type = "JAE";
+                    next_jump_type.push("JAE");
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
-                    next_jump_type = "JB";
+                    next_jump_type.push("JB");
                 } 
             }
             break;
@@ -539,10 +537,10 @@ public class AsmGenerator {
                 if (terceto.subtipo.equals("UINTEGER")) {
                     appendCode("MOV BX, "+getOperador(op1,terceto.subtipo)+"                  ; Mueve op1 a reg. B");
                     appendCode("CMP BX, "+getOperador(op2,terceto.subtipo)+"                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. ");  
-                    next_jump_type = "JBE";
+                    next_jump_type.push("JBE");
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
-                    next_jump_type = "JA";
+                    next_jump_type.push("JA");
                 } 
             }
                 
@@ -555,7 +553,7 @@ public class AsmGenerator {
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
                 } 
-                    next_jump_type = "JA";
+                    next_jump_type.push("JA");
             }
             break;
 
@@ -566,7 +564,7 @@ public class AsmGenerator {
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
                 } 
-                    next_jump_type = "JB";
+                    next_jump_type.push("JB");
             }
                 
                 break;
@@ -578,7 +576,7 @@ public class AsmGenerator {
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
                 } 
-                    next_jump_type = "JNE";
+                    next_jump_type.push("JNE");
 
             }
                 
@@ -591,7 +589,7 @@ public class AsmGenerator {
                 } else if (terceto.subtipo.equals("SINGLE")) {
                     compareSingle(op1, op2, "SINGLE");
                 } 
-                    next_jump_type = "JE";  
+                    next_jump_type.push("JE");  
             }
                 
                 break;
