@@ -296,8 +296,8 @@ var_type
 */
 if_statement
 : if_cond then_statement END_IF {       //pdoria poner end_if dentro de then_statement y hacer esto ahi.
-        //completo terceto
-        Terceto.print_all();
+        //completo terceto BF
+        //Terceto.print_all();
         //System.out.println("debugging if: "+extractNumber($2.sval));
         //Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); 
         Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($2.sval))+1)+">"); 
@@ -305,8 +305,10 @@ if_statement
 | if_cond then_statement error {yyerror("Se esperaba END_IF.") ; }
 
 | if_cond then_statement else_statement {
-        // completo el terceto
-        Terceto.completeTerceto(Terceto.popTerceto(),"<"+String.valueOf(Integer.parseInt(extractNumber($3.sval)) + 1)+">",null); 
+        // completo el terceto BI
+        System.out.println("completando BI, con terceto: "+ $3.sval);
+        System.out.println(" y el ultimo terceto fue: "+Terceto.getLast());
+        Terceto.completeTerceto(Terceto.popTerceto(),"<"+String.valueOf(Integer.parseInt(extractNumber(Terceto.getLast())) + 1)+">",null); 
 
 }
 ;
@@ -355,7 +357,7 @@ then_statement
         ;
 
 else_statement
-        : else_tk ctrl_block_statement END_IF {$$.sval = $2.sval;}      //devulve ultimo terceto
+        : else_tk ctrl_block_statement END_IF {$$.sval = $2.sval; System.out.println("ultimo terceto dentro del else, a pasar a $$: "+$$.sval);}      //devulve ultimo terceto del else
         | else_tk END_IF {yyerror("Se esperaba sentencia ejecutable luego del else. "); }
         | else_tk error END_IF {yyerror("sintaxis de sentencia ejecutable luego del else, incorrecta "); }
         | else_tk ctrl_block_statement error {yyerror("se esperaba END_IF ") ; }
@@ -363,12 +365,16 @@ else_statement
 
 else_tk
         : ELSE {
+                // completo BF
+                Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(Terceto.getTercetoCount())+1)+">");
+                System.out.println("pila luego de completar bf: "+Terceto.TerStack);
                 $$.sval = Terceto.addTerceto("BI",null,null); //incompleto, primer operando se completara despues.
                 //$$.sval = Terceto.addTerceto("LABEL_CTRL",)
-                Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber($$.sval)) + 1)+">");//creo seria $$.sval + 1 (pasar a int y luego volver a string)
                 Terceto.pushTerceto($$.sval);
+                System.out.println("pila con BI incompleto: "+Terceto.TerStack);
         }
         ;
+
 ctrl_block_statement
         : executable_statement_list
         ;
@@ -643,8 +649,7 @@ outf_statement
 */
 repeat_statement
         : repeat_begin executable_statement_list END UNTIL '(' cond ')'{
-                $$.sval = Terceto.addTerceto("BF",$6.sval,$1.sval);
-                // si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());
+                $$.sval = Terceto.addTerceto("BF",$6.sval,"<"+String.valueOf(UntilStack.pop())+">");
         }
         | repeat_begin executable_statement_list END UNTIL cond {yyerror("Se esperaba que la condicion este entre parentesis. "); }
         | repeat_begin executable_statement_list END UNTIL '(' cond {yyerror("Se esperaba ')' luego de la condicion UNTIL. "); }
@@ -662,10 +667,11 @@ repeat_statement
 repeat_begin
         : REPEAT BEGIN {
                 // opcion 1: pila:
-                //UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)
+                UntilStack.push(Integer.parseInt(Terceto.getTercetoCount()));     //apilo prox terceto (porque empieza en 0 los id de lista.)
                 // opcion 2:
-                $$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
-                Terceto.addTerceto("LABEL_TAG","labelt_"+Terceto.getTercetoCount(),null); // pone un label al inicio de la esctructura
+                //$$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto
+                //  ESTO ESTABA MAL. PORQUE DESPUES AL REDUCIR REPEAT_STATEMENT, USABA EL ULTIMO TERCETO Y SI HAY IFS O REPEATS ADENTRO DE UN REPEAT, COMPLETABA OTRO BF.
+                $$.sval = Terceto.addTerceto("LABEL_TAG","labelt_"+Terceto.getTercetoCount(),null); // pone un label al inicio de la esctructura
         }
         ;
 
@@ -778,7 +784,7 @@ goto_statement
 %%
         public static ArrayList<String> errores = new ArrayList<>();
         public static String actualScope = "MAIN";
-        //static Stack<Integer> UntilStack = new Stack<>();
+        static Stack<Integer> UntilStack = new Stack<>();
 
 
 	public static void yyerror(String msg){
@@ -1029,7 +1035,7 @@ goto_statement
                                 String subtypeID = "";
                                 if (!isPairAccess(pid,"assign") && isPair(pid) ){      // caso asignacion de pair -> p1 := p2
                                         subtypeID = AnalizadorLexico.t_simbolos.get_subtype(lexemID);
-                                        System.out.println("pair completo, "+lexemID+" subtypeID: "+subtypeID);
+                                        //System.out.println("pair completo, "+lexemID+" subtypeID: "+subtypeID);
                                 } else {
                                         subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
                                 }
@@ -1040,7 +1046,7 @@ goto_statement
                                 Boolean pairs = false;
                                 if (!isPairAccess(pid,"assign") && isPair(pid) && !isPairAccess(pexpr,"assign") && isPair(pexpr)){
                                         pairs = true;
-                                        System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
+                                        //System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
                                         subtypeID = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemID));
                                         subtypeT = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemExpr));
                                 }           // si es asignacion entre pairs completos
@@ -1049,7 +1055,9 @@ goto_statement
                                                 Terceto.addTercetoT(":=",lexemID+"{1}",lexemExpr+"{1}",subtypeID);
                                                 return Terceto.addTercetoT(":=",lexemID+"{2}",lexemExpr+"{2}",subtypeID);
                                         }
-                                        return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
+                                        String aux = Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
+                                        System.out.println("ultimo terceto en assign: "+aux);
+                                        return aux;
                                 }
                                 
                                 else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    

@@ -22,10 +22,12 @@ chk_rec BYTE 0
 aux_charch_0  DB "ANIDADAS ",  0
 aux_charch_3  DB " EN EL REPEAT ",  0
 aux_charch_7  DB "THEN ",  0
-aux_charch_9  DB "ELSE ",  0
-aux_charch_12  DB "EN REPEAT2 ",  0
-auxt_14 DW ?
-aux_charch_20  DB "FUERA DEL FOR ",  0
+aux_charch_8  DB "I MENOR A 5 ",  0
+aux_charch_10  DB "ELSE ",  0
+aux_charch_13  DB "EN REPEAT2 ",  0
+auxt_15 DW ?
+auxt_19 DW ?
+aux_charch_23  DB "FUERA DEL FOR ",  0
 
 .code
 OverflowMul:
@@ -58,25 +60,27 @@ invoke printf, cfm$("%u\n"), I@MAIN
 MOV BX, I@MAIN                  ; Mueve op1 a reg. B
 CMP BX, 5                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
 
-JAE labelt_9
+JAE labelt_10
 
 INVOKE printf, addr __new_line__
 invoke printf, addr aux_charch_7
 
-JMP labelt_10
-
-labelt_9:
 INVOKE printf, addr __new_line__
-invoke printf, addr aux_charch_9
+invoke printf, addr aux_charch_8
+
+JMP labelt_19
 
 labelt_10:
+INVOKE printf, addr __new_line__
+invoke printf, addr aux_charch_10
+
 MOV AX, 4
 MOV J@MAIN, AX
 
-labelt_11:
+labelt_12:
 
 INVOKE printf, addr __new_line__
-invoke printf, addr aux_charch_12
+invoke printf, addr aux_charch_13
 
 INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u\n"), J@MAIN
@@ -86,15 +90,23 @@ MOV BX, 2
 CMP AX, BX
 jb OverflowSub
 SUB AX, BX
-MOV auxt_14, AX
+MOV auxt_15, AX
 
-MOV AX, auxt_14
+MOV AX, auxt_15
 MOV J@MAIN, AX
 
 MOV BX, J@MAIN                  ; Mueve op1 a reg. B
 CMP BX, 0                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
 
-JAE labelt_11
+JA labelt_12
+
+labelt_19:
+MOV AX, I@MAIN
+ADD AX, 1
+MOV auxt_19, AX
+
+MOV AX, auxt_19
+MOV I@MAIN, AX
 
 MOV BX, I@MAIN                  ; Mueve op1 a reg. B
 CMP BX, 10                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1 : 0. 
@@ -102,7 +114,7 @@ CMP BX, 10                 ; Compara op1 con op2. R = op1 - op2. ZF = R == 0 ? 1
 JBE labelt_2
 
 INVOKE printf, addr __new_line__
-invoke printf, addr aux_charch_20
+invoke printf, addr aux_charch_23
 
 invoke printf, addr __new_line__
 

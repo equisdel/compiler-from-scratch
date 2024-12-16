@@ -12,7 +12,7 @@ public class Terceto {
 
     public static ArrayList<Terceto> TerList = new ArrayList<>();
 
-    static Stack<Integer> TerStack = new Stack<>();
+    public static Stack<Integer> TerStack = new Stack<>();
 
     Terceto(String operacion, String op1, String op2) { // desp hace referencia al terceto con esa id
         this.operacion = operacion;

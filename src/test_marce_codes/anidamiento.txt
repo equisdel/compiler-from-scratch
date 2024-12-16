@@ -10,18 +10,20 @@ begin
 		OUTF([ en el repeat]);
 		outf(i);
 		if (i <5) then
-		  outf([then]);
-		 else
+		  	outf([then]);
+		  	outf([i menor a 5]);
+		else
 			outf([else]);
 			j := 4;
 			repeat
 			begin
-			  outf([en repeat2]);
+			outf([en repeat2]);
 			  outf(J);
 			  j := j -2;
 			END
-			until (j < 0);
+			until (j <= 0);
 		end_if;
+		i := i + 1;
 	END UNTIL (i > 10);
 	OUTF([fuera del for]);
 	

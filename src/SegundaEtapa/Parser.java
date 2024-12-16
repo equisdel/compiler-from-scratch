@@ -685,10 +685,10 @@ final static String yyrule[] = {
 "goto_statement : GOTO error",
 };
 
-//#line 779 "grammar.y"
+//#line 785 "grammar.y"
         public static ArrayList<String> errores = new ArrayList<>();
         public static String actualScope = "MAIN";
-        //static Stack<Integer> UntilStack = new Stack<>();
+        static Stack<Integer> UntilStack = new Stack<>();
 
 
 	public static void yyerror(String msg){
@@ -939,7 +939,7 @@ final static String yyrule[] = {
                                 String subtypeID = "";
                                 if (!isPairAccess(pid,"assign") && isPair(pid) ){      // caso asignacion de pair -> p1 := p2
                                         subtypeID = AnalizadorLexico.t_simbolos.get_subtype(lexemID);
-                                        System.out.println("pair completo, "+lexemID+" subtypeID: "+subtypeID);
+                                        //System.out.println("pair completo, "+lexemID+" subtypeID: "+subtypeID);
                                 } else {
                                         subtypeID = chkAndGetType(id+posid);      // SI ES PAIR, DEVUELVE TIPO PRIMITIVO! :D
                                 }
@@ -950,7 +950,7 @@ final static String yyrule[] = {
                                 Boolean pairs = false;
                                 if (!isPairAccess(pid,"assign") && isPair(pid) && !isPairAccess(pexpr,"assign") && isPair(pexpr)){
                                         pairs = true;
-                                        System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
+                                        //System.out.println(" ES ASIGNACION ENTRE PAIRS COMPLETOS!");
                                         subtypeID = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemID));
                                         subtypeT = AnalizadorLexico.t_simbolos.get_subtype(AnalizadorLexico.t_simbolos.get_subtype(lexemExpr));
                                 }           // si es asignacion entre pairs completos
@@ -959,7 +959,9 @@ final static String yyrule[] = {
                                                 Terceto.addTercetoT(":=",lexemID+"{1}",lexemExpr+"{1}",subtypeID);
                                                 return Terceto.addTercetoT(":=",lexemID+"{2}",lexemExpr+"{2}",subtypeID);
                                         }
-                                        return Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
+                                        String aux = Terceto.addTercetoT(":=",lexemID,lexemExpr,subtypeID);
+                                        System.out.println("ultimo terceto en assign: "+aux);
+                                        return aux;
                                 }
                                 
                                 else if (subtypeID.equals("SINGLE") && (subtypeT.equals("UINTEGER") || subtypeT.equals("HEXA"))){    
@@ -1085,7 +1087,7 @@ final static String yyrule[] = {
             return terceto; 
         }
     }
-//#line 1016 "Parser.java"
+//#line 1018 "Parser.java"
 //###############################################################
 // method: yylexdebug : check lexer state
 //###############################################################
@@ -1509,8 +1511,8 @@ break;
 case 53:
 //#line 298 "grammar.y"
 {       /*pdoria poner end_if dentro de then_statement y hacer esto ahi.*/
-        /*completo terceto*/
-        Terceto.print_all();
+        /*completo terceto BF*/
+        /*Terceto.print_all();*/
         /*System.out.println("debugging if: "+extractNumber($2.sval));*/
         /*Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt((extractNumber($2.sval)).substring(1,($2.sval).length()-1)+1))+">"); */
         Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber(val_peek(1).sval))+1)+">"); 
@@ -1523,68 +1525,73 @@ break;
 case 55:
 //#line 307 "grammar.y"
 {
-        /* completo el terceto*/
-        Terceto.completeTerceto(Terceto.popTerceto(),"<"+String.valueOf(Integer.parseInt(extractNumber(val_peek(0).sval)) + 1)+">",null); 
+        /* completo el terceto BI*/
+        System.out.println("completando BI, con terceto: "+ val_peek(0).sval);
+        System.out.println(" y el ultimo terceto fue: "+Terceto.getLast());
+        Terceto.completeTerceto(Terceto.popTerceto(),"<"+String.valueOf(Integer.parseInt(extractNumber(Terceto.getLast())) + 1)+">",null); 
 
 }
 break;
 case 56:
-//#line 315 "grammar.y"
+//#line 317 "grammar.y"
 {
                 yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,null);
                 Terceto.pushTerceto(yyval.sval); /*apilo terceto incompleto.*/
         }
 break;
 case 57:
-//#line 319 "grammar.y"
+//#line 321 "grammar.y"
 {yyerror("Se esperaba que la condicion este entre parentesis. "); }
 break;
 case 58:
-//#line 320 "grammar.y"
+//#line 322 "grammar.y"
 {
                 yyerror("Se esperaba ')' luego de la condicion"); }
 break;
 case 59:
-//#line 322 "grammar.y"
+//#line 324 "grammar.y"
 {yyerror("se esperaba '(' antes de la condicion. "); }
 break;
 case 60:
-//#line 350 "grammar.y"
+//#line 352 "grammar.y"
 {
                 yyval.sval = val_peek(0).sval;       /*devuelve ultimo terceto*/
         }
 break;
 case 61:
-//#line 354 "grammar.y"
+//#line 356 "grammar.y"
 {yyerror("Sintaxis de sentencia ejecutable dentro del IF, incorrecta."); }
 break;
 case 62:
-//#line 358 "grammar.y"
-{yyval.sval = val_peek(1).sval;}
+//#line 360 "grammar.y"
+{yyval.sval = val_peek(1).sval; System.out.println("ultimo terceto dentro del else, a pasar a $$: "+yyval.sval);}
 break;
 case 63:
-//#line 359 "grammar.y"
+//#line 361 "grammar.y"
 {yyerror("Se esperaba sentencia ejecutable luego del else. "); }
 break;
 case 64:
-//#line 360 "grammar.y"
+//#line 362 "grammar.y"
 {yyerror("sintaxis de sentencia ejecutable luego del else, incorrecta "); }
 break;
 case 65:
-//#line 361 "grammar.y"
+//#line 363 "grammar.y"
 {yyerror("se esperaba END_IF ") ; }
 break;
 case 66:
-//#line 365 "grammar.y"
+//#line 367 "grammar.y"
 {
+                /* completo BF*/
+                Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(Terceto.getTercetoCount())+1)+">");
+                System.out.println("pila luego de completar bf: "+Terceto.TerStack);
                 yyval.sval = Terceto.addTerceto("BI",null,null); /*incompleto, primer operando se completara despues.*/
                 /*$$.sval = Terceto.addTerceto("LABEL_CTRL",)*/
-                Terceto.completeTerceto(Terceto.popTerceto(),null,"<"+String.valueOf(Integer.parseInt(extractNumber(yyval.sval)) + 1)+">");/*creo seria $$.sval + 1 (pasar a int y luego volver a string)*/
                 Terceto.pushTerceto(yyval.sval);
+                System.out.println("pila con BI incompleto: "+Terceto.TerStack);
         }
 break;
 case 68:
-//#line 377 "grammar.y"
+//#line 383 "grammar.y"
 {   /* NO CONTEMPLA USAR TIPOS DEFINIDOS POR USUARIOOOOOOO*/
                 /* ambas expr chequear si son pair, que sean acceso (O CHEQUAR EN GETDECLARED?)*/
                 String t_subtype1 = chkAndGetType(val_peek(2).sval);
@@ -1615,27 +1622,27 @@ case 68:
         }
 break;
 case 69:
-//#line 405 "grammar.y"
+//#line 411 "grammar.y"
 {yyerror("Se esperaba comparador.") ; }
 break;
 case 76:
-//#line 418 "grammar.y"
+//#line 424 "grammar.y"
 {
                 yyval.sval = chkAndAssign(val_peek(2).sval,val_peek(0).sval);
                 }
 break;
 case 77:
-//#line 422 "grammar.y"
+//#line 428 "grammar.y"
 {
                 yyval.sval = chkAndAssign(val_peek(2).sval,val_peek(0).sval);
         }
 break;
 case 78:
-//#line 425 "grammar.y"
+//#line 431 "grammar.y"
 {yyerror("No se permite asignacion en declaracion. Separa las sentencias. ") ;}
 break;
 case 79:
-//#line 431 "grammar.y"
+//#line 437 "grammar.y"
 {            
                 String id1 = val_peek(2).sval;
                 String id2 = val_peek(0).sval;
@@ -1662,7 +1669,7 @@ case 79:
 }
 break;
 case 80:
-//#line 457 "grammar.y"
+//#line 463 "grammar.y"
 {            /*la expr o el term pueden ser: variable, funcion, expr_pair,cte,terceto.*/
                 String id1 = val_peek(2).sval;
                 String id2 = val_peek(0).sval;
@@ -1690,11 +1697,11 @@ case 80:
         }
 break;
 case 82:
-//#line 483 "grammar.y"
+//#line 489 "grammar.y"
 {yyerror("Sintaxis de expresion incorrecta, asegurate no falte operador ni operando.") ; }
 break;
 case 83:
-//#line 487 "grammar.y"
+//#line 493 "grammar.y"
 {            
                 String id1 = val_peek(2).sval;
                 String id2 = val_peek(0).sval;
@@ -1721,7 +1728,7 @@ case 83:
         }
 break;
 case 84:
-//#line 511 "grammar.y"
+//#line 517 "grammar.y"
 {            
                 String id1 = val_peek(2).sval;
                 String id2 = val_peek(0).sval;
@@ -1748,7 +1755,7 @@ case 84:
         }
 break;
 case 88:
-//#line 541 "grammar.y"
+//#line 547 "grammar.y"
 {    /* si cont de CTE es 1, reemplazo esa entrada de la TS por -CTE*/
                 /* si es mas de 1, creo nueva entrada con -CTE*/
         if (!AnalizadorLexico.t_simbolos.get_subtype(val_peek(0).sval).equals("SINGLE")) {yyerror("Se esperaba constante de tipo single. "); }
@@ -1763,7 +1770,7 @@ case 88:
 }
 break;
 case 91:
-//#line 563 "grammar.y"
+//#line 569 "grammar.y"
 {       
                 if (isDeclared(val_peek(3).sval)){
                         /* si ID es de un tipo definido (el tipo de ID esta en la tabla de simbolos)*/
@@ -1782,7 +1789,7 @@ case 91:
         }
 break;
 case 92:
-//#line 582 "grammar.y"
+//#line 588 "grammar.y"
 { 
                 /*System.out.println("\n\nEl lexema a buscar: "+$1.sval);*/
                 String lexema = getDeclared(val_peek(3).sval);
@@ -1800,11 +1807,11 @@ case 92:
         }
 break;
 case 93:
-//#line 597 "grammar.y"
+//#line 603 "grammar.y"
 {yyerror("Sintaxis incorrecta de invocacion a funcion. Asegurate de no pasar más de 1 parametro a una funcion. ") ; }
 break;
 case 94:
-//#line 601 "grammar.y"
+//#line 607 "grammar.y"
 {   /*expr puede  VARIBLE, CTE, funcion, terceto(varaux),*/
                 /* si es ID o funcion o exprpair se pasa con scope*/
                 /* CHEQUEAR LA EXPR SEA VALIDA, ES DECIR SI ES VARIABLE O FUNCIOn, QUE ESTE DECLARADO*/
@@ -1827,74 +1834,74 @@ case 94:
         }
 break;
 case 95:
-//#line 621 "grammar.y"
+//#line 627 "grammar.y"
 {
                 yyval.sval = Terceto.addTercetoT("OUTF",val_peek(1).sval,null,"CHARCH");
         }
 break;
 case 96:
-//#line 624 "grammar.y"
+//#line 630 "grammar.y"
 {yyerror("Se esperaba parametro en OUTF. "); }
 break;
 case 97:
-//#line 625 "grammar.y"
+//#line 631 "grammar.y"
 {yyerror("Parametro incorrecto en OUTF. "); }
 break;
 case 98:
-//#line 645 "grammar.y"
+//#line 651 "grammar.y"
 {
-                yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,val_peek(6).sval);
-                /* si use pila: $$.sval = Terceto.addTerceto("BF",$6.sval,UntilStack.pop());*/
+                yyval.sval = Terceto.addTerceto("BF",val_peek(1).sval,"<"+String.valueOf(UntilStack.pop())+">");
         }
 break;
 case 99:
-//#line 649 "grammar.y"
+//#line 654 "grammar.y"
 {yyerror("Se esperaba que la condicion este entre parentesis. "); }
 break;
 case 100:
-//#line 650 "grammar.y"
+//#line 655 "grammar.y"
 {yyerror("Se esperaba ')' luego de la condicion UNTIL. "); }
 break;
 case 101:
-//#line 651 "grammar.y"
+//#line 656 "grammar.y"
 {yyerror("Se esperaba '(' antes de la condicion UNTIL. "); }
 break;
 case 102:
-//#line 653 "grammar.y"
+//#line 658 "grammar.y"
 {yyerror("Se esperaba cuerpo de REPEAT-UNTIL."); }
 break;
 case 103:
-//#line 654 "grammar.y"
+//#line 659 "grammar.y"
 {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y que la condicion este entre parentesis. "); }
 break;
 case 104:
-//#line 655 "grammar.y"
+//#line 660 "grammar.y"
 {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y ')' luego de la condicion. "); }
 break;
 case 105:
-//#line 656 "grammar.y"
+//#line 661 "grammar.y"
 {yyerror("Se esperaba cuerpo de REPEAT-UNTIL, y'(' antes de la condicion. "); }
 break;
 case 106:
-//#line 657 "grammar.y"
+//#line 662 "grammar.y"
 {yyerror("Se esperaba UNTIL luego de 'END'."); }
 break;
 case 107:
-//#line 658 "grammar.y"
+//#line 663 "grammar.y"
 {yyerror("Se esperaba condicion luego de UNTIL."); }
 break;
 case 108:
-//#line 663 "grammar.y"
+//#line 668 "grammar.y"
 {
                 /* opcion 1: pila:*/
-                /*UntilStack.push(Terceto.getTercetoCount());     //apilo prox terceto (porque empieza en 0 los id de lista.)*/
+                UntilStack.push(Integer.parseInt(Terceto.getTercetoCount()));     /*apilo prox terceto (porque empieza en 0 los id de lista.)*/
                 /* opcion 2:*/
-                yyval.sval = strToTID(Terceto.getTercetoCount());  /*paso id del proximo terceto*/
-                Terceto.addTerceto("LABEL_TAG","labelt_"+Terceto.getTercetoCount(),null); /* pone un label al inicio de la esctructura*/
+                /*$$.sval = strToTID(Terceto.getTercetoCount());  //paso id del proximo terceto*/
+                /*  ESTO ESTABA MAL. PORQUE DESPUES AL REDUCIR REPEAT_STATEMENT, USABA EL ULTIMO TERCETO Y SI HAY IFS O REPEATS ADENTRO DE UN REPEAT, COMPLETABA OTRO BF.*/
+                yyval.sval = Terceto.addTerceto("LABEL_TAG","labelt_"+Terceto.getTercetoCount(),null); /* pone un label al inicio de la esctructura*/
         }
 break;
 case 109:
-//#line 673 "grammar.y"
+//#line 679 "grammar.y"
 {
                 String[] idList = val_peek(2).sval.split(",");
                 String[] exprList = val_peek(0).sval.split(",");
@@ -1925,7 +1932,7 @@ case 109:
         }
 break;
 case 110:
-//#line 701 "grammar.y"
+//#line 707 "grammar.y"
 {
                 String[] exprList = val_peek(0).sval.split(",");
                 yyval.sval = chkAndAssign(val_peek(2).sval,exprList[0]);
@@ -1933,11 +1940,11 @@ case 110:
         }
 break;
 case 111:
-//#line 706 "grammar.y"
+//#line 712 "grammar.y"
 {yyerror("La lista de expresiones es incorrecta, puede que falte ',' entre las expresiones. ") ; }
 break;
 case 112:
-//#line 711 "grammar.y"
+//#line 717 "grammar.y"
 {
                 
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
@@ -1945,26 +1952,26 @@ case 112:
         }
 break;
 case 113:
-//#line 716 "grammar.y"
+//#line 722 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
         }
 break;
 case 116:
-//#line 730 "grammar.y"
+//#line 736 "grammar.y"
 {
                 yyval.sval = val_peek(2).sval + "," + val_peek(0).sval;
         }
 break;
 case 117:
-//#line 734 "grammar.y"
+//#line 740 "grammar.y"
 {
                 yyval.sval = yyval.sval + ',' + val_peek(0).sval;
                 
         }
 break;
 case 118:
-//#line 742 "grammar.y"
+//#line 748 "grammar.y"
 {
                 /* buscar si no hay otra tag con el mismo nombre al alcance*/
                /*System.out.println("wtf");*/
@@ -1986,7 +1993,7 @@ case 118:
         }
 break;
 case 119:
-//#line 768 "grammar.y"
+//#line 774 "grammar.y"
 {
                 /*if existe en TS {*/
                         yyval.sval= Terceto.addTerceto("JUMP_TAG",null,null);      /*se pone terceto incompleto, se completara al final del programa*/
@@ -1995,10 +2002,10 @@ case 119:
         }
 break;
 case 120:
-//#line 774 "grammar.y"
+//#line 780 "grammar.y"
 {yyerror("Se esperaba TAG en la sentencia GOTO."); }
 break;
-//#line 1924 "Parser.java"
+//#line 1931 "Parser.java"
 //########## END OF USER-SUPPLIED ACTIONS ##########
     }//switch
     //#### Now let's reduce... ####
