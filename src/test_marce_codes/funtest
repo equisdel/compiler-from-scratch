@@ -5,14 +5,14 @@ BEGIN
 	begin
         uinteger FUN funcion1(uinteger param)
         begin
-            param := param + 1;
-            ret (param);
+            parametro := parametro + 1;
+            ret (parametro);
         end
 	  parametro := parametro + 1;
       ret (funcion1(parametro));
 	end
 
 uinteger parametro;
-parametro := 2;
+parametro := 2*1;
 outf (funcion2(parametro));
 END

@@ -33,10 +33,11 @@ public class AsmGenerator {
     private static ArrayList<FunFile> func_files = new ArrayList<>();
     public static class FunFile {
         FileManager ff_manager;
-        String fun_name;
+        String fun_name, fun_param_name;
         Boolean fun_is_closed = false;
-        FunFile(String name) {
+        FunFile(String name, String param_name) {
             this.fun_name = name;
+            this.fun_param_name = param_name;
             this.fun_is_closed = false;
             this.ff_manager = new FileManager(destPath+fun_name);
         }
@@ -105,7 +106,7 @@ public class AsmGenerator {
         punto_code.appendLine("invoke ExitProcess, 1   ; tiene que terminar con la ejecucion");
 
         // Elemento 0: programa main
-        FunFile main = new FunFile(AsmGenerator.main);
+        FunFile main = new FunFile(AsmGenerator.main, "");
         main.ff_manager.appendLine(main.fun_name+":");    
         main.ff_manager.appendLine("");
         func_files.add(main);   // primer elemento
@@ -282,7 +283,7 @@ public class AsmGenerator {
                     break;
 
                 case "INIC_FUN" : {  
-                    FunFile new_fun = new FunFile(op1);
+                    FunFile new_fun = new FunFile(op1,op2);
                     if (!func_nesting.isEmpty())
                         insertBeforeParent(func_nesting.peek(),new_fun);
                     else func_files.add(new_fun);
@@ -294,8 +295,15 @@ public class AsmGenerator {
                     // subtipo:     tipo del parametro formal
                     // SI EL PARAMETRO ES ENTERO:
                     if (terceto.subtipo.equals("UINTEGER")) {
-                        appendCode(op1+" PROC "+op2+":WORD");
+                        appendData(new AsmData(op2, "DW", "?"));
+                    } else appendData(new AsmData(op2, "DD", "?"));
+                    appendCode(op1+" PROC ");
+                    
+                    /*
+                    if (terceto.subtipo.equals("UINTEGER")) {
+                        appendCode(op1+" PROC "+op2+":WORD");   // Quitar el parámetro, agregar la variable data
                     } else appendCode(op1+" PROC "+op2+":DWORD");
+                    */
                     //appendCode("XOR EAX, EAX");     // setea el registro EAX en todos 0s
                     //appendCode("MOV EAX, [ESP+4]"); // carga el parámetro en EAX (32 bits son 4 bytes, funciona para UINTEGER y para SINGLE)
                     // appendCode("POP ESP");          // quita el parámetro del tope de la pila?
@@ -316,7 +324,43 @@ public class AsmGenerator {
                     appendCode("MOV chk_rec, "+isRecursive(op1));   // Si devuelve 1: el llamado es recursivo
                     appendCode("CMP chk_rec, 0"); // solo para setear flag ZF 
                     appendCode("JNZ RecursiveAttempt"); // llama al error
-                    appendCode("invoke "+op1+", "+getOperador(op2, terceto.subtipo));  
+                    // como acceder a la convencion del nombre del parámetro formal de la función llamada?
+                    // puede venir en el terceto o
+                    // puede guardarse en la clase FunFile (esto m da cosa, pq tiene que haber sido declarada ya)
+                    // funfile está arriba, es más que nada para guardar todo el cuerpo de la función y separarla en distisntos archivos PERO 
+                    // te permite guardar info, como el nombre  o parametro
+                // thoughts?
+                    //aca tendria q haber una asignacion pero el tema esta en acceder al parametro formal
+                    // o la q decías vos, terceto adicional antes de un call
+                    // ponele q antes de CALL_FUN haces un ASIGN_PARAM con nombre del real y del formal, 
+                    // podemos pq hasta la etapa anterior tenemos acceso a la T. de S, o no?
+                    // tenes nombre de la funcion llamada, campo param es suficiente, o no? o param es el tipo, no m acuerdo ya jasjd es el tipo :c
+                    // mal ahí jssXD
+                    // bueno funfile, fue, listoooo barbaro
+                    // lo guardamos en funfile, y despues aca ahcemos la asignacion?????
+                    // siii, lo gracioso es q estaba cambiando las cosas para q quede así Y ESTABA TODO LISTO PARA ESO ajsjasj wat XD
+                    // ahí hago un método q recupere el nombre del formal, vos si queres hace la asignación,
+                    
+                    // asignacion de parametro real al formal: getParamFormal(op1) := op2
+                    if ( AnalizadorLexico.t_simbolos.get_entry(op2) != null && !Parser.isTerceto(op2)) {    // si es cte
+                        if (!terceto.subtipo.equals("SINGLE")){
+                            appendCode("MOV "+getOperador(getParamFormal(op1), terceto.subtipo)+","+getOperador(op2, terceto.subtipo)); //op2 es inmediato
+                        } else {
+                            // si es float, creo la variable (no puedo usar inmediatos float)
+                            appendCode("fld " + getOperador(op2, "SINGLE"));
+                            appendCode("fstp "+getOperador(getParamFormal(op1), terceto.subtipo));
+                        }
+                    } else {// tengo q pasar primero a un reg
+                        if (terceto.subtipo.equals("SINGLE")) {
+                            appendCode("fld "+getOperador(op2, terceto.subtipo));
+                            appendCode("fstp "+getOperador(getParamFormal(op1), terceto.subtipo));
+                        } else {    //uinteger o hexa
+                            appendCode("MOV AX, "+getOperador(op2, terceto.subtipo));
+                            appendCode("MOV "+getOperador(getParamFormal(op1), terceto.subtipo)+", AX");
+                        }
+                    }   
+
+                    appendCode("call "+op1);
                     //appendData(new AsmData("auxt_"+contador_t,"DWORD","?"));    // esta aux sacarla creo, usar 1 por funcion
                     // usamos una unica var de resultado para cada funcion.
                     //appendData(new AsmData("@"+op1, op1, op2));   no hacemos nada aca, despues se usa la variable cuando se use
@@ -630,6 +674,15 @@ public class AsmGenerator {
                 }
             }
         }
+
+        private static String getParamFormal(String function) {
+            for (FunFile fun : func_files) {
+                if (fun.fun_name.equals(function))
+                    return fun.fun_param_name;
+            } // che creo q anduvo BARBARO a    ver screen
+            // pudiste chequear? oki, mando chequear que
+            return "ERROR! No existe la funcion X_x"; 
+        }
     /* 
     * 
     private static String mapSubtypeToSizeInBytes(String op2) {
@@ -654,21 +707,4 @@ public class AsmGenerator {
         finish();
     }
 
-    public static void main(String[] args) {
-        FunFile a = new FunFile("a");
-        a.appendLine("a");
-        FunFile b = new FunFile("b");
-        b.appendLine("b");
-        FunFile c = new FunFile("c");
-        c.appendLine("c");
-
-        func_files.add(a);
-        func_files.add(b);
-        func_files.add(c);
-        
-        FileManager concat = new FileManager(new File(destPath+"/concat"));
-        concat.appendFiles(func_files);
-
-        concat.display();
-    }
 }

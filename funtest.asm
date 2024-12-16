@@ -17,8 +17,11 @@ errorOverflowMul db "ERROR: Overflow detectado! Una multiplicacion de enteros ex
 errorOverflowSub db "ERROR: Overflow detectado! Una resta de enteros da negativo", 0
 errorRecursiveAttempt db "ERROR: Llamado recursivo detectado! No se permite la recursion directa ni indirecta.", 0
 chk_rec BYTE 0
+PARAMETRO@MAIN@FUNCION2 DW ?
+PARAM@MAIN@FUNCION2@FUNCION1 DW ?
 auxt_2 DW ?
 auxt_7 DW ?
+auxt_13 DW ?
 
 .code
 OverflowMul:
@@ -31,16 +34,16 @@ RecursiveAttempt:
 invoke StdOut, addr errorRecursiveAttempt
 invoke ExitProcess, 1   ; tiene que terminar con la ejecucion
 
-FUNCION1@MAIN@FUNCION2 PROC PARAM@MAIN@FUNCION2@FUNCION1:WORD
+FUNCION1@MAIN@FUNCION2 PROC 
 
-MOV AX, PARAM@MAIN@FUNCION2@FUNCION1
+MOV AX, PARAMETRO@MAIN@FUNCION2
 ADD AX, 1
 MOV auxt_2, AX
 
 MOV AX, auxt_2
-MOV PARAM@MAIN@FUNCION2@FUNCION1, AX
+MOV PARAMETRO@MAIN@FUNCION2, AX
 
-MOV AX, PARAM@MAIN@FUNCION2@FUNCION1
+MOV AX, PARAMETRO@MAIN@FUNCION2
 MOV @FUNCION1@MAIN@FUNCION2, AX
 
 ret
@@ -48,7 +51,7 @@ ret
 ret
 FUNCION1@MAIN@FUNCION2 ENDP
 
-FUNCION2@MAIN PROC PARAMETRO@MAIN@FUNCION2:WORD
+FUNCION2@MAIN PROC 
 
 
 MOV AX, PARAMETRO@MAIN@FUNCION2
@@ -61,7 +64,9 @@ MOV PARAMETRO@MAIN@FUNCION2, AX
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-invoke FUNCION1@MAIN@FUNCION2, PARAMETRO@MAIN@FUNCION2
+MOV AX, PARAMETRO@MAIN@FUNCION2
+MOV PARAM@MAIN@FUNCION2@FUNCION1, AX
+call FUNCION1@MAIN@FUNCION2
 
 MOV AX, @FUNCION1@MAIN@FUNCION2
 MOV @FUNCION2@MAIN, AX
@@ -75,13 +80,23 @@ start:
 
 
 
-MOV AX, 2
+MOV AX ,2
+MOV CX ,1
+MOV DX, 0
+MUL CX
+CMP DX, 0
+JNE OverflowMul
+MOV auxt_13 ,AX
+
+MOV AX, auxt_13
 MOV PARAMETRO@MAIN, AX
 
 MOV chk_rec, 0
 CMP chk_rec, 0
 JNZ RecursiveAttempt
-invoke FUNCION2@MAIN, PARAMETRO@MAIN
+MOV AX, PARAMETRO@MAIN
+MOV PARAMETRO@MAIN@FUNCION2, AX
+call FUNCION2@MAIN
 
 INVOKE printf, addr __new_line__
 invoke printf, cfm$("%u\n"), @FUNCION2@MAIN
