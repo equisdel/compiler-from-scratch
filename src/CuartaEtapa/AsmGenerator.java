@@ -450,6 +450,7 @@ public class AsmGenerator {
                     appendCode("MOV AX ,"+getOperador(op1, terceto.subtipo));   // MOV auxt_[id_terceto], final_op1
                     appendCode("MOV CX ,"+getOperador(op2, terceto.subtipo));
                     // ACA PONER UN 0 EN DX SINO PUEDE ANDAR MAL.                               HACER
+                    appendCode("MOV DX, 0");
                     appendCode("MUL CX"); // MUL auxt_[id_terceto], final_op2
                     appendCode("CMP DX, 0");   // SI DA 0 ES PORQ NO HUBO OVERFLOW
                     appendCode("JNE OverflowMul");
@@ -459,8 +460,9 @@ public class AsmGenerator {
                 break;
         
                 case "DIV" : { // QUE ONDA LAS CTES NEGATIVAS!?
-                    // Declarar la variable "auxt_[id_terceto]".
+                    // Declarar la variable "auxt_[id_terceto]".  // holi
                     appendData(new AsmData("auxt_"+contador_t,mapIDSubtypeToVarType(new String(terceto.subtipo)),"?"));
+                    appendCode("MOV DX, 0");
                     if (terceto.subtipo.equals("SINGLE")){ 
                         appendCode("fld "+getOperador(op1, terceto.subtipo));
                         appendCode("fdiv "+getOperador(op2, terceto.subtipo,"_bis"));
@@ -639,5 +641,23 @@ public class AsmGenerator {
         }
         System.out.println("\n");
         finish();
+    }
+
+    public static void main(String[] args) {
+        FunFile a = new FunFile("a");
+        a.appendLine("a");
+        FunFile b = new FunFile("b");
+        b.appendLine("b");
+        FunFile c = new FunFile("c");
+        c.appendLine("c");
+
+        func_files.add(a);
+        func_files.add(b);
+        func_files.add(c);
+        
+        FileManager concat = new FileManager(new File(destPath+"/concat"));
+        concat.appendFiles(func_files);
+
+        concat.display();
     }
 }
