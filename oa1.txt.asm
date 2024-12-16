@@ -59,6 +59,7 @@ MOV C@MAIN, AX
 
 MOV AX ,C@MAIN
 MOV CX ,2
+MOV DX, 0
 MUL CX
 CMP DX, 0
 JNE OverflowMul
@@ -68,6 +69,7 @@ MOV AX, B@MAIN
 ADD AX, auxt_5
 MOV auxt_6, AX
 
+MOV DX, 0
 MOV CX,0
 MOV AX, B@MAIN
 MOV CX, 2

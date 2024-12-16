@@ -75,6 +75,7 @@ fld auxt_3
 fadd
 fstp auxt_4
 
+MOV DX, 0
 fld DB@MAIN
 fdiv aux_float_5_bis
 fstp auxt_5
