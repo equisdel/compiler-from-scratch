@@ -283,8 +283,10 @@ public class AsmGenerator {
 
                 case "INIC_FUN" : {  
                     FunFile new_fun = new FunFile(op1);
+                    if (!func_nesting.isEmpty())
+                        insertBeforeParent(func_nesting.peek(),new_fun);
+                    else func_files.add(new_fun);
                     func_nesting.push(new_fun);
-                    func_files.add(new_fun);
                     // el terceto guarda: ¿nos sirve de algo esta data?
                     // operador:    LABEL_FUN
                     // op1:         nombre de la función (con scope y reemplazos)
@@ -618,6 +620,15 @@ public class AsmGenerator {
             for (FunFile ff : func_nesting)
                 if (ff.fun_name.equals(fun_to_call)) return 1;
             return 0;
+        }
+
+        private static void insertBeforeParent(FunFile parent, FunFile child) {
+            for (int i = 1; i < func_files.size(); i++) {
+                if (func_files.get(i) == parent) {
+                    func_files.add(i,child);
+                    break;
+                }
+            }
         }
     /* 
     * 

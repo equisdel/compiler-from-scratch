@@ -5,8 +5,8 @@ BEGIN
 	begin
         uinteger FUN funcion1(uinteger param)
         begin
-            parametro := parametro + 1;
-            ret (parametro);
+            param := param + 1;
+            ret (param);
         end
 	  parametro := parametro + 1;
       ret (funcion1(parametro));
