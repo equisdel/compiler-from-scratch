@@ -1,0 +1,18 @@
+funtest
+BEGIN
+
+    uinteger FUN funcion2(uinteger parametro)
+	begin
+        uinteger FUN funcion1(uinteger param)
+        begin
+            parametro := parametro + 1;
+            ret (parametro);
+        end
+	  parametro := parametro + 1;
+      ret (funcion1(parametro));
+	end
+
+uinteger parametro;
+parametro := 2;
+outf (funcion2(parametro));
+END

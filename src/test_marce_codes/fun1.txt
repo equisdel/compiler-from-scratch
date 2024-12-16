@@ -16,12 +16,12 @@ BEGIN
 		RET (pepe + 1);
 	END
 	
-	uinteger FUN sfuncion2(uinteger sparametro)
+	uinteger FUN funcion2(uinteger parametro)
 	begin
-	  outf([en fun22]);
-	  sparametro := sparametro + 1;
-	  outf(sparametro);
-	  ax := sparametro;
+	  outf([en fun2]);
+	  parametro := parametro + 1;
+	  outf(parametro);
+	  ax := parametro;
 	  single a;
 	  a := funcion1(ax);
 	  outf(a);
@@ -36,7 +36,7 @@ BEGIN
 
 	c := 1;
 	ax := 1.9;
-	b := sfuncion2( c);
+	b := funcion2( c);
 	outf(b);
 	outf(axf);
 

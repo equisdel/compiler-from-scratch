@@ -42,7 +42,7 @@ auxt_11_64 DQ ?
 auxt_12 REAL4 ?
 aux_float_12 DD 1
 auxt_13 REAL4 ?
-aux_charch_18  DB "EN FUN22 ",  0
+aux_charch_18  DB "EN FUN2 ",  0
 auxt_19 DW ?
 auxt_22 REAL4 ?
 auxt_26_64 DQ ?
